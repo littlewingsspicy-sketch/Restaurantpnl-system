@@ -122,7 +122,59 @@ opacity:1;
 .simple-bars .bar{height:14px;background:#f0e7db;border-radius:999px;overflow:hidden}
 .simple-bars .fill{height:100%;background:#c08457;border-radius:999px}
 @media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
+* {
+  box-sizing: border-box;
+}
 
+.card {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+table {
+  width: 100%;
+  min-width: 900px;
+}
+
+th,
+td {
+  white-space: nowrap;
+}
+
+.topbar {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+
+  .wrap {
+    grid-template-columns: 1fr !important;
+  }
+
+  .side {
+    position: relative !important;
+    height: auto !important;
+  }
+
+  .main {
+    padding: 14px !important;
+  }
+
+  .grid2,
+  .chart-grid,
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+}
 </style>
 </head>
 <body>
