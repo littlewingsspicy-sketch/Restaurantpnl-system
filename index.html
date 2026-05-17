@@ -32,89 +32,195 @@ input,select{min-width:0}
 @media(max-width:760px){
   .grid2,.grid3,#inv .grid2,#daily .grid2{grid-template-columns:1fr}
 }
-* { box-sizing: border-box; }
 
-  .main { overflow-x: hidden; }
 
-  .card { max-width: 100%; overflow-x: auto; }
+.monthbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.monthbar input{max-width:190px}
+.daybox{border:1px solid #e2d8ca;border-radius:16px;background:#fff;margin-bottom:12px;overflow:hidden}
+.dayhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;background:#fff8df;cursor:pointer;font-weight:900}
+.daybody{display:none;padding:14px}
+.daybox.open .daybody{display:block}
+.ws-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.ws-sales{display:grid;grid-template-columns:1.1fr .7fr .55fr .7fr;gap:8px;align-items:center;margin-bottom:6px}
+.ws-line{display:grid;grid-template-columns:1.4fr .55fr .55fr .75fr auto;gap:8px;align-items:center;margin-bottom:8px}
+.ws-exp{display:grid;grid-template-columns:1.4fr 1.1fr .7fr auto;gap:8px;align-items:center;margin-bottom:8px}
+.ws-mini-table{font-size:12px;margin-top:8px}
+.ws-mini-table th,.ws-mini-table td{padding:6px}
+@media(max-width:1000px){.ws-grid{grid-template-columns:1fr}.ws-sales,.ws-line,.ws-exp{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.ws-sales,.ws-line,.ws-exp{grid-template-columns:1fr}}
 
-  input, select, textarea {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-  }
 
-  .grid, .grid2, .grid3, .layout2 {
-    width: 100%;
-    max-width: 100%;
-  }
+/* v8 workspace usability */
+#workspace .card{overflow-x:auto}
+#workspace input,#workspace select{width:100%;max-width:100%;min-width:0}
+.ws-line{grid-template-columns:minmax(220px,1.2fr) minmax(170px,.8fr) minmax(90px,.5fr) minmax(90px,.5fr) minmax(110px,.7fr) auto}
+.ws-exp{grid-template-columns:minmax(220px,1.4fr) minmax(160px,1.1fr) minmax(110px,.7fr) auto}
+.ws-sales{grid-template-columns:minmax(120px,1.1fr) minmax(100px,.7fr) minmax(80px,.55fr) minmax(100px,.7fr)}
+@media(max-width:900px){.ws-sales,.ws-line,.ws-exp{grid-template-columns:1fr}}
 
-  .grid2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
-  }
 
-  .grid3 {
-    grid-template-columns: repeat(3, minmax(240px, 1fr));
-    gap: 18px;
-  }
+.monthbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.monthbar input{max-width:190px}
+#pl table td:nth-child(2),#pl table th:nth-child(2),
+#pl table td:nth-child(3),#pl table th:nth-child(3){text-align:right}
 
-  .layout2 {
-    grid-template-columns: minmax(420px, 0.9fr) minmax(520px, 1.1fr);
-    gap: 22px;
-  }
 
-  table {
-    width: 100%;
-    table-layout: auto;
-  }
+.savehint{
+position:fixed;
+bottom:18px;
+right:18px;
+background:#1f7a45;
+color:#fff;
+padding:10px 14px;
+border-radius:12px;
+font-weight:700;
+z-index:9999;
+opacity:0;
+transition:all .25s;
+}
+.savehint.show{
+opacity:1;
+}
 
-  th, td {
-    white-space: nowrap;
-  }
 
-  @media (max-width: 1100px) {
-    .layout2, .grid2, .grid3 {
-      grid-template-columns: 1fr;
-    }
+.pl-layout{display:grid;grid-template-columns:minmax(520px,1.1fr) minmax(360px,.9fr);gap:18px;align-items:start}
+.pl-summary-table td:nth-child(2),.pl-summary-table td:nth-child(3),
+.pl-summary-table th:nth-child(2),.pl-summary-table th:nth-child(3){text-align:right}
+.pie-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.expense-pie{width:260px;height:260px;border-radius:50%;background:conic-gradient(#ddd 0deg 360deg);border:1px solid #e2d8ca}
+.pie-legend{width:100%;font-size:13px}
+.pie-row{display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:center;margin:6px 0}
+.pie-color{width:14px;height:14px;border-radius:4px;background:#ddd}
+@media(max-width:1000px){.pl-layout{grid-template-columns:1fr}}
 
-    .side {
-      position: relative;
-      width: 100%;
-    }
 
-    .main {
-      margin-left: 0;
-      width: 100%;
-    }
-  }
+/* v17 P&L owner flow */
+.pl-layout{display:grid;grid-template-columns:minmax(520px,1.1fr) minmax(360px,.9fr);gap:18px;align-items:start}
+.pl-summary-table td:nth-child(2),.pl-summary-table td:nth-child(3),
+.pl-summary-table th:nth-child(2),.pl-summary-table th:nth-child(3){text-align:right}
+.pl-section-row td{font-weight:900;background:#fff8df}
+.pl-total-row td{font-weight:900;border-top:2px solid #e2d8ca}
+.pl-profit-row td{font-weight:900;background:#eefbf3}
+.pl-loss-row td{font-weight:900;background:#fff1f2}
+.pie-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.expense-pie{width:260px;height:260px;border-radius:50%;background:conic-gradient(#ddd 0deg 360deg);border:1px solid #e2d8ca}
+.pie-legend{width:100%;font-size:13px}
+.pie-row{display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:center;margin:6px 0}
+.pie-color{width:14px;height:14px;border-radius:4px;background:#ddd}
+@media(max-width:1000px){.pl-layout{grid-template-columns:1fr}}
 
-</style>
+
+/* v18 dashboard */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px}
+.kpi-card{background:#fff;border:1px solid #e7dccf;border-radius:16px;padding:16px}
+.kpi-card h4{margin:0 0 8px;font-size:13px;opacity:.7}
+.kpi-card .big{font-size:28px;font-weight:900}
+.kpi-card .sub{font-size:12px;opacity:.7;margin-top:8px}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.chart-card{background:#fff;border:1px solid #e7dccf;border-radius:16px;padding:16px}
+.simple-bars .row{display:grid;grid-template-columns:120px 1fr 80px;gap:10px;align-items:center;margin:8px 0}
+.simple-bars .bar{height:14px;background:#f0e7db;border-radius:999px;overflow:hidden}
+.simple-bars .fill{height:100%;background:#c08457;border-radius:999px}
+@media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
-<div class="wrap"><aside class="side"><div class="brand">🐥 NRK Clean v70</div><nav><a href="#dash" class="active">📊 Dashboard</a><a href="#pl">📈 P&L</a><a href="#daily">🧾 Daily Sale</a><a href="#inv">📦 COGS/Inventory</a><a href="#exp">💸 Expenses</a><a href="#ing">🧂 Ingredients</a><a href="#rec">🍗 Food Cost</a><a href="#brand">🏷️ Brands</a><a href="#export">⬇️ Export</a></nav></aside>
+<div class="wrap"><aside class="side"><div class="brand">🐥 NRK Clean v91</div><nav><a href="#dash" class="active">📊 Dashboard</a><a href="#workspace">📅 Monthly Workspace</a><a href="#pl">📈 P&L</a><a href="#ing">🧂 Ingredients</a><a href="#rec">🍗 Food Cost</a><a href="#brand">🏷️ Brands</a><a href="#export">⬇️ Export</a></nav></aside>
 <main class="main"><div class="top"><h2 id="title">Dashboard</h2><div id="status" class="status">Loading...</div></div>
-<section id="dash" class="page active"><div class="grid"><div class="card kpi"><small>รายได้</small><b id="krev">฿0</b></div><div class="card kpi"><small>กำไร/ขาดทุน</small><b id="kprofit">฿0</b></div><div class="card kpi"><small>บิล / AOV</small><b id="kbills">0</b><div id="kaov"></div></div><div class="card kpi"><small>CM Ratio</small><b id="kcm">0%</b></div></div><div class="grid2"><div class="card"><h3>รายได้ตามช่องทาง</h3><table><tbody id="channelTbl"></tbody></table></div><div class="card"><h3>จันทร์-อาทิตย์</h3><table><tbody id="weekdayTbl"></tbody></table></div></div></section>
 
-<section id="pl" class="page">
+<section id="dash" class="page active">
 <div class="card">
-<h3>P&L Summary</h3>
-<table>
-<thead>
-<tr><th>รายการ</th><th>จำนวนเงิน</th><th>% Revenue</th></tr>
-</thead>
-<tbody id="plTbl"></tbody>
-</table>
-<div class="help">Revenue = Daily Sale, COGS = Inventory Purchase, Expenses = Expenses</div>
+<h2>Owner Dashboard</h2>
+<p class="help">ภาพรวมธุรกิจรายปี/รายเดือนสำหรับติดตามสุขภาพร้าน</p>
+</div>
+
+<div class="kpi-grid">
+<div class="kpi-card"><h4>Revenue</h4><div class="big" id="kpiRevenue">฿0</div><div class="sub" id="kpiRevenueSub">Gross / Discount / Net</div></div>
+<div class="kpi-card"><h4>COGS</h4><div class="big" id="kpiCogs">฿0</div><div class="sub" id="kpiCogsSub">Food / Packaging / Beverage</div></div>
+<div class="kpi-card"><h4>Gross Profit</h4><div class="big" id="kpiGross">฿0</div><div class="sub" id="kpiGrossSub">0%</div></div>
+<div class="kpi-card"><h4>GP Delivery</h4><div class="big" id="kpiGpDelivery">฿0</div><div class="sub">Grab GP & Commission</div></div>
+<div class="kpi-card"><h4>Labor Cost</h4><div class="big" id="kpiLabor">฿0</div><div class="sub" id="kpiLaborSub">0%</div></div>
+<div class="kpi-card"><h4>AOV</h4><div class="big" id="kpiAov">฿0</div><div class="sub">Average Order Value</div></div>
+<div class="kpi-card"><h4>Break-even</h4><div class="big" id="kpiBe">0%</div><div class="sub" id="kpiBeSub">฿0 / ฿0</div></div>
+<div class="kpi-card"><h4>Net Profit</h4><div class="big" id="kpiNet">฿0</div><div class="sub" id="kpiNetSub">0%</div></div>
+</div>
+
+<div class="chart-grid">
+<div class="chart-card"><h3>Revenue Growth</h3><div id="growthChart" class="simple-bars"></div></div>
+<div class="chart-card"><h3>Revenue by Channel</h3><div id="channelChart" class="simple-bars"></div></div>
+<div class="chart-card"><h3>Revenue by Brand (Grab Only)</h3><div id="brandChart" class="simple-bars"></div></div>
+<div class="chart-card"><h3>Sales by Week Day</h3><div id="weekdayChart" class="simple-bars"></div></div>
 </div>
 </section>
 
+
+
+
+
+<section id="pl" class="page">
+<div class="card">
+  <h3>P&L รายเดือน</h3>
+  <div class="monthbar">
+    <button class="secondary" onclick="movePLMonth(-1)">← เดือนก่อน</button>
+    <input type="month" id="plMonth" onchange="renderPL()">
+    <button class="secondary" onclick="movePLMonth(1)">เดือนถัดไป →</button>
+    <button class="primary" onclick="renderPL()">โหลดเดือนนี้</button>
+  </div>
+</div>
+
+<div class="pl-layout">
+  <div class="card">
+    <h3>สรุป P&L รวม</h3>
+    <table class="pl-summary-table">
+      <thead>
+        <tr><th>รายการ</th><th>จำนวนเงิน</th><th>% Revenue</th></tr>
+      </thead>
+      <tbody id="plSummaryTbl"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>เงิน 100 บาท หายไปไหน</h3>
+    <div class="pie-wrap">
+      <div id="expensePie" class="expense-pie"></div>
+      <div id="pieTotalLabel" class="help"></div>
+      <div id="expensePieLegend" class="pie-legend"></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="workspace" class="page">
+<div class="card">
+  <h3>Monthly Workspace</h3>
+  <div class="monthbar">
+    <button class="secondary" onclick="moveMonth(-1)">← เดือนก่อน</button>
+    <input type="month" id="wsMonth" onchange="renderWorkspace()">
+    <button class="secondary" onclick="moveMonth(1)">เดือนถัดไป →</button>
+    <button class="primary" onclick="renderWorkspace()">โหลดเดือนนี้</button>
+  </div>
+  <div class="help">หน้านี้ใช้กรอกแบบรายเดือน: ยอดขาย / ซื้อของ / รายจ่าย ภายในวันเดียวกัน</div>
+</div>
+<div id="workspaceDays"></div>
+</section>
+
 <section id="daily" class="page"><div class="card"><h3>Daily Sale</h3><div class="grid2"><div><label>วันที่</label><input type="date" id="sd"></div><div><label>หมายเหตุ</label><input id="sn"></div></div><div id="saleInputs" class="grid3"></div><button class="primary" onclick="saveSale()">บันทึก</button> <button class="secondary" onclick="clearSale()">ล้าง</button></div><div class="card"><table><thead><tr><th>วันที่</th><th>ช่องทาง</th><th>ยอด</th><th>ลด</th><th>Net</th><th>บิล</th><th></th></tr></thead><tbody id="saleTbl"></tbody></table></div></section>
-<section id="inv" class="page"><div class="card"><h3>COGS / Inventory</h3><div class="grid2"><div><label>วันที่ซื้อ</label><input type="date" id="pd"></div><div><label>วัตถุดิบ</label><select id="ping"></select></div><div><label>จำนวนซื้อ</label><input type="number" id="pqty" oninput="calcPurchase()"></div><div><label>หน่วยซื้อ</label><input id="punit"></div><div><label>ราคารวม</label><input type="number" id="ptotal" oninput="calcPurchase()"></div><div><label>ราคาต่อหน่วยซื้อ</label><input id="punitcost" readonly></div></div><div id="pcpu" class="help"></div><button class="primary" onclick="savePurchase()">บันทึก</button> <button class="secondary" onclick="clearPurchase()">ล้าง</button></div><div class="card"><table><thead><tr><th>วันที่</th><th>วัตถุดิบ</th><th>จำนวน</th><th>หน่วย</th><th>ราคารวม</th><th></th></tr></thead><tbody id="purchaseTbl"></tbody></table></div></section>
-<section id="exp" class="page"><div class="card"><h3>Expenses</h3><div class="grid2"><div><label>วันที่</label><input type="date" id="ed"></div><div><label>หมวด</label><select id="ec"><optgroup label="👷 ค่าแรงงาน"><option value="0301 — เงินเดือนพนักงาน FT">0301 — เงินเดือนพนักงาน FT</option><option value="0302 — ค่าแรงพนักงาน PT รายวัน">0302 — ค่าแรงพนักงาน PT รายวัน</option><option value="0303 — ค่าแรงอื่นๆ / OT">0303 — ค่าแรงอื่นๆ / OT</option><option value="0304 — ประกันสังคม">0304 — ประกันสังคม</option><option value="0305 — สวัสดิการอื่นๆ">0305 — สวัสดิการอื่นๆ</option></optgroup><optgroup label="🔧 สาธารณูปโภค"><option value="0401 — ค่าไฟฟ้า">0401 — ค่าไฟฟ้า</option><option value="0402 — ค่าน้ำ">0402 — ค่าน้ำ</option><option value="0403 — ค่าโทรศัพท์">0403 — ค่าโทรศัพท์</option><option value="0404 — ค่าอินเตอร์เน็ต">0404 — ค่าอินเตอร์เน็ต</option></optgroup><optgroup label="🏢 ค่าใช้จ่ายคงที่"><option value="0501 — ค่าเช่ารายเดือน">0501 — ค่าเช่ารายเดือน</option><option value="0502 — ค่าทำบัญชี">0502 — ค่าทำบัญชี</option><option value="0503 — ค่าธรรมเนียมธนาคาร">0503 — ค่าธรรมเนียมธนาคาร</option><option value="0504 — ค่า GP Delivery Commission">0504 — ค่า GP Delivery Commission</option><option value="0505 — ภาษีหัก ณ ที่จ่าย">0505 — ภาษีหัก ณ ที่จ่าย</option><option value="0506 — VAT">0506 — VAT</option><option value="0507 — ภาษีเงินได้ประจำปี">0507 — ภาษีเงินได้ประจำปี</option><option value="0508 — ค่าบริการ/สำนักงาน/ส่วนกลาง">0508 — ค่าบริการ/สำนักงาน/ส่วนกลาง</option></optgroup><optgroup label="📦 ค่าใช้จ่ายแปรผัน"><option value="0206 — ค่าน้ำแข็ง">0206 — ค่าน้ำแข็ง</option><option value="0207 — ค่าแก๊ส">0207 — ค่าแก๊ส</option><option value="0408 — ค่าโฆษณา / Marketing">0408 — ค่าโฆษณา / Marketing</option><option value="0411 — ค่าใช้จ่ายอื่นๆ">0411 — ค่าใช้จ่ายอื่นๆ</option></optgroup></select></div><div><label>รายละเอียด</label><input id="edt"></div><div><label>จำนวนเงิน</label><input type="number" id="ea"></div><div><label>Cost type</label><select id="et"><option value="fixed">fixed</option><option value="variable">variable</option></select></div></div><button class="primary" onclick="saveExp()">บันทึก</button></div><div class="card"><table><tbody id="expTbl"></tbody></table></div></section>
-<section id="ing" class="page"><div class="card"><h3>Ingredients — Excel Logic</h3><div class="grid2"><div><label>ชื่อวัตถุดิบ</label><input id="inm"></div><div><label>หมวด</label><input id="icat"></div><div><label>หน่วยรับ</label><input id="ipu" placeholder="ฟอง / ถุง / กก. / ลิตร"></div><div><label>ราคา / หน่วยรับ</label><input type="number" id="ipp" oninput="calcIngredientPreview()" placeholder="เช่น 90"></div><div><label>จำนวนใช้ / หน่วยใช้</label><input type="number" id="icv" value="1" oninput="calcIngredientPreview()" placeholder="เช่น 1000"></div><div><label>หน่วยใช้</label><input id="iuu" placeholder="กรัม / ml / ฟอง"></div><div><label>Yield %</label><input type="number" id="iy" value="100" oninput="calcIngredientPreview()"></div><div><label>ราคา / หน่วยใช้ Auto</label><input id="icpu" readonly></div></div><div class="help">สูตรตาม Excel: ราคา/หน่วยใช้ = ราคา/หน่วยรับ ÷ จำนวนใช้ ÷ Yield</div><button class="primary" onclick="saveIng()">บันทึก</button> <button class="secondary" onclick="clearIng()">ล้าง</button></div><div class="card"><table><thead><tr><th>ชื่อ</th><th>หน่วยรับ</th><th>ราคา/หน่วยรับ</th><th>หน่วยใช้</th><th>Yield</th><th>Cost/use</th><th></th></tr></thead><tbody id="ingTbl"></tbody></table></div></section>
-<section id="rec" class="page"><div class="recipe-layout"><div class="card"><h3>Food Cost by Recipe</h3><label>Type</label><select id="rt" onchange="toggleRecipePrice();renderWork()"><option value="menu">Menu</option><option value="semi">Semi</option></select><label>Brand</label><select id="rb"></select><label>ชื่อ Menu / Semi</label><input id="rn"><div class="grid2"><div><label>Output Qty / Yield สุดท้าย</label><input type="number" id="ry" value="1" oninput="renderWork()"></div><div><label>Output Unit</label><input id="rou" placeholder="กรัม / ml / ชิ้น / portion" oninput="renderWork()"></div></div><div id="priceBox"><div class="grid2"><div><label>ราคาหน้าร้านรวม VAT</label><input type="number" id="rp" value="0" oninput="renderWork()"></div><div><label>GP Delivery %</label><input type="number" id="rgp" value="23" oninput="renderWork()"></div></div><div><span class="pill" id="pb">หน้าร้านรวม VAT ฿0</span><span class="pill" id="pg">หน้าร้านถอด VAT ฿0</span><span class="pill" id="pv">Delivery ฿0</span><span class="pill" id="pf">GP 0%</span></div></div><hr><label>เลือก Ingredient / Semi</label><select id="rs"></select><div class="line"><input type="number" id="rq" placeholder="จำนวนใช้"><input id="ru" placeholder="หน่วย"><div id="ruc">฿0</div><div id="rlc">฿0</div><button class="secondary" onclick="addLine()">เพิ่ม</button></div><h4>รายการที่เลือกก่อนบันทึก</h4><table><thead><tr><th>รายการ</th><th>จำนวน</th><th>หน่วย</th><th>ต้นทุน/หน่วย</th><th>ต้นทุนรวม</th><th></th></tr></thead><tbody id="workTbl"></tbody></table><h3 id="rtotal">Cost ฿0</h3><h3 id="rfc">FC —</h3><button class="primary" onclick="saveRecipe()">บันทึก</button> <button class="secondary" onclick="clearRecipe()">ล้าง</button></div><div class="card"><h3>รายการ Recipe / Semi</h3><div class="grid2"><div><label>Filter Type</label><select id="recipeTypeFilter" onchange="recipeTable()"><option value="all">ทั้งหมด</option><option value="menu">Menu</option><option value="semi">Semi</option></select></div><div><label>Filter Brand</label><select id="recipeBrandFilter" onchange="recipeTable()"><option value="all">ทุกแบรนด์</option></select></div></div><table><thead><tr><th>ชื่อ</th><th>Type</th><th>Brand</th><th>Cost/output</th><th>ราคาหน้าร้าน</th><th>Delivery</th><th>กำไรหน้าร้าน</th><th>FC หน้าร้าน</th><th></th></tr></thead><tbody id="recTbl"></tbody></table><hr><h3 id="recipeDetailTitle">รายละเอียดสูตรที่เลือก</h3><div id="recipeDetail" class="help">กด “ดู” ที่รายการด้านบนเพื่อดูวัตถุดิบในสูตร</div></div></div></section>
+<section id="inv" class="page"><div class="card"><h3>COGS / Inventory</h3><div class="grid2"><div><label>วันที่ซื้อ</label><input type="date" id="pd"></div><div><label>วัตถุดิบ</label><select id="ping"></select></div><div><label>จำนวนซื้อ</label><input type="number" id="pqty" oninput="calcPurchase()"></div><div><label>หน่วยซื้อ</label><input id="punit" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วย"></div><div><label>ราคารวม</label><input type="number" id="ptotal" oninput="calcPurchase()"></div><div><label>ราคาต่อหน่วยซื้อ</label><input id="punitcost" readonly></div></div><div id="pcpu" class="help"></div><button class="primary" onclick="savePurchase()">บันทึก</button> <button class="secondary" onclick="clearPurchase()">ล้าง</button></div><div class="card"><table><thead><tr><th>วันที่</th><th>วัตถุดิบ</th><th>จำนวน</th><th>หน่วย</th><th>ราคารวม</th><th></th></tr></thead><tbody id="purchaseTbl"></tbody></table></div></section>
+<section id="exp" class="page"><div class="card"><h3>Expenses</h3><div class="grid2"><div><label>วันที่</label><input type="date" id="ed"></div><div><label>หมวด</label><select id="ec"><optgroup label="👷 ค่าแรงงาน"><option value="0301 — เงินเดือนพนักงาน FT">0301 — เงินเดือนพนักงาน FT</option><option value="0302 — ค่าแรงพนักงาน PT รายวัน">0302 — ค่าแรงพนักงาน PT รายวัน</option><option value="0303 — ค่าแรงอื่นๆ / OT">0303 — ค่าแรงอื่นๆ / OT</option><option value="0304 — ประกันสังคม">0304 — ประกันสังคม</option><option value="0305 — สวัสดิการอื่นๆ">0305 — สวัสดิการอื่นๆ</option></optgroup><optgroup label="🔧 สาธารณูปโภค"><option value="0401 — ค่าไฟฟ้า">0401 — ค่าไฟฟ้า</option><option value="0402 — ค่าน้ำ">0402 — ค่าน้ำ</option><option value="0403 — ค่าโทรศัพท์">0403 — ค่าโทรศัพท์</option><option value="0404 — ค่าอินเตอร์เน็ต">0404 — ค่าอินเตอร์เน็ต</option></optgroup><optgroup label="🏢 ค่าใช้จ่ายคงที่"><option value="0501 — ค่าเช่ารายเดือน">0501 — ค่าเช่ารายเดือน</option><option value="0502 — ค่าทำบัญชี">0502 — ค่าทำบัญชี</option><option value="0503 — ค่าธรรมเนียมธนาคาร">0503 — ค่าธรรมเนียมธนาคาร</option><option value="0504 — ค่า GP Delivery Commission">0504 — ค่า GP Delivery Commission</option><option value="0505 — ภาษีหัก ณ ที่จ่าย">0505 — ภาษีหัก ณ ที่จ่าย</option><option value="0506 — VAT">0506 — VAT</option><option value="0507 — ภาษีเงินได้ประจำปี">0507 — ภาษีเงินได้ประจำปี</option><option value="0508 — ค่าบริการ/สำนักงาน/ส่วนกลาง">0508 — ค่าบริการ/สำนักงาน/ส่วนกลาง</option></optgroup><optgroup label="📦 ค่าใช้จ่ายแปรผัน"><option value="0206 — ค่าน้ำแข็ง">0206 — ค่าน้ำแข็ง</option><option value="0408 — ค่าโฆษณา / Marketing">0408 — ค่าโฆษณา / Marketing</option><option value="0411 — ค่าใช้จ่ายอื่นๆ">0411 — ค่าใช้จ่ายอื่นๆ</option></optgroup></select></div><div><label>รายละเอียด</label><input id="edt"></div><div><label>จำนวนเงิน</label><input type="number" id="ea"></div><div><label>Cost type</label><select id="et"><option value="fixed">fixed</option><option value="variable">variable</option></select></div></div><button class="primary" onclick="saveExp()">บันทึก</button></div><div class="card"><table><tbody id="expTbl"></tbody></table></div></section>
+<section id="ing" class="page"><div class="card"><h3>Ingredients — Excel Logic</h3><div class="grid2"><div><label>ชื่อวัตถุดิบ</label><input id="inm"></div><div>
+<label>หมวด</label>
+<select id="icat">
+  <option value="วัตถุดิบอาหาร">วัตถุดิบอาหาร</option>
+  <option value="เครื่องดื่ม">เครื่องดื่ม</option>
+  <option value="Packaging">Packaging</option>
+  <option value="Kitchen Utility / Gas">Kitchen Utility / Gas</option>
+  <option value="ของหวาน">ของหวาน</option>
+  <option value="วัสดุสิ้นเปลือง">วัสดุสิ้นเปลือง</option>
+  <option value="อื่นๆ">อื่นๆ</option>
+</select>
+</div><div><label>หน่วยรับ</label><input id="ipu" placeholder="ฟอง / ถุง / กก. / ลิตร"></div><div><label>ราคา / หน่วยรับ</label><input type="number" id="ipp" oninput="calcIngredientPreview()" placeholder="เช่น 90"></div><div><label>จำนวนใช้ / หน่วยใช้</label><input type="number" id="icv" value="1" oninput="calcIngredientPreview()" placeholder="เช่น 1000"></div><div><label>หน่วยใช้</label><input id="iuu" placeholder="กรัม / ml / ฟอง"></div><div><label>Yield %</label><input type="number" id="iy" value="100" oninput="calcIngredientPreview()"></div><div><label>ราคา / หน่วยใช้ Auto</label><input id="icpu" readonly></div></div><div class="help">สูตรตาม Excel: ราคา/หน่วยใช้ = ราคา/หน่วยรับ ÷ จำนวนใช้ ÷ Yield</div><button class="primary" onclick="saveIng()">บันทึก</button> <button class="secondary" onclick="clearIng()">ล้าง</button></div><div class="card"><table><thead><tr><th>ชื่อ</th><th>หน่วยรับ</th><th>ราคา/หน่วยรับ</th><th>หน่วยใช้</th><th>Yield</th><th>Cost/use</th><th></th></tr></thead><tbody id="ingTbl"></tbody></table></div></section>
+<section id="rec" class="page"><div class="recipe-layout"><div class="card"><h3>Food Cost by Recipe</h3><label>Type</label><select id="rt" onchange="toggleRecipePrice();renderWork()"><option value="menu">Menu</option><option value="semi">Semi</option></select><label>Brand</label><select id="rb"></select><label>ชื่อ Menu / Semi</label><input id="rn"><div class="grid2"><div><label>Output Qty / Yield สุดท้าย</label><input type="number" id="ry" value="1" oninput="renderWork()"></div><div><label>Output Unit</label><input id="rou" list="unitMasterList" placeholder="เลือก/พิมพ์ output unit" oninput="renderWork()"></div></div><div id="priceBox"><div class="grid2"><div><label>ราคาหน้าร้านรวม VAT</label><input type="number" id="rp" value="0" oninput="renderWork()"></div><div><label>GP Delivery %</label><input type="number" id="rgp" value="23" oninput="renderWork()"></div></div><div><span class="pill" id="pb">หน้าร้านรวม VAT ฿0</span><span class="pill" id="pg">หน้าร้านถอด VAT ฿0</span><span class="pill" id="pv">Delivery ฿0</span><span class="pill" id="pf">GP 0%</span></div></div><hr><label>เลือก Ingredient / Semi</label><select id="rs"></select><div class="line"><input type="number" id="rq" placeholder="จำนวนใช้"><input id="ru" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วย"><div id="ruc">฿0</div><div id="rlc">฿0</div><button class="secondary" onclick="addLine()">เพิ่ม</button></div><h4>รายการที่เลือกก่อนบันทึก</h4><table><thead><tr><th>รายการ</th><th>จำนวน</th><th>หน่วย</th><th>ต้นทุน/หน่วย</th><th>ต้นทุนรวม</th><th></th></tr></thead><tbody id="workTbl"></tbody></table><h3 id="rtotal">Cost ฿0</h3><h3 id="rfc">FC —</h3><button class="primary" onclick="saveRecipe()">บันทึก</button> <button class="secondary" onclick="clearRecipe()">ล้าง</button></div><div class="card"><h3>รายการ Recipe / Semi</h3><div class="grid2"><div><label>Filter Type</label><select id="recipeTypeFilter" onchange="recipeTable()"><option value="all">ทั้งหมด</option><option value="menu">Menu</option><option value="semi">Semi</option></select></div><div><label>Filter Brand</label><select id="recipeBrandFilter" onchange="recipeTable()"><option value="all">ทุกแบรนด์</option></select></div></div><table><thead><tr><th>ชื่อ</th><th>Type</th><th>Brand</th><th>Cost/output</th><th>ราคาหน้าร้าน</th><th>Delivery</th><th>กำไรหน้าร้าน</th><th>FC หน้าร้าน</th><th></th></tr></thead><tbody id="recTbl"></tbody></table><hr><h3 id="recipeDetailTitle">รายละเอียดสูตรที่เลือก</h3><div id="recipeDetail" class="help">กด “ดู” ที่รายการด้านบนเพื่อดูวัตถุดิบในสูตร</div></div></div></section>
 <section id="brand" class="page"><div class="card"><h3>Brands</h3><div class="grid2"><input id="bid" placeholder="ID เช่น LTW"><input id="bnm" placeholder="ชื่อแบรนด์"></div><button class="primary" onclick="saveBrand()">บันทึก</button></div><div class="card"><table><tbody id="brandTbl"></tbody></table></div></section>
 <section id="export" class="page"><div class="card"><button class="primary" onclick="exportAll()">Export JSON</button><pre id="out"></pre></div></section>
 </main></div>
@@ -122,19 +228,234 @@ input,select{min-width:0}
 const SUPABASE_URL="https://mjbxskhfvaxxcopzesic.supabase.co";
 const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qYnhza2hmdmF4eGNvcHplc2ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjg4NTIsImV4cCI6MjA5MDk0NDg1Mn0.G2W728EIN6qfALpW06YCdSkVKKnAO1bULMGIlei-Z2U";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-const channels=[["dine_in","Dine-in",null],["take_away","Take Away",null],["grab_ltw","Grab LTW","LTW"],["grab_rrk","Grab RRK","RRK"],["grab_fff","Grab FFF","FFF"],["grab_den","Grab DEN","DEN"]];
+const channels=[["dine_in","Dine-in",null],["take_away","Take Away",null],["grab_ltw","Grab LTW","LTW"],["grab_rrk","Grab RRK","RRK"],["grab_fff","Grab FFF","FFF"],["grab_den","Grab DEN","DEN"],["catering","Catering",null],["event","Event",null],["market","ตลาดนัด",null]];
 let brands=[],ings=[],purchases=[],recipes=[],lines=[],sales=[],exps=[],work=[],editIng=null,editRec=null;
 const B=n=>"฿"+Number(n||0).toLocaleString("th-TH",{maximumFractionDigits:4});
 const V=id=>document.getElementById(id).value; const N=id=>Number(V(id)||0); const uid=p=>p+"_"+Date.now()+"_"+Math.random().toString(16).slice(2);
 async function get(t){let {data,error}=await db.from(t).select("*");if(error){alert(t+": "+error.message);return[]}return data||[]}
-async function load(){st("Loading...");brands=await get("brands");ings=await get("ingredients");purchases=await get("inventory_purchases");recipes=await get("recipes");lines=await get("recipe_lines");sales=await get("daily_sales");exps=await get("expenses");st("Cloud ✓");render()}
+async function load(fullRender=true){st("Loading...");brands=await get("brands");ings=await get("ingredients");purchases=await get("inventory_purchases");recipes=await get("recipes");lines=await get("recipe_lines");sales=await get("daily_sales");exps=await get("expenses");st("Cloud ✓");render()}
 function st(t){document.getElementById("status").textContent=t}
 function nav(){let id=(location.hash||"#dash").slice(1);document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById(id)?.classList.add("active");document.querySelectorAll(".side a").forEach(a=>a.classList.toggle("active",a.hash=="#"+id));document.getElementById("title").textContent=document.querySelector(".side a.active")?.textContent||"Dashboard";render()}
 window.onhashchange=nav;
-function render(){dash();renderPL();saleForm();saleTable();ingTable();purchaseForm();purchaseTable();expTable();recipeSelects();recipeTable();brandTable();toggleRecipePrice();renderWork()}
+function render(){dash();renderPL();saleForm();saleTable();ingTable();purchaseForm();purchaseTable();expTable();recipeSelects();recipeTable();brandTable();toggleRecipePrice();renderWork();renderWorkspace();renderDashboard()}
 function sumSales(){return sales.reduce((a,r)=>a+Number(r.net_sales||0),0)} function sumBills(){return sales.reduce((a,r)=>a+Number(r.bill_count||0),0)} function sumCogs(){return purchases.reduce((a,r)=>a+Number(r.total_cost||0),0)} function sumExp(){return exps.reduce((a,r)=>a+Number(r.amount||0),0)}
 function dash(){let rev=sumSales(),cog=sumCogs(),ex=sumExp(),p=rev-cog-ex,b=sumBills(),cm=rev?(rev-cog)/rev:0;krev.textContent=B(rev);kprofit.textContent=B(p);kbills.textContent=b;kaov.textContent="AOV "+B(b?rev/b:0);kcm.textContent=(cm*100).toFixed(1)+"%";let safe=rev||1;channelTbl.innerHTML=channels.map(([k,n])=>{let s=sales.filter(r=>r.channel==k).reduce((a,r)=>a+Number(r.net_sales||0),0);return`<tr><td>${n}</td><td>${B(s)}</td><td>${(s/safe*100).toFixed(1)}%</td></tr>`}).join("");let names=["อา","จ","อ","พ","พฤ","ศ","ส"],sm=Array(7).fill(0),ct=Array(7).fill(0);sales.forEach(r=>{if(r.sale_date){let d=new Date(r.sale_date).getDay();sm[d]+=Number(r.net_sales||0);ct[d]++}});weekdayTbl.innerHTML=names.map((n,i)=>`<tr><td>${n}</td><td>${B(ct[i]?sm[i]/ct[i]:0)}</td><td>${ct[i]}</td></tr>`).join("")}
-function renderPL(){let rev=sumSales(),cog=sumCogs(),ex=sumExp(),gross=rev-cog,net=gross-ex,safe=rev||1;let htmlRows=`<tr><td><b>Revenue</b></td><td><b>${B(rev)}</b></td><td>100%</td></tr><tr><td><b>COGS / Inventory Purchase</b></td><td><b>${B(cog)}</b></td><td>${(cog/safe*100).toFixed(1)}%</td></tr><tr><td><b>Gross Profit</b></td><td><b>${B(gross)}</b></td><td>${(gross/safe*100).toFixed(1)}%</td></tr>`;let groups={};exps.forEach(e=>{let cat=e.category||"ไม่ระบุหมวด";groups[cat]=(groups[cat]||0)+Number(e.amount||0)});htmlRows+=`<tr><td><b>Expenses รวม</b></td><td><b>${B(ex)}</b></td><td>${(ex/safe*100).toFixed(1)}%</td></tr>`;Object.keys(groups).sort().forEach(cat=>{let amt=groups[cat];htmlRows+=`<tr><td style="padding-left:24px">${cat}</td><td>${B(amt)}</td><td>${(amt/safe*100).toFixed(1)}%</td></tr>`});htmlRows+=`<tr><td><b>Net Profit</b></td><td><b>${B(net)}</b></td><td>${(net/safe*100).toFixed(1)}%</td></tr>`;let el=document.getElementById("plTbl");if(el)el.innerHTML=htmlRows}function saleForm(){saleInputs.innerHTML=channels.map(([k,n])=>`<div class="chan"><h4>${n}</h4><input id="s_${k}" type="number" placeholder="ยอดขาย"><input id="b_${k}" type="number" placeholder="จำนวนบิล"><input id="d_${k}" type="number" placeholder="ส่วนลด"></div>`).join("")}
+
+
+
+function initPLMonth(){
+  const el=document.getElementById("plMonth");
+  if(el && !el.value){
+    const d=new Date();
+    el.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  }
+}
+function movePLMonth(delta){
+  const el=document.getElementById("plMonth");
+  if(!el) return;
+  initPLMonth();
+  const parts=el.value.split("-").map(Number);
+  const d=new Date(parts[0],parts[1]-1+delta,1);
+  el.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  renderPL();
+}
+function inPLMonth(dateStr){
+  const el=document.getElementById("plMonth");
+  if(!el) return true;
+  initPLMonth();
+  if(!dateStr) return false;
+  return String(dateStr).slice(0,7)===el.value;
+}
+function groupSum(rows,keyFn,amountFn){
+  const out={};
+  rows.forEach(r=>{
+    const k=keyFn(r)||"ไม่ระบุ";
+    out[k]=(out[k]||0)+Number(amountFn(r)||0);
+  });
+  return out;
+}
+function channelLabel(ch){
+  const found=(channels||[]).find(c=>c[0]===ch);
+  return found?found[1]:ch;
+}
+function renderMoneyPie(parts,totalRevenue){
+  const pie=document.getElementById("expensePie");
+  const legend=document.getElementById("expensePieLegend");
+  const totalLabel=document.getElementById("pieTotalLabel");
+  if(!pie || !legend) return;
+
+  const safe=totalRevenue||1;
+  const colors=[
+    "#f97316","#fb923c","#fdba74","#3b82f6","#60a5fa","#8b5cf6",
+    "#ec4899","#14b8a6","#64748b","#84cc16","#22c55e"
+  ];
+
+  let entries=parts
+    .filter(p=>Number(p.amount||0)>0)
+    .map((p,i)=>({...p,color:p.color||colors[i%colors.length]}));
+
+  let start=0;
+  const segments=[];
+  entries.forEach(e=>{
+    const deg=(Number(e.amount||0)/safe)*360;
+    const end=start+deg;
+    if(deg>0) segments.push(`${e.color} ${start}deg ${end}deg`);
+    start=end;
+  });
+  if(start<360) segments.push(`#e5e7eb ${start}deg 360deg`);
+  pie.style.background=`conic-gradient(${segments.join(",")})`;
+
+  const totalCost=entries.reduce((a,e)=>a+Number(e.amount||0),0);
+  if(totalLabel){
+    totalLabel.textContent=`ยอดขาย ${B(totalRevenue)} | ต้นทุน+ค่าใช้จ่าย+กำไร = ${B(totalCost)} (${(totalCost/safe*100).toFixed(1)}%)`;
+  }
+
+  legend.innerHTML=entries.map(e=>`
+    <div class="pie-row">
+      <span class="pie-color" style="background:${e.color}"></span>
+      <span>${e.name}</span>
+      <b>${B(e.amount)} (${(e.amount/safe*100).toFixed(1)}%)</b>
+    </div>
+  `).join("");
+}
+
+function sumBy(arr,keyFn,valFn){
+const o={}
+arr.forEach(r=>{
+const k=keyFn(r)||"Unknown"
+o[k]=(o[k]||0)+Number(valFn(r)||0)
+})
+return o
+}
+function renderSimpleBars(id,data){
+const el=document.getElementById(id)
+if(!el) return
+const vals=Object.values(data)
+const max=Math.max(...vals,1)
+el.innerHTML=Object.entries(data).map(([k,v])=>`
+<div class="row">
+<div>${k}</div>
+<div class="bar"><div class="fill" style="width:${(v/max)*100}%"></div></div>
+<div>${B(v)}</div>
+</div>`).join("")
+}
+function renderDashboard(){
+const revenue=(sales||[]).reduce((a,r)=>a+Number(r.net_sales||0),0)
+const grossSales=(sales||[]).reduce((a,r)=>a+Number(r.sales_amount||0),0)
+const discount=(sales||[]).reduce((a,r)=>a+Number(r.discount||0),0)
+const cogs=(purchases||[]).reduce((a,r)=>a+Number(r.total_cost||0),0)
+const expenses=(exps||[]).reduce((a,r)=>a+Number(r.amount||0),0)
+const gpDelivery=(exps||[]).filter(e=>String(e.category||"").toLowerCase().includes("gp")||String(e.category||"").toLowerCase().includes("commission")).reduce((a,r)=>a+Number(r.amount||0),0)
+const labor=(exps||[]).filter(e=>String(e.category||"").toLowerCase().includes("labor")||String(e.category||"").includes("แรง")||String(e.category||"").includes("เงินเดือน")).reduce((a,r)=>a+Number(r.amount||0),0)
+const gross=revenue-cogs
+const net=gross-expenses
+const orders=(sales||[]).reduce((a,r)=>a+Number(r.order_count||0),0)
+const aov=orders?revenue/orders:0
+const breakEven=expenses
+const bePct=breakEven?((revenue/breakEven)*100):0
+
+document.getElementById("kpiRevenue").textContent=B(revenue)
+document.getElementById("kpiRevenueSub").textContent=`Gross ${B(grossSales)} | Discount ${B(discount)}`
+document.getElementById("kpiCogs").textContent=B(cogs)
+
+const cogsGroup=sumBy(purchases||[],r=>r.category||"Other",r=>r.total_cost)
+const foodPct=((cogsGroup["วัตถุดิบอาหาร"]||0)/Math.max(revenue,1)*100).toFixed(1)
+const packPct=((cogsGroup["Packaging"]||0)/Math.max(revenue,1)*100).toFixed(1)
+const bevPct=((cogsGroup["เครื่องดื่ม"]||0)/Math.max(revenue,1)*100).toFixed(1)
+document.getElementById("kpiCogsSub").textContent=`Food ${foodPct}% | Packaging ${packPct}% | Beverage ${bevPct}%`
+
+document.getElementById("kpiGross").textContent=B(gross)
+document.getElementById("kpiGrossSub").textContent=`${((gross/Math.max(revenue,1))*100).toFixed(1)}%`
+document.getElementById("kpiGpDelivery").textContent=B(gpDelivery)
+document.getElementById("kpiLabor").textContent=B(labor)
+document.getElementById("kpiLaborSub").textContent=`${((labor/Math.max(revenue,1))*100).toFixed(1)}%`
+document.getElementById("kpiAov").textContent=B(aov)
+document.getElementById("kpiBe").textContent=`${bePct.toFixed(1)}%`
+document.getElementById("kpiBeSub").textContent=`${B(revenue)} / ${B(breakEven)}`
+document.getElementById("kpiNet").textContent=B(net)
+document.getElementById("kpiNetSub").textContent=`${((net/Math.max(revenue,1))*100).toFixed(1)}%`
+
+const byMonth={}
+;(sales||[]).forEach(s=>{
+const m=String(s.sale_date||"").slice(0,7)
+byMonth[m]=(byMonth[m]||0)+Number(s.net_sales||0)
+})
+renderSimpleBars("growthChart",byMonth)
+
+renderSimpleBars("channelChart",sumBy(sales||[],r=>r.channel||"Other",r=>r.net_sales))
+
+const brand={}
+;(sales||[]).forEach(s=>{
+const c=String(s.channel||"")
+if(c.includes("grab")) brand[c]=(brand[c]||0)+Number(s.net_sales||0)
+})
+renderSimpleBars("brandChart",brand)
+
+const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+const weekday={}
+days.forEach(d=>weekday[d]=0)
+;(sales||[]).forEach(s=>{
+const d=new Date(s.sale_date)
+if(!isNaN(d)) weekday[days[d.getDay()]]+=Number(s.net_sales||0)
+})
+renderSimpleBars("weekdayChart",weekday)
+}
+
+function renderPL(){
+  initPLMonth();
+
+  const monthSales=(sales||[]).filter(r=>inPLMonth(r.sale_date));
+  const monthCogs=(purchases||[]).filter(r=>inPLMonth(r.purchase_date));
+  const monthExpenses=(exps||[]).filter(r=>inPLMonth(r.expense_date));
+
+  const totalRevenue=monthSales.reduce((a,r)=>a+Number(r.net_sales||0),0);
+  const totalCogs=monthCogs.reduce((a,r)=>a+Number(r.total_cost||0),0);
+  const totalExpenses=monthExpenses.reduce((a,r)=>a+Number(r.amount||0),0);
+  const grossProfit=totalRevenue-totalCogs;
+  const netProfit=grossProfit-totalExpenses;
+  const safe=totalRevenue||1;
+
+  const revenueGroup=groupSum(monthSales,r=>channelLabel(r.channel),r=>r.net_sales);
+  const cogsGroup=groupSum(monthCogs,r=>r.category||"ไม่ระบุหมวด",r=>r.total_cost);
+  const expenseGroup=groupSum(monthExpenses,r=>r.category||"ไม่ระบุหมวด",r=>r.amount);
+
+  let rows="";
+
+  rows+=`<tr class="pl-section-row"><td colspan="3">Revenue</td></tr>`;
+  Object.keys(revenueGroup).sort().forEach(k=>{
+    rows+=`<tr><td style="padding-left:22px">${k}</td><td>${B(revenueGroup[k])}</td><td>${(revenueGroup[k]/safe*100).toFixed(1)}%</td></tr>`;
+  });
+  rows+=`<tr class="pl-total-row"><td>Total Revenue</td><td>${B(totalRevenue)}</td><td>100%</td></tr>`;
+
+  rows+=`<tr class="pl-section-row"><td colspan="3">COGS</td></tr>`;
+  Object.keys(cogsGroup).sort().forEach(k=>{
+    rows+=`<tr><td style="padding-left:22px">${k}</td><td>${B(cogsGroup[k])}</td><td>${(cogsGroup[k]/safe*100).toFixed(1)}%</td></tr>`;
+  });
+  rows+=`<tr class="pl-total-row"><td>Total COGS</td><td>${B(totalCogs)}</td><td>${(totalCogs/safe*100).toFixed(1)}%</td></tr>`;
+
+  rows+=`<tr class="pl-profit-row"><td>Gross Profit</td><td>${B(grossProfit)}</td><td>${(grossProfit/safe*100).toFixed(1)}%</td></tr>`;
+
+  rows+=`<tr class="pl-section-row"><td colspan="3">Expenses</td></tr>`;
+  Object.keys(expenseGroup).sort().forEach(k=>{
+    rows+=`<tr><td style="padding-left:22px">${k}</td><td>${B(expenseGroup[k])}</td><td>${(expenseGroup[k]/safe*100).toFixed(1)}%</td></tr>`;
+  });
+  rows+=`<tr class="pl-total-row"><td>Total Expenses</td><td>${B(totalExpenses)}</td><td>${(totalExpenses/safe*100).toFixed(1)}%</td></tr>`;
+
+  rows+=`<tr class="${netProfit>=0?'pl-profit-row':'pl-loss-row'}"><td>Net Profit</td><td>${B(netProfit)}</td><td>${(netProfit/safe*100).toFixed(1)}%</td></tr>`;
+
+  const tbl=document.getElementById("plSummaryTbl");
+  if(tbl) tbl.innerHTML=rows;
+
+  const pieParts=[];
+  Object.keys(cogsGroup).sort().forEach(k=>pieParts.push({name:"COGS: "+k,amount:cogsGroup[k]}));
+  Object.keys(expenseGroup).sort().forEach(k=>pieParts.push({name:"EXP: "+k,amount:expenseGroup[k]}));
+  if(netProfit>0) pieParts.push({name:"Net Profit",amount:netProfit,color:"#22c55e"});
+  if(netProfit<0) pieParts.push({name:"Net Loss",amount:Math.abs(netProfit),color:"#ef4444"});
+
+  renderMoneyPie(pieParts,totalRevenue);
+}
+
+function saleForm(){saleInputs.innerHTML=channels.map(([k,n])=>`<div class="chan"><h4>${n}</h4><input id="s_${k}" type="number" placeholder="ยอดขาย"><input id="b_${k}" type="number" placeholder="จำนวนบิล"><input id="d_${k}" type="number" placeholder="ส่วนลด"></div>`).join("")}
 async function saveSale(){let date=V("sd"),note=V("sn");if(!date)return alert("เลือกวันที่");for(let [k,n,bid] of channels){let amt=N("s_"+k),bc=N("b_"+k),dis=N("d_"+k);if(amt||bc||dis){let row={id:uid("sale"),sale_date:date,channel:k,brand_id:bid,sales_amount:amt,bill_count:bc,discount:dis,net_sales:amt-dis,note};let {error}=await db.from("daily_sales").insert(row);if(error)return alert(error.message)}}clearSale();await load()}
 function clearSale(){["sd","sn"].forEach(i=>document.getElementById(i).value="");channels.forEach(([k])=>["s_","b_","d_"].forEach(p=>document.getElementById(p+k).value=""))}
 function saleTable(){saleTbl.innerHTML=sales.map(r=>`<tr><td>${r.sale_date||""}</td><td>${r.channel}</td><td>${B(r.sales_amount)}</td><td>${B(r.discount)}</td><td>${B(r.net_sales)}</td><td>${r.bill_count||0}</td><td><button class="danger" onclick="del('daily_sales','${r.id}')">ลบ</button></td></tr>`).join("")}
@@ -149,11 +470,11 @@ function editIngredient(id){let i=ings.find(x=>x.id==id);editIng=id;inm.value=i.
 function purchaseForm(){ping.innerHTML='<option value="">เลือกวัตถุดิบ</option>'+ings.map(i=>`<option value="${i.id}">${i.name}</option>`).join("")}
 function calcPurchase(){let ing=ings.find(i=>i.id==V("ping")),q=N("pqty"),t=N("ptotal"),uc=q?t/q:0;punitcost.value=uc?uc.toFixed(4):"";pcpu.textContent=ing&&q&&t?"ราคา/หน่วยใช้ใหม่: "+B(calcIngredientCpu(uc,ing.convert_rate||1,(ing.yield_rate||1)*100))+" / "+(ing.usage_unit||"unit"):""}
 ping.onchange=()=>{let i=ings.find(x=>x.id==V("ping"));if(i)punit.value=i.purchase_unit||"";calcPurchase()}
-async function savePurchase(){let ing=ings.find(i=>i.id==V("ping"));if(!ing)return alert("เลือกวัตถุดิบ");let q=N("pqty"),t=N("ptotal"),uc=q?t/q:0;let row={id:uid("pur"),purchase_date:V("pd"),ingredient_id:ing.id,ingredient_name:ing.name,category:ing.category,quantity:q,purchase_unit:V("punit")||ing.purchase_unit,total_cost:t,unit_purchase_cost:uc};let {error}=await db.from("inventory_purchases").insert(row);if(error)return alert(error.message);let cpu=calcIngredientCpu(uc,ing.convert_rate||1,(ing.yield_rate||1)*100);await db.from("ingredients").update({latest_purchase_qty:q,latest_purchase_total:t,unit_purchase_cost:uc,cost_per_use:cpu,updated_at:new Date().toISOString()}).eq("id",ing.id);clearPurchase();await load()}
+async function savePurchase(){let ing=ings.find(i=>i.id==V("ping"));if(!ing)return alert("เลือกวัตถุดิบ");let q=N("pqty"),t=N("ptotal"),uc=q?t/q:0;let row={id:uid("pur"),purchase_date:V("pd"),ingredient_id:ing.id,ingredient_name:ing.name,category:document.getElementById(`ws_cat_${date}`)?.value || ing.category || "อื่นๆ",quantity:q,purchase_unit:V("punit")||ing.purchase_unit,total_cost:t,unit_purchase_cost:uc};let {error}=await db.from("inventory_purchases").insert(row);if(error)return alert(error.message);let cpu=calcIngredientCpu(uc,ing.convert_rate||1,(ing.yield_rate||1)*100);await db.from("ingredients").update({latest_purchase_qty:q,latest_purchase_total:t,unit_purchase_cost:uc,cost_per_use:cpu,updated_at:new Date().toISOString()}).eq("id",ing.id);clearPurchase();await load()}
 function clearPurchase(){["pd","ping","pqty","punit","ptotal","punitcost"].forEach(i=>document.getElementById(i).value="");pcpu.textContent=""}
-function purchaseTable(){purchaseTbl.innerHTML=purchases.map(p=>`<tr><td>${p.purchase_date||""}</td><td>${p.ingredient_name||""}</td><td>${p.quantity||0}</td><td>${p.purchase_unit||""}</td><td>${B(p.total_cost)}</td><td><button class="danger" onclick="del('inventory_purchases','${p.id}')">ลบ</button></td></tr>`).join("")}
+function purchaseTable(){purchaseTbl.innerHTML=purchases.map(p=>`<tr><td>${p.purchase_date||""}</td><td>${p.ingredient_name||""}</td><td>${p.quantity||0}</td><td>${p.purchase_unit||""}</td><td>${B(p.total_cost)}</td><td><button class="secondary" onclick="editWorkspacePurchase('${p.id}')">แก้</button><button class="danger" onclick="del('inventory_purchases','${p.id}')">ลบ</button></td></tr>`).join("")}
 async function saveExp(){let row={id:uid("exp"),expense_date:V("ed"),category:V("ec"),detail:V("edt"),amount:N("ea"),cost_type:V("et")};let {error}=await db.from("expenses").insert(row);if(error)return alert(error.message);["ed","edt","ea"].forEach(i=>document.getElementById(i).value="");await load()}
-function expTable(){expTbl.innerHTML=exps.map(e=>`<tr><td>${e.expense_date||""}</td><td>${e.category}</td><td>${e.detail||""}</td><td>${B(e.amount)}</td><td><button class="danger" onclick="del('expenses','${e.id}')">ลบ</button></td></tr>`).join("")}
+function expTable(){expTbl.innerHTML=exps.map(e=>`<tr><td>${e.expense_date||""}</td><td>${e.category}</td><td>${e.detail||""}</td><td>${B(e.amount)}</td><td><button class="secondary" onclick="editWorkspaceExpense('${e.id}')">แก้</button><button class="danger" onclick="del('expenses','${e.id}')">ลบ</button></td></tr>`).join("")}
 function costSemi(id){let r=recipes.find(x=>x.id==id);return r?Number(r.cost_per_output||0):0}
 function selectable(){return ings.map(i=>({t:"ingredient",id:i.id,n:"[วัตถุดิบ] "+i.name,u:i.usage_unit,c:Number(i.cost_per_use||0)})).concat(recipes.filter(r=>r.type=="semi").map(r=>({t:"semi",id:r.id,n:"[Semi] "+r.name,u:r.output_unit||"unit",c:costSemi(r.id)})))}
 function recipeSelects(){rb.innerHTML=brands.map(b=>`<option value="${b.id}">${b.id} - ${b.name}</option>`).join("");rs.innerHTML='<option value="">เลือก</option>'+selectable().map(x=>`<option value="${x.t}|${x.id}">${x.n} (${B(x.c)}/${x.u||"unit"})</option>`).join("")}
@@ -207,11 +528,304 @@ async function editRecipePrice(id){
   }
 
   await load();
+  if(typeof date !== "undefined") reopenWorkspaceDay(date);
 }
 
 async function delRecipe(id){if(!confirm("ลบ?"))return;await db.from("recipe_lines").delete().eq("recipe_id",id);await db.from("recipes").delete().eq("id",id);await load()}
 async function del(t,id){if(!confirm("ลบ?"))return;let {error}=await db.from(t).delete().eq("id",id);if(error)alert(error.message);await load()}
 function exportAll(){out.textContent=JSON.stringify({brands,ings,purchases,recipes,lines,sales,exps},null,2)}
+
+
+function reopenWorkspaceDay(date){
+  location.hash="#workspace";
+  setTimeout(function(){
+    if(typeof renderWorkspace==="function") renderWorkspace();
+    const box=document.getElementById("day_"+date);
+    if(box && !box.classList.contains("open")) box.classList.add("open");
+    if(box) box.scrollIntoView({behavior:"smooth",block:"start"});
+  },150);
+}
+
+
+let CURRENT_WORKSPACE_DAY = null;
+
+function showSaveHint(){
+  const el=document.getElementById("savehint");
+  if(!el) return;
+  el.classList.add("show");
+  setTimeout(()=>el.classList.remove("show"),1200);
+}
+
+function keepWorkspaceDay(date){
+  CURRENT_WORKSPACE_DAY = date;
+  location.hash = "#workspace";
+
+  setTimeout(()=>{
+    const box = document.getElementById("day_"+date);
+    if(box) box.classList.add("open");
+    if(box){
+      box.classList.add("open");
+      box.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+  },120);
+}
+
+function quickRefreshWorkspace(date){
+  try{
+    renderPL();
+    keepWorkspaceDay(date);
+    showSaveHint();
+  }catch(e){
+    console.log(e);
+  }
+}
+
+function initWorkspaceMonth(){
+  const el=document.getElementById("wsMonth");
+  if(el && !el.value){
+    const d=new Date();
+    el.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  }
+}
+function moveMonth(delta){
+  const el=document.getElementById("wsMonth");
+  if(!el) return;
+  initWorkspaceMonth();
+  const parts=el.value.split("-").map(Number);
+  const d=new Date(parts[0],parts[1]-1+delta,1);
+  el.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  renderWorkspace();
+}
+function daysInMonth(y,m){return new Date(y,m,0).getDate()}
+function wsDate(y,m,d){return y+"-"+String(m).padStart(2,"0")+"-"+String(d).padStart(2,"0")}
+function wsOpen(id){const box=document.getElementById(id); if(box) box.classList.toggle("open")}
+function saleFor(date,channel){return sales.find(s=>s.sale_date===date && s.channel===channel)}
+function purchasesFor(date){return purchases.filter(p=>p.purchase_date===date)}
+function expensesFor(date){return exps.filter(e=>e.expense_date===date)}
+
+function getOpenWorkspaceDays(){
+  return Array.from(document.querySelectorAll(".daybox.open"))
+    .map(el => el.id);
+}
+
+function restoreOpenWorkspaceDays(ids){
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.add("open");
+  });
+}
+
+function renderWorkspace(){
+  const openDays=getOpenWorkspaceDays();
+  initWorkspaceMonth();
+  const holder=document.getElementById("workspaceDays");
+  const monthEl=document.getElementById("wsMonth");
+  if(!holder || !monthEl || !monthEl.value) return;
+  const parts=monthEl.value.split("-").map(Number);
+  const y=parts[0], m=parts[1];
+  let html="";
+  for(let d=1; d<=daysInMonth(y,m); d++){
+    const date=wsDate(y,m,d);
+    const daySales=channels.reduce((a,c)=>a+Number((saleFor(date,c[0])||{}).net_sales||0),0);
+    const dayCog=purchasesFor(date).reduce((a,p)=>a+Number(p.total_cost||0),0);
+    const dayExp=expensesFor(date).reduce((a,e)=>a+Number(e.amount||0),0);
+    const boxId="day_"+date;
+    html+=`<div class="daybox" id="${boxId}">
+      <div class="dayhead" onclick="wsOpen('${boxId}')">
+        <div>📅 ${date}</div>
+        <div>Sale ${B(daySales)} | COGS ${B(dayCog)} | Exp ${B(dayExp)}</div>
+      </div>
+      <div class="daybody">
+        <div class="ws-grid">
+          <div>
+            <h4>Daily Sale</h4>
+            <div class="ws-sales"><b>Channel</b><b>Sales</b><b>Bills</b><b>Discount</b></div>
+            ${channels.map(c=>{
+              const ch=c[0], name=c[1];
+              const s=saleFor(date,ch)||{};
+              return `<div class="ws-sales">
+                <div>${name}</div>
+                <input type="number" id="ws_sales_${date}_${ch}" value="${s.sales_amount||""}" placeholder="ยอดขาย">
+                <input type="number" id="ws_bills_${date}_${ch}" value="${s.bill_count||""}" placeholder="บิล">
+                <input type="number" id="ws_disc_${date}_${ch}" value="${s.discount||""}" placeholder="ส่วนลด">
+              </div>`;
+            }).join("")}
+            <input id="ws_note_${date}" placeholder="หมายเหตุวันนี้">
+            <button class="primary" onclick="saveWorkspaceSales('${date}')">บันทึกยอดขายวันนี้</button>
+          </div>
+          <div>
+            <h4>COGS / Purchases</h4>
+            <div class="ws-line">
+              <input id="ws_ing_${date}" list="ingList_${date}" placeholder="ค้นหาวัตถุดิบ"><datalist id="ingList_${date}">${ings.map(i=>`<option value="${i.name}"></option>`).join("")}</datalist>
+              <select id="ws_cat_${date}">
+<option value="วัตถุดิบอาหาร">วัตถุดิบอาหาร</option>
+<option value="เครื่องดื่ม">เครื่องดื่ม</option>
+<option value="Packaging">Packaging</option>
+<option value="Kitchen Utility / Gas">Kitchen Utility / Gas</option>
+<option value="ของหวาน">ของหวาน</option>
+<option value="วัสดุสิ้นเปลือง">วัสดุสิ้นเปลือง</option>
+<option value="อื่นๆ">อื่นๆ</option>
+</select><input type="number" id="ws_qty_${date}" placeholder="จำนวน">
+              <input id="ws_unit_${date}" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วย">
+              <input type="number" id="ws_total_${date}" placeholder="ราคารวม">
+              <button class="secondary" onclick="addWorkspacePurchase('${date}')">เพิ่ม</button>
+            </div>
+            <table class="ws-mini-table"><thead><tr><th>รายการ</th><th>หมวด</th><th>จำนวน</th><th>รวม</th><th></th></tr></thead><tbody>
+              ${purchasesFor(date).map(p=>`<tr><td>${p.ingredient_name||""}</td><td>${p.category||""}</td><td>${p.quantity||0} ${p.purchase_unit||""}</td><td>${B(p.total_cost)}</td><td><button class="secondary" onclick="editWorkspacePurchase('${p.id}')">แก้</button><button class="danger" onclick="del('inventory_purchases','${p.id}')">ลบ</button></td></tr>`).join("")}
+            </tbody></table>
+            <h4>Expenses</h4>
+            <div class="ws-exp">
+              <select id="ws_exp_cat_${date}">${document.getElementById("ec")?document.getElementById("ec").innerHTML:"<option>อื่นๆ</option>"}</select>
+              <input id="ws_exp_detail_${date}" placeholder="รายละเอียด">
+              <input type="number" id="ws_exp_amt_${date}" placeholder="จำนวนเงิน">
+              <button class="secondary" onclick="addWorkspaceExpense('${date}')">เพิ่ม</button>
+            </div>
+            <table class="ws-mini-table"><thead><tr><th>หมวด</th><th>รายละเอียด</th><th>เงิน</th><th></th></tr></thead><tbody>
+              ${expensesFor(date).map(e=>`<tr><td>${e.category||""}</td><td>${e.detail||""}</td><td>${B(e.amount)}</td><td><button class="secondary" onclick="editWorkspaceExpense('${e.id}')">แก้</button><button class="danger" onclick="del('expenses','${e.id}')">ลบ</button></td></tr>`).join("")}
+            </tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+  holder.innerHTML=html;
+  restoreOpenWorkspaceDays(openDays);
+}
+async function saveWorkspaceSales(date){
+  for(const c of channels){
+    const ch=c[0], bid=c[2];
+    const amt=Number(document.getElementById(`ws_sales_${date}_${ch}`)?.value||0);
+    const bills=Number(document.getElementById(`ws_bills_${date}_${ch}`)?.value||0);
+    const disc=Number(document.getElementById(`ws_disc_${date}_${ch}`)?.value||0);
+    const existing=saleFor(date,ch);
+    if(amt || bills || disc || existing){
+      const row={id:existing?existing.id:`sale_${date}_${ch}`,sale_date:date,channel:ch,brand_id:bid,sales_amount:amt,bill_count:bills,discount:disc,net_sales:amt-disc,note:document.getElementById(`ws_note_${date}`)?.value||""};
+      const res=await db.from("daily_sales").upsert(row);
+      if(res.error){alert(res.error.message);return;}
+    }
+  }
+  await load(false);
+  quickRefreshWorkspace(date);
+}
+
+async function editWorkspacePurchase(id){
+  const p=(purchases||[]).find(x=>x.id===id);
+  if(!p){alert("ไม่พบรายการซื้อ");return;}
+
+  const newQty=prompt("จำนวน", p.quantity ?? 0);
+  if(newQty===null) return;
+
+  const newUnit=prompt("หน่วย", p.purchase_unit || "");
+  if(newUnit===null) return;
+
+  const newTotal=prompt("ราคารวม", p.total_cost ?? 0);
+  if(newTotal===null) return;
+
+  const newCat=prompt("หมวด COGS", p.category || "");
+  if(newCat===null) return;
+
+  const qty=Number(newQty||0);
+  const total=Number(newTotal||0);
+  const unitCost=qty ? total/qty : 0;
+
+  const {error}=await db.from("inventory_purchases")
+    .update({
+      quantity: qty,
+      purchase_unit: newUnit,
+      total_cost: total,
+      unit_purchase_cost: unitCost,
+      category: newCat
+    })
+    .eq("id", id);
+
+  if(error){alert(error.message);return;}
+
+  await load(false);
+  if(p.purchase_date) quickRefreshWorkspace(p.purchase_date);
+  else render();
+}
+
+async function editWorkspaceExpense(id){
+  const e=(exps||[]).find(x=>x.id===id);
+  if(!e){alert("ไม่พบรายการค่าใช้จ่าย");return;}
+
+  const newCat=prompt("หมวดค่าใช้จ่าย", e.category || "");
+  if(newCat===null) return;
+
+  const newDetail=prompt("รายละเอียด", e.detail || "");
+  if(newDetail===null) return;
+
+  const newAmount=prompt("จำนวนเงิน", e.amount ?? 0);
+  if(newAmount===null) return;
+
+  const {error}=await db.from("expenses")
+    .update({
+      category: newCat,
+      detail: newDetail,
+      amount: Number(newAmount||0)
+    })
+    .eq("id", id);
+
+  if(error){alert(error.message);return;}
+
+  await load(false);
+  if(e.expense_date) quickRefreshWorkspace(e.expense_date);
+  else render();
+}
+
+async function addWorkspacePurchase(date){
+  const ingValue=document.getElementById(`ws_ing_${date}`)?.value || "";
+  const ing=ings.find(i=>i.name===ingValue) || ings.find(i=>i.id===ingValue) || ings.find(i=>String(i.name||"").toLowerCase().includes(ingValue.toLowerCase()));
+  if(!ing){alert("เลือก/ค้นหาวัตถุดิบก่อน");return;}
+  const qty=Number(document.getElementById(`ws_qty_${date}`)?.value||0);
+  const unit=document.getElementById(`ws_unit_${date}`)?.value||ing.purchase_unit||"";
+  const total=Number(document.getElementById(`ws_total_${date}`)?.value||0);
+  const uc=qty?total/qty:0;
+  const cpu=(typeof calcIngredientCpu==="function")?calcIngredientCpu(uc,ing.convert_rate||1,(ing.yield_rate||1)*100):ing.cost_per_use;
+  const row={id:uid("pur"),purchase_date:date,ingredient_id:ing.id,ingredient_name:ing.name,category:ing.category,quantity:qty,purchase_unit:unit,total_cost:total,unit_purchase_cost:uc};
+  const res=await db.from("inventory_purchases").insert(row);
+  if(res.error){alert(res.error.message);return;}
+  await db.from("ingredients").update({latest_purchase_qty:qty,latest_purchase_total:total,unit_purchase_cost:uc,cost_per_use:cpu,updated_at:new Date().toISOString()}).eq("id",ing.id);
+  await load(false);
+  quickRefreshWorkspace(date);
+}
+async function addWorkspaceExpense(date){
+  const cat=document.getElementById(`ws_exp_cat_${date}`)?.value||"อื่นๆ";
+  const detail=document.getElementById(`ws_exp_detail_${date}`)?.value||"";
+  const amount=Number(document.getElementById(`ws_exp_amt_${date}`)?.value||0);
+  const row={id:uid("exp"),expense_date:date,category:cat,detail:detail,amount:amount,cost_type:"variable"};
+  const res=await db.from("expenses").insert(row);
+  if(res.error){alert(res.error.message);return;}
+  await load();
+}
+
+
+(function(){
+  ["krev","kprofit","kbill","kaov"].forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el){
+      el = document.createElement("span");
+      el.id = id;
+      el.style.display = "none";
+      document.body.appendChild(el);
+    }
+    window[id] = el;
+  });
+})();
+
+
+(function(){
+  var oldDash = window.dash;
+  window.dash = function(){
+    try{
+      if(typeof oldDash === "function") oldDash();
+    }catch(e){
+      console.warn("legacy dash skipped", e);
+      if(typeof renderDashboard === "function") renderDashboard();
+    }
+  };
+})();
+
 saleForm();nav();load();
 </script>
 
@@ -375,6 +989,138 @@ saleForm();nav();load();
         + '</tr>';
     }).join("");
   };
+})();
+</script>
+
+
+<datalist id="unitMasterList">
+  <option value="kg"></option>
+  <option value="g"></option>
+  <option value="L"></option>
+  <option value="ml"></option>
+  <option value="pcs"></option>
+  <option value="pack"></option>
+  <option value="bottle"></option>
+  <option value="tray"></option>
+  <option value="bag"></option>
+  <option value="cup"></option>
+  <option value="box"></option>
+  <option value="set"></option>
+  <option value="ถุง"></option>
+  <option value="แพค"></option>
+  <option value="ขวด"></option>
+  <option value="ลัง"></option>
+  <option value="ชิ้น"></option>
+  <option value="ฟอง"></option>
+  <option value="กรัม"></option>
+  <option value="กิโลกรัม"></option>
+  <option value="ลิตร"></option>
+</datalist>
+
+<div id="savehint" class="savehint">บันทึกแล้ว ✓</div>
+
+<script>
+/* v19 lazy render performance patch */
+(function(){
+  function activePageId(){
+    return (location.hash || "#dash").replace("#","");
+  }
+
+  function safeCall(name){
+    try{
+      if(typeof window[name] === "function") window[name]();
+    }catch(e){
+      console.error(name+" error", e);
+      const s=document.getElementById("status");
+      if(s) s.textContent = name+" error: เปิด Console ดูรายละเอียด";
+    }
+  }
+
+  window.renderActivePage = function(){
+    const id = activePageId();
+
+    if(id === "dash"){
+      safeCall("renderDashboard");
+      return;
+    }
+
+    if(id === "pl"){
+      safeCall("renderPL");
+      return;
+    }
+
+    if(id === "workspace"){
+      safeCall("renderWorkspace");
+      return;
+    }
+
+    if(id === "daily"){
+      safeCall("saleForm");
+      safeCall("saleTable");
+      return;
+    }
+
+    if(id === "inv"){
+      safeCall("purchaseForm");
+      safeCall("purchaseTable");
+      return;
+    }
+
+    if(id === "exp"){
+      safeCall("expTable");
+      return;
+    }
+
+    if(id === "ing"){
+      safeCall("ingTable");
+      return;
+    }
+
+    if(id === "rec"){
+      safeCall("recipeSelects");
+      safeCall("recipeTable");
+      safeCall("toggleRecipePrice");
+      safeCall("renderWork");
+      return;
+    }
+
+    if(id === "brand"){
+      safeCall("brandTable");
+      return;
+    }
+
+    safeCall("renderDashboard");
+  };
+
+  const oldRender = window.render;
+  window.render = function(){
+    window.renderActivePage();
+  };
+
+  const oldNav = window.nav;
+  window.nav = function(){
+    if(typeof oldNav === "function"){
+      oldNav();
+    }else{
+      const id = activePageId();
+      document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+      const page=document.getElementById(id);
+      if(page) page.classList.add("active");
+      document.querySelectorAll(".side a").forEach(a=>a.classList.toggle("active",a.hash==="#"+id));
+    }
+    window.renderActivePage();
+  };
+
+  window.addEventListener("hashchange", function(){
+    setTimeout(()=>window.renderActivePage(), 50);
+  });
+
+  setTimeout(()=>{
+    const s=document.getElementById("status");
+    if(s && String(s.textContent||"").toLowerCase().includes("loading")){
+      s.textContent="Loading ช้า: ลอง refresh หรือเปิด Console ดู error";
+    }
+  },8000);
 })();
 </script>
 
