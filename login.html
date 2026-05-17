@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NRK Login</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:Arial,'Noto Sans Thai',sans-serif;background:#f6f1ea;color:#222}
+.card{width:min(420px,92vw);background:#fff;border:1px solid #e6d8c8;border-radius:22px;padding:26px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+h1{margin:0 0 8px;color:#111}
+p{opacity:.72;line-height:1.45}
+label{display:block;margin-top:14px;font-weight:800}
+input{width:100%;border:1px solid #d8c9b8;border-radius:14px;padding:12px;margin-top:6px;font-size:16px}
+button{width:100%;border:0;border-radius:14px;padding:12px;margin-top:18px;background:#d9c400;font-weight:900;font-size:16px;cursor:pointer}
+.status{margin-top:14px;font-size:14px;color:#555}
+.err{color:#b91c1c;font-weight:800}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🐥 NRK ERP Login</h1>
+  <p>เข้าสู่ระบบเพื่อใช้งาน Workspace / Food Cost / Reports</p>
+  <label>Email</label>
+  <input id="email" type="email" placeholder="you@example.com" autocomplete="email">
+  <label>Password</label>
+  <input id="password" type="password" placeholder="password" autocomplete="current-password">
+  <button onclick="login()">Login</button>
+  <div id="status" class="status">กรอกอีเมลและรหัสผ่านที่สร้างใน Supabase</div>
+</div>
+<script>
+const SUPABASE_URL = "https://mjbxskhfvaxxcopzesic.supabase.co";
+const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_KEY_HERE";
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function alreadyLoggedIn(){
+  const result = await db.auth.getSession();
+  if(result.data.session){
+    const next = new URLSearchParams(location.search).get("next") || "index.html";
+    location.href = next;
+  }
+}
+
+async function login(){
+  const status = document.getElementById("status");
+  status.textContent = "กำลังเข้าสู่ระบบ...";
+  status.className = "status";
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const result = await db.auth.signInWithPassword({ email, password });
+  if(result.error){
+    status.textContent = result.error.message;
+    status.className = "status err";
+    return;
+  }
+  const next = new URLSearchParams(location.search).get("next") || "index.html";
+  location.href = next;
+}
+alreadyLoggedIn();
+</script>
+</body>
+</html>

@@ -51,6 +51,7 @@ th:nth-child(n+4),td:nth-child(n+4){text-align:right}
     <a href="index.html">📅 Workspace</a>
     <a href="foodcost.html" class="active">🍗 Food Cost</a>
     <a href="reports.html">📊 Reports</a>
+  <a href="#" onclick="logout()">🚪 Logout</a>
   </aside>
 
   <main class="main">
@@ -293,5 +294,27 @@ async function editPrice(id){
 
 loadAll();
 </script>
+
+<script>
+/* NRK Owner Guard */
+(async function(){
+  const OWNER_EMAILS = ["littlewingsspicy@gmail.com"];
+  const result = await db.auth.getSession();
+  const user = result.data && result.data.session && result.data.session.user;
+  if(!user){
+    location.href = "login.html?next=" + encodeURIComponent(location.pathname.split("/").pop() || "foodcost.html");
+    return;
+  }
+  if(!OWNER_EMAILS.includes(String(user.email || "").toLowerCase())){
+    alert("หน้านี้สำหรับ Owner เท่านั้น");
+    location.href = "index.html";
+  }
+})();
+async function logout(){
+  await db.auth.signOut();
+  location.href = "login.html";
+}
+</script>
+
 </body>
 </html>

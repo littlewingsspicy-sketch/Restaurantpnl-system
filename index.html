@@ -126,7 +126,8 @@ opacity:1;
 </style>
 </head>
 <body>
-<div class="wrap"><aside class="side"><div class="brand">🐥 NRK Clean v91</div><nav><a href="#dash" class="active">📊 Dashboard</a><a href="#workspace">📅 Monthly Workspace</a><a href="#pl">📈 P&L</a><a href="#ing">🧂 Ingredients</a><a href="#rec">🍗 Food Cost</a><a href="#brand">🏷️ Brands</a><a href="#export">⬇️ Export</a></nav></aside>
+<div class="wrap"><aside class="side"><div class="brand">🐥 NRK Clean v95</div><nav><a href="#dash" class="active">📊 Dashboard</a><a href="#workspace">📅 Monthly Workspace</a><a href="#pl">📈 P&L</a><a href="#ing">🧂 Ingredients</a><a href="#rec">🍗 Food Cost</a><a href="#brand">🏷️ Brands</a><a href="#export">⬇️ Export</a></nav><a href="#" onclick="logout()">🚪 Logout</a>
+  </aside>
 <main class="main"><div class="top"><h2 id="title">Dashboard</h2><div id="status" class="status">Loading...</div></div>
 
 <section id="dash" class="page active">
@@ -207,7 +208,7 @@ opacity:1;
 
 <section id="daily" class="page"><div class="card"><h3>Daily Sale</h3><div class="grid2"><div><label>วันที่</label><input type="date" id="sd"></div><div><label>หมายเหตุ</label><input id="sn"></div></div><div id="saleInputs" class="grid3"></div><button class="primary" onclick="saveSale()">บันทึก</button> <button class="secondary" onclick="clearSale()">ล้าง</button></div><div class="card"><table><thead><tr><th>วันที่</th><th>ช่องทาง</th><th>ยอด</th><th>ลด</th><th>Net</th><th>บิล</th><th></th></tr></thead><tbody id="saleTbl"></tbody></table></div></section>
 <section id="inv" class="page"><div class="card"><h3>COGS / Inventory</h3><div class="grid2"><div><label>วันที่ซื้อ</label><input type="date" id="pd"></div><div><label>วัตถุดิบ</label><select id="ping"></select></div><div><label>จำนวนซื้อ</label><input type="number" id="pqty" oninput="calcPurchase()"></div><div><label>หน่วยซื้อ</label><input id="punit" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วย"></div><div><label>ราคารวม</label><input type="number" id="ptotal" oninput="calcPurchase()"></div><div><label>ราคาต่อหน่วยซื้อ</label><input id="punitcost" readonly></div></div><div id="pcpu" class="help"></div><button class="primary" onclick="savePurchase()">บันทึก</button> <button class="secondary" onclick="clearPurchase()">ล้าง</button></div><div class="card"><table><thead><tr><th>วันที่</th><th>วัตถุดิบ</th><th>จำนวน</th><th>หน่วย</th><th>ราคารวม</th><th></th></tr></thead><tbody id="purchaseTbl"></tbody></table></div></section>
-<section id="exp" class="page"><div class="card"><h3>Expenses</h3><div class="grid2"><div><label>วันที่</label><input type="date" id="ed"></div><div><label>หมวด</label><select id="ec"><optgroup label="👷 ค่าแรงงาน"><option value="0301 — เงินเดือนพนักงาน FT">0301 — เงินเดือนพนักงาน FT</option><option value="0302 — ค่าแรงพนักงาน PT รายวัน">0302 — ค่าแรงพนักงาน PT รายวัน</option><option value="0303 — ค่าแรงอื่นๆ / OT">0303 — ค่าแรงอื่นๆ / OT</option><option value="0304 — ประกันสังคม">0304 — ประกันสังคม</option><option value="0305 — สวัสดิการอื่นๆ">0305 — สวัสดิการอื่นๆ</option></optgroup><optgroup label="🔧 สาธารณูปโภค"><option value="0401 — ค่าไฟฟ้า">0401 — ค่าไฟฟ้า</option><option value="0402 — ค่าน้ำ">0402 — ค่าน้ำ</option><option value="0403 — ค่าโทรศัพท์">0403 — ค่าโทรศัพท์</option><option value="0404 — ค่าอินเตอร์เน็ต">0404 — ค่าอินเตอร์เน็ต</option></optgroup><optgroup label="🏢 ค่าใช้จ่ายคงที่"><option value="0501 — ค่าเช่ารายเดือน">0501 — ค่าเช่ารายเดือน</option><option value="0502 — ค่าทำบัญชี">0502 — ค่าทำบัญชี</option><option value="0503 — ค่าธรรมเนียมธนาคาร">0503 — ค่าธรรมเนียมธนาคาร</option><option value="0504 — ค่า GP Delivery Commission">0504 — ค่า GP Delivery Commission</option><option value="0505 — ภาษีหัก ณ ที่จ่าย">0505 — ภาษีหัก ณ ที่จ่าย</option><option value="0506 — VAT">0506 — VAT</option><option value="0507 — ภาษีเงินได้ประจำปี">0507 — ภาษีเงินได้ประจำปี</option><option value="0508 — ค่าบริการ/สำนักงาน/ส่วนกลาง">0508 — ค่าบริการ/สำนักงาน/ส่วนกลาง</option></optgroup><optgroup label="📦 ค่าใช้จ่ายแปรผัน"><option value="0206 — ค่าน้ำแข็ง">0206 — ค่าน้ำแข็ง</option><option value="0408 — ค่าโฆษณา / Marketing">0408 — ค่าโฆษณา / Marketing</option><option value="0411 — ค่าใช้จ่ายอื่นๆ">0411 — ค่าใช้จ่ายอื่นๆ</option></optgroup></select></div><div><label>รายละเอียด</label><input id="edt"></div><div><label>จำนวนเงิน</label><input type="number" id="ea"></div><div><label>Cost type</label><select id="et"><option value="fixed">fixed</option><option value="variable">variable</option></select></div></div><button class="primary" onclick="saveExp()">บันทึก</button></div><div class="card"><table><tbody id="expTbl"></tbody></table></div></section>
+<section id="exp" class="page"><div class="card"><h3>Expenses</h3><div class="grid2"><div><label>วันที่</label><input type="date" id="ed"></div><div><label>หมวด</label><select id="ec"><optgroup label="👷 ค่าแรงงาน"><option value="0301 — เงินเดือนพนักงาน FT">0301 — เงินเดือนพนักงาน FT</option><option value="0302 — ค่าแรงพนักงาน PT รายวัน">0302 — ค่าแรงพนักงาน PT รายวัน</option><option value="0303 — ค่าแรงอื่นๆ / OT">0303 — ค่าแรงอื่นๆ / OT</option><option value="0304 — ประกันสังคม">0304 — ประกันสังคม</option><option value="0305 — สวัสดิการอื่นๆ">0305 — สวัสดิการอื่นๆ</option></optgroup><optgroup label="🔧 สาธารณูปโภค"><option value="0401 — ค่าไฟฟ้า">0401 — ค่าไฟฟ้า</option><option value="0402 — ค่าน้ำ">0402 — ค่าน้ำ</option><option value="0403 — ค่าโทรศัพท์">0403 — ค่าโทรศัพท์</option><option value="0404 — ค่าอินเตอร์เน็ต">0404 — ค่าอินเตอร์เน็ต</option></optgroup><optgroup label="🏢 ค่าใช้จ่ายคงที่"><option value="0501 — ค่าเช่ารายเดือน">0501 — ค่าเช่ารายเดือน</option><option value="0502 — ค่าทำบัญชี">0502 — ค่าทำบัญชี</option><option value="0503 — ค่าธรรมเนียมธนาคาร">0503 — ค่าธรรมเนียมธนาคาร</option><option value="0504 — ค่า GP Delivery Commission">0504 — ค่า GP Delivery Commission</option><option value="0505 — ภาษีหัก ณ ที่จ่าย">0505 — ภาษีหัก ณ ที่จ่าย</option><option value="0506 — VAT">0506 — VAT</option><option value="0507 — ภาษีเงินได้ประจำปี">0507 — ภาษีเงินได้ประจำปี</option><option value="0508 — ค่าบริการ/สำนักงาน/ส่วนกลาง">0508 — ค่าบริการ/สำนักงาน/ส่วนกลาง</option></optgroup><optgroup label="📦 ค่าใช้จ่ายแปรผัน"><option value="0206 — ค่าน้ำแข็ง">0206 — ค่าน้ำแข็ง</option><option value="0207 — ค่าแก๊ส">0207 — ค่าแก๊ส</option><option value="0408 — ค่าโฆษณา / Marketing">0408 — ค่าโฆษณา / Marketing</option><option value="0411 — ค่าใช้จ่ายอื่นๆ">0411 — ค่าใช้จ่ายอื่นๆ</option></optgroup></select></div><div><label>รายละเอียด</label><input id="edt"></div><div><label>จำนวนเงิน</label><input type="number" id="ea"></div><div><label>Cost type</label><select id="et"><option value="fixed">fixed</option><option value="variable">variable</option></select></div></div><button class="primary" onclick="saveExp()">บันทึก</button></div><div class="card"><table><tbody id="expTbl"></tbody></table></div></section>
 <section id="ing" class="page"><div class="card"><h3>Ingredients — Excel Logic</h3><div class="grid2"><div><label>ชื่อวัตถุดิบ</label><input id="inm"></div><div>
 <label>หมวด</label>
 <select id="icat">
@@ -1122,6 +1123,21 @@ saleForm();nav();load();
     }
   },8000);
 })();
+</script>
+
+
+<script>
+/* NRK Auth Guard */
+(async function(){
+  const result = await db.auth.getSession();
+  if(!result.data.session){
+    location.href = "login.html?next=" + encodeURIComponent(location.pathname.split("/").pop() || "index.html");
+  }
+})();
+async function logout(){
+  await db.auth.signOut();
+  location.href = "login.html";
+}
 </script>
 
 </body>
