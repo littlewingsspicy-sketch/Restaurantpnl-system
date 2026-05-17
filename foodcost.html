@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NRK Food Cost</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,'Noto Sans Thai',sans-serif;background:#f6f1ea;color:#222}
+.wrap{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.side{background:#111;color:#eee;padding:24px;position:sticky;top:0;height:100vh}
+.side h1{font-size:22px;color:#ffd21a;margin:0 0 24px}
+.side a{display:block;color:#eee;text-decoration:none;padding:12px 14px;border-radius:12px;margin:8px 0}
+.side a.active{background:#4a4109;color:#fff}
+.main{padding:26px;overflow-x:hidden}
+.card{background:#fff;border:1px solid #e6d8c8;border-radius:18px;padding:18px;margin-bottom:18px;box-shadow:0 2px 10px rgba(0,0,0,.03);overflow-x:auto}
+.topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+button{border:0;border-radius:12px;padding:9px 12px;font-weight:800;cursor:pointer;background:#ddd;margin:2px}
+button.primary{background:#d9c400}
+button.secondary{background:#eee}
+input,select{border:1px solid #d8c9b8;border-radius:12px;padding:10px;min-width:0;max-width:100%}
+table{width:100%;border-collapse:collapse}
+th,td{border-bottom:1px solid #eee;padding:10px;text-align:left;vertical-align:top}
+th:nth-child(n+4),td:nth-child(n+4){text-align:right}
+.grid2{display:grid;grid-template-columns:minmax(560px,1.15fr) minmax(360px,.85fr);gap:18px;align-items:start}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:12px 0}
+.kpi{background:#fff8df;border:1px solid #e6d8c8;border-radius:16px;padding:14px}
+.kpi small{display:block;opacity:.7;font-weight:800;margin-bottom:6px}
+.kpi b{font-size:24px;display:block}
+.help{font-size:13px;opacity:.75;line-height:1.45}
+.good{color:#168a42;font-weight:900}
+.mid{color:#c47f00;font-weight:900}
+.bad{color:#b91c1c;font-weight:900}
+.detail-line{display:grid;grid-template-columns:1.4fr .7fr .7fr .9fr .9fr;gap:8px;border-bottom:1px solid #eee;padding:8px 0}
+.detail-line b{font-size:13px}
+.pill{display:inline-block;background:#fff8df;border:1px solid #e6d8c8;border-radius:999px;padding:6px 10px;margin:4px;font-size:13px}
+.status{position:fixed;right:18px;bottom:18px;background:#111;color:#fff;padding:10px 14px;border-radius:14px;z-index:20}
+@media(max-width:1000px){
+  .wrap{grid-template-columns:1fr}
+  .side{position:relative;height:auto}
+  .grid2{grid-template-columns:1fr}
+  th,td{white-space:nowrap}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="side">
+    <h1>🐥 NRK Food Cost</h1>
+    <a href="index.html">📅 Workspace</a>
+    <a href="foodcost.html" class="active">🍗 Food Cost</a>
+    <a href="reports.html">📊 Reports</a>
+  </aside>
+
+  <main class="main">
+    <div class="card">
+      <h2>Food Cost / Recipe / Semi</h2>
+      <div class="topbar">
+        <input id="searchBox" placeholder="ค้นหาเมนู / semi / brand" oninput="renderRecipes()">
+        <select id="typeFilter" onchange="renderRecipes()">
+          <option value="all">ทั้งหมด</option>
+          <option value="menu">Menu</option>
+          <option value="semi">Semi</option>
+        </select>
+        <select id="brandFilter" onchange="renderRecipes()">
+          <option value="all">ทุกแบรนด์</option>
+        </select>
+        <button class="primary" onclick="loadAll()">Refresh</button>
+      </div>
+      <div class="help">
+        สูตร Delivery รวม VAT on GP แล้ว: Effective GP = GP% × 1.07 | ราคาแนะนำ Delivery รวม VAT = ((ต้นทุน + กำไรหน้าร้าน) ÷ (1 - Effective GP)) × 1.07
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Owner Table</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ชื่อ</th>
+              <th>Type</th>
+              <th>Brand</th>
+              <th>Cost/output</th>
+              <th>หน้าร้าน</th>
+              <th>กำไรหน้าร้าน</th>
+              <th>FC%</th>
+              <th>GP%</th>
+              <th>Delivery แนะนำ</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="recipeTbl"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>รายละเอียดสูตร</h3>
+        <div id="recipeDetail" class="help">กด “ดู” ที่เมนูเพื่อดูรายละเอียดวัตถุดิบ</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="status" class="status">Loading...</div>
+
+<script>
+const SUPABASE_URL = "https://mjbxskhfvaxxcopzesic.supabase.co";
+const SUPABASE_ANON_KEY = "PASTE_YOUR_ANON_KEY_HERE";
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let recipes=[], lines=[], brands=[], ings=[];
+
+function B(n){ return "฿"+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2}); }
+function setStatus(t){ const el=document.getElementById("status"); if(el) el.textContent=t; }
+function typeOf(r){ return String(r.type||"").toLowerCase().trim(); }
+function isSemi(r){ return typeOf(r)==="semi"; }
+
+function recommendedDeliveryVatIn(cost, frontPriceVatIn, gpPercent){
+  const targetNetAfterGp = Number(cost||0) + (Number(frontPriceVatIn||0) - Number(cost||0));
+  const gpEffective = (Number(gpPercent||0)/100) * 1.07;
+  if(gpEffective >= 1) return 0;
+  const deliveryBeforeVat = targetNetAfterGp / (1 - gpEffective);
+  return deliveryBeforeVat * 1.07;
+}
+
+function fcClass(fc){
+  if(fc > 50) return "bad";
+  if(fc > 35) return "mid";
+  return "good";
+}
+function profitClass(p){
+  if(p < 25) return "bad";
+  if(p < 40) return "mid";
+  return "good";
+}
+
+async function loadAll(){
+  setStatus("Loading...");
+  const r = await db.from("recipes").select("*").limit(10000);
+  const l = await db.from("recipe_lines").select("*").limit(20000);
+  const b = await db.from("brands").select("*").limit(1000);
+  const i = await db.from("ingredients").select("*").limit(10000);
+
+  if(r.error || l.error){
+    console.error(r.error||l.error);
+    alert((r.error||l.error).message);
+    setStatus("Load error");
+    return;
+  }
+
+  recipes = r.data || [];
+  lines = l.data || [];
+  brands = b.data || [];
+  ings = i.data || [];
+
+  renderBrandFilter();
+  renderRecipes();
+  setStatus("Loaded ✓");
+  setTimeout(()=>setStatus("Cloud ✓"),1200);
+}
+
+function renderBrandFilter(){
+  const el=document.getElementById("brandFilter");
+  if(!el) return;
+  const cur=el.value||"all";
+  const ids=new Set();
+  recipes.forEach(r=>{ if(r.brand_id) ids.add(r.brand_id); });
+  brands.forEach(b=>{ if(b.id) ids.add(b.id); });
+  el.innerHTML='<option value="all">ทุกแบรนด์</option>'+Array.from(ids).sort().map(id=>{
+    const brand=brands.find(b=>b.id===id);
+    return '<option value="'+id+'">'+id+(brand?(' - '+brand.name):'')+'</option>';
+  }).join("");
+  el.value=cur;
+}
+
+function renderRecipes(){
+  const tbody=document.getElementById("recipeTbl");
+  if(!tbody) return;
+
+  const q=String(document.getElementById("searchBox").value||"").toLowerCase();
+  const tf=document.getElementById("typeFilter").value||"all";
+  const bf=document.getElementById("brandFilter").value||"all";
+
+  const list=recipes.filter(r=>{
+    const text=[r.name,r.type,r.brand_id].join(" ").toLowerCase();
+    const typeOk=tf==="all" || typeOf(r)===tf;
+    const brandOk=bf==="all" || String(r.brand_id||"")===bf;
+    const searchOk=!q || text.includes(q);
+    return typeOk && brandOk && searchOk;
+  });
+
+  tbody.innerHTML=list.map(r=>{
+    const cost=Number(r.cost_per_output||0);
+    const price=Number(r.base_price||0);
+    const gp=Number(r.delivery_gp_percent||0);
+    const profit=price-cost;
+    const fc=price?cost/price*100:0;
+    const del=recommendedDeliveryVatIn(cost,price,gp);
+    const semi=isSemi(r);
+
+    return '<tr>'
+      + '<td>'+(r.name||'')+'</td>'
+      + '<td>'+(r.type||'')+'</td>'
+      + '<td>'+(r.brand_id||'')+'</td>'
+      + '<td>'+B(cost)+' / '+(r.output_unit||'unit')+'</td>'
+      + '<td>'+(semi?'—':B(price))+'</td>'
+      + '<td>'+(semi?'—':'<span class="'+profitClass(profit)+'">'+B(profit)+'</span>')+'</td>'
+      + '<td>'+(semi?'—':'<span class="'+fcClass(fc)+'">'+fc.toFixed(1)+'%</span>')+'</td>'
+      + '<td>'+(semi?'—':gp.toFixed(1)+'%')+'</td>'
+      + '<td>'+(semi?'—':B(del))+'</td>'
+      + '<td style="text-align:left"><button class="secondary" onclick="showRecipe(\\''+r.id+'\\')">ดู</button>'
+      + (semi?'':'<button class="secondary" onclick="editPrice(\\''+r.id+'\\')">แก้ราคา</button>')
+      + '</td></tr>';
+  }).join("");
+}
+
+function showRecipe(id){
+  const r=recipes.find(x=>x.id===id);
+  if(!r) return;
+  const ls=lines.filter(l=>l.recipe_id===id);
+  const cost=Number(r.cost_per_output||0);
+  const price=Number(r.base_price||0);
+  const gp=Number(r.delivery_gp_percent||0);
+  const profit=price-cost;
+  const del=recommendedDeliveryVatIn(cost,price,gp);
+
+  let html='<h3>'+(r.name||'')+'</h3>'
+    + '<div class="kpi-grid">'
+    + '<div class="kpi"><small>Cost/output</small><b>'+B(cost)+'</b><div class="help">'+(r.output_unit||'unit')+'</div></div>'
+    + '<div class="kpi"><small>หน้าร้านรวม VAT</small><b>'+(isSemi(r)?'—':B(price))+'</b></div>'
+    + '<div class="kpi"><small>กำไรหน้าร้าน</small><b>'+(isSemi(r)?'—':B(profit))+'</b></div>'
+    + '<div class="kpi"><small>Delivery แนะนำรวม VAT</small><b>'+(isSemi(r)?'—':B(del))+'</b><div class="help">รวม VAT on GP</div></div>'
+    + '</div>'
+    + '<div>'
+    + '<span class="pill">Type: '+(r.type||'')+'</span>'
+    + '<span class="pill">Brand: '+(r.brand_id||'')+'</span>'
+    + '<span class="pill">GP Delivery: '+gp.toFixed(1)+'%</span>'
+    + '<span class="pill">Effective GP: '+(gp*1.07).toFixed(2)+'%</span>'
+    + '</div><hr>'
+    + '<div class="detail-line"><b>รายการ</b><b>จำนวน</b><b>หน่วย</b><b>ต้นทุน/หน่วย</b><b>ต้นทุนรวม</b></div>';
+
+  html += ls.map(l=>'<div class="detail-line">'
+    + '<div>'+(l.source_name||'')+'</div>'
+    + '<div>'+Number(l.quantity||0).toLocaleString()+'</div>'
+    + '<div>'+(l.usage_unit||'')+'</div>'
+    + '<div>'+B(l.unit_cost)+'</div>'
+    + '<div>'+B(l.line_cost)+'</div>'
+    + '</div>').join("");
+
+  if(!ls.length) html += '<div class="help">ยังไม่มีรายละเอียดวัตถุดิบใน recipe_lines</div>';
+  document.getElementById("recipeDetail").innerHTML=html;
+}
+
+async function editPrice(id){
+  const r=recipes.find(x=>x.id===id);
+  if(!r) return alert("ไม่พบเมนู");
+
+  const priceText=prompt("ราคาหน้าร้านรวม VAT", Number(r.base_price||0));
+  if(priceText===null) return;
+
+  const gpText=prompt("GP Delivery %", Number(r.delivery_gp_percent||0));
+  if(gpText===null) return;
+
+  const price=Number(priceText||0);
+  const gp=Number(gpText||0);
+  const cost=Number(r.cost_per_output||0);
+  const del=recommendedDeliveryVatIn(cost,price,gp);
+
+  const result = await db.from("recipes")
+    .update({
+      base_price: price,
+      vat_price: price/1.07,
+      delivery_gp_percent: gp,
+      gp_price: del,
+      final_price: del
+    })
+    .eq("id", id);
+
+  if(result.error){ alert(result.error.message); return; }
+
+  r.base_price=price;
+  r.vat_price=price/1.07;
+  r.delivery_gp_percent=gp;
+  r.gp_price=del;
+  r.final_price=del;
+
+  renderRecipes();
+  showRecipe(id);
+  setStatus("Saved ✓");
+}
+
+loadAll();
+</script>
+</body>
+</html>
