@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NRK — P&L Report</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#faf9f6;
+  --border:#e8e3da;--border2:#d5cfc3;
+  --text:#1a1916;--text2:#6b6560;--text3:#9c968e;
+  --accent:#d4a843;--accent-soft:#fdf3dc;--accent-border:#f0d896;
+  --green:#1a7a4a;--green-bg:#edf7f2;
+  --red:#c0392b;--red-bg:#fdf0ee;
+  --orange:#c47a1e;--orange-bg:#fef4e3;
+  --blue:#2563a8;--blue-bg:#eef4fd;
+  --radius:14px;--radius-sm:9px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.55}
+
+/* ── Topbar ── */
+.topbar{
+  position:sticky;top:0;z-index:50;background:var(--text);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:56px;box-shadow:0 2px 12px rgba(0,0,0,.18);
+}
+.brand{font-size:17px;font-weight:700;color:#fff}
+.brand span{color:var(--accent);font-size:13px;font-weight:500;margin-left:6px;font-family:'DM Mono',monospace}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.nav-btn{
+  padding:7px 13px;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.15);
+  background:none;color:rgba(255,255,255,.6);font-size:13px;font-weight:500;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;text-decoration:none;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.nav-btn:hover{background:rgba(255,255,255,.09);color:#fff}
+#statusDot{
+  width:7px;height:7px;border-radius:50%;background:#555;
+  display:inline-block;margin-right:5px;
+}
+#statusDot.ok{background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+#statusTxt{font-size:12px;color:rgba(255,255,255,.38);font-family:'DM Mono',monospace}
+
+/* ── Wrap ── */
+.wrap{max-width:1380px;margin:0 auto;padding:24px 20px}
+
+/* ── Month Bar ── */
+.month-bar{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 18px;margin-bottom:20px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.month-bar input[type=month]{
+  padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--surface);
+}
+.month-bar input[type=month]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(212,168,67,.12)}
+.month-label{font-weight:700;font-size:16px;color:var(--text);margin-left:4px}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:9px 16px;
+  border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;
+  transition:all .15s;border:1px solid transparent;font-family:'DM Sans',sans-serif;white-space:nowrap;
+}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:#c49a35}
+.btn-secondary{background:var(--surface);color:var(--text2);border-color:var(--border)}
+.btn-secondary:hover{background:var(--surface2);border-color:var(--border2)}
+
+/* ── KPI Grid ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+.kpi.accent{border-top:3px solid var(--accent)}
+.kpi.green{border-top:3px solid var(--green)}
+.kpi.red{border-top:3px solid var(--red)}
+.kpi.blue{border-top:3px solid var(--blue)}
+.kpi.orange{border-top:3px solid var(--orange)}
+.kpi-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.kpi-value{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.kpi-sub{font-size:12px;color:var(--text3);margin-top:6px;font-family:'DM Mono',monospace}
+.up{color:var(--green)}.down{color:var(--red)}.mid{color:var(--orange)}
+
+/* ── Grid layouts ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+.grid-pl{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-bottom:20px}
+
+/* ── Card ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.card-title{font-size:16px;font-weight:700;letter-spacing:-.01em;margin-bottom:16px}
+.card-sub{font-size:12px;color:var(--text3);font-weight:400;margin-left:6px}
+
+/* ── P&L Table ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{padding:9px 11px;border-bottom:2px solid var(--border);text-align:left;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);background:var(--surface2);white-space:nowrap}
+td{padding:10px 11px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.tr-section td{font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);background:var(--surface2);padding:7px 11px}
+.tr-total td{font-weight:700;border-top:1.5px solid var(--border2);border-bottom:1.5px solid var(--border2)}
+.tr-gross td{font-weight:700;background:var(--accent-soft);color:var(--orange)}
+.tr-profit td{font-weight:700;background:var(--green-bg);color:var(--green)}
+.tr-loss td{font-weight:700;background:var(--red-bg);color:var(--red)}
+.td-indent{padding-left:22px!important;color:var(--text2)}
+.td-r{text-align:right}
+.td-mono{font-family:'DM Mono',monospace;font-size:13px}
+
+/* ── BEP Card ── */
+.bep-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.bep-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}
+.bep-box-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.bep-box-value{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1;margin-bottom:4px}
+.bep-box-sub{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
+.bep-progress-wrap{margin-top:14px}
+.bep-progress-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;font-weight:600}
+.bep-track{height:14px;background:var(--border);border-radius:99px;overflow:hidden;position:relative}
+.bep-fill{height:100%;border-radius:99px;transition:width .6s ease;position:relative}
+.bep-marker{
+  position:absolute;top:-4px;width:2px;height:22px;background:var(--text);
+  transform:translateX(-50%);
+}
+.bep-pct-badge{
+  display:inline-block;padding:3px 10px;border-radius:99px;
+  font-size:13px;font-weight:700;margin-top:8px;
+}
+
+/* ── Health Bars ── */
+.health-row{margin-bottom:16px}
+.health-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.health-name{font-size:14px;font-weight:600}
+.health-pcts{display:flex;align-items:center;gap:8px;font-size:13px;font-family:'DM Mono',monospace}
+.health-actual{font-weight:700;font-size:15px}
+.health-range{color:var(--text3);font-size:12px}
+.health-track{height:12px;background:var(--border);border-radius:99px;position:relative;overflow:visible}
+.health-zone{
+  position:absolute;top:0;height:100%;
+  background:rgba(26,122,74,.15);border-radius:99px;
+  border:1px solid rgba(26,122,74,.25);
+}
+.health-bar{
+  position:absolute;top:0;left:0;height:100%;
+  border-radius:99px;transition:width .5s ease;
+  min-width:4px;
+}
+.health-status{font-size:12px;margin-top:5px;font-weight:600}
+
+/* ── Cost Structure Pie ── */
+.pie-container{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.pie-ring{width:200px;height:200px;border-radius:50%;flex-shrink:0;border:1px solid var(--border)}
+.pie-legend{flex:1;min-width:180px}
+.pie-row{display:grid;grid-template-columns:12px 1fr auto auto;gap:8px;align-items:center;margin:6px 0;font-size:13px}
+.pie-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.pie-pct{font-family:'DM Mono',monospace;font-weight:700;font-size:13px}
+.pie-amt{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3)}
+.pie-total{font-size:13px;color:var(--text2);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+
+/* ── Trend Bars ── */
+.trend-row{display:grid;grid-template-columns:80px 1fr 90px;gap:10px;align-items:center;margin:7px 0;font-size:13px}
+.trend-label{color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+.trend-track{height:9px;background:var(--border);border-radius:99px;overflow:hidden}
+.trend-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .4s ease}
+.trend-val{font-family:'DM Mono',monospace;text-align:right;font-size:13px;font-weight:600}
+
+/* ── Loading ── */
+.loading{text-align:center;padding:60px;color:var(--text3);font-size:15px}
+
+/* ── Responsive ── */
+@media(max-width:1100px){.grid-pl{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}.bep-grid{grid-template-columns:1fr}}
+@media(max-width:500px){.kpi-grid{grid-template-columns:1fr 1fr}.wrap{padding:14px 12px}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">📈 P&L Report<span>NRK ERP</span></div>
+  <div class="topbar-right">
+    <span id="statusDot"></span><span id="statusTxt">Loading…</span>
+    <a href="index.html" class="nav-btn">← Dashboard</a>
+    <button class="nav-btn" onclick="logout()">ออกจากระบบ</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- Month Bar -->
+  <div class="month-bar">
+    <button class="btn btn-secondary" onclick="moveMonth(-1)">← ก่อน</button>
+    <input type="month" id="plMonth" onchange="renderAll()">
+    <button class="btn btn-secondary" onclick="moveMonth(1)">ถัดไป →</button>
+    <button class="btn btn-primary" onclick="renderAll()">🔄 โหลด</button>
+    <span class="month-label" id="monthLabel">—</span>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi accent"><div class="kpi-label">Net Revenue</div><div class="kpi-value" id="kRevenue">฿0</div><div class="kpi-sub" id="kRevenueSub">—</div></div>
+    <div class="kpi green"><div class="kpi-label">Gross Profit</div><div class="kpi-value" id="kGross">฿0</div><div class="kpi-sub" id="kGrossSub">—</div></div>
+    <div class="kpi blue"><div class="kpi-label">Gross Margin %</div><div class="kpi-value" id="kGM">0%</div><div class="kpi-sub">เป้า ≥ 60%</div></div>
+    <div class="kpi orange"><div class="kpi-label">Labor Ratio %</div><div class="kpi-value" id="kLabor">0%</div><div class="kpi-sub">เป้า ≤ 20%</div></div>
+    <div class="kpi blue"><div class="kpi-label">Daily Avg Revenue</div><div class="kpi-value" id="kDaily">฿0</div><div class="kpi-sub" id="kDailySub">—</div></div>
+    <div class="kpi"><div class="kpi-label">Net Profit</div><div class="kpi-value" id="kNet">฿0</div><div class="kpi-sub" id="kNetSub">—</div></div>
+  </div>
+
+  <!-- BEP + P&L Table -->
+  <div class="grid-pl">
+
+    <!-- P&L Statement -->
+    <div class="card">
+      <div class="card-title">P&L Statement <span class="card-sub" id="plLabel"></span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>รายการ</th><th class="td-r">จำนวนเงิน</th><th class="td-r">% Revenue</th></tr></thead>
+          <tbody id="plTbl"><tr><td colspan="3" class="loading">กำลังโหลด…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right column: BEP + Cost Structure -->
+    <div>
+
+      <!-- BEP -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Break-Even Point</div>
+        <div class="bep-grid">
+          <div class="bep-box" style="border-top:3px solid var(--accent)">
+            <div class="bep-box-label">BEP ยอดขาย</div>
+            <div class="bep-box-value" id="bepRevenue">฿0</div>
+            <div class="bep-box-sub">ต้องขายได้อย่างน้อย</div>
+          </div>
+          <div class="bep-box" style="border-top:3px solid var(--blue)">
+            <div class="bep-box-label">BEP จำนวนบิล</div>
+            <div class="bep-box-value" id="bepBills">0 บิล</div>
+            <div class="bep-box-sub" id="bepBillSub">AOV ฿0 / บิล</div>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="bep-progress-wrap">
+          <div class="bep-progress-label">
+            <span>ความคืบหน้า</span>
+            <span id="bepPctLabel">0%</span>
+          </div>
+          <div class="bep-track">
+            <div class="bep-fill" id="bepFill" style="width:0%;background:var(--accent)"></div>
+            <div class="bep-marker" id="bepMarker" style="left:0%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-top:4px">
+            <span>฿0</span>
+            <span id="bepTrackMax">BEP</span>
+          </div>
+        </div>
+        <div id="bepBadge" class="bep-pct-badge" style="margin-top:10px">— กำลังคำนวณ —</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:8px" id="bepFormula">—</div>
+      </div>
+
+      <!-- Cost Structure Pie -->
+      <div class="card">
+        <div class="card-title">Cost Structure</div>
+        <div class="pie-container">
+          <div class="pie-ring" id="pieRing"></div>
+          <div class="pie-legend">
+            <div id="pieLegend"></div>
+            <div class="pie-total" id="pieTotal"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Health Bars + Trend -->
+  <div class="grid2">
+
+    <!-- Cost Health Bars -->
+    <div class="card">
+      <div class="card-title">Cost Health Monitor <span class="card-sub">vs เกณฑ์มาตรฐาน</span></div>
+      <div id="healthBars"><div class="loading">กำลังโหลด…</div></div>
+    </div>
+
+    <!-- Monthly Trend Bars -->
+    <div class="card">
+      <div class="card-title">Revenue by Channel <span class="card-sub">เดือนนี้</span></div>
+      <div id="channelBars"><div class="loading">กำลังโหลด…</div></div>
+    </div>
+
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+const SUPABASE_URL="https://mjbxskhfvaxxcopzesic.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qYnhza2hmdmF4eGNvcHplc2ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjg4NTIsImV4cCI6MjA5MDk0NDg1Mn0.G2W728EIN6qfALpW06YCdSkVKKnAO1bULMGIlei-Z2U";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+const B=n=>"฿"+Number(n||0).toLocaleString("th-TH",{maximumFractionDigits:0});
+const Bd=n=>"฿"+Number(n||0).toLocaleString("th-TH",{maximumFractionDigits:2});
+const P=n=>Number(n||0).toFixed(1)+"%";
+
+const channels=[
+  ["dine_in","Dine-in"],["take_away","Take Away"],
+  ["grab_ltw","Grab LTW"],["grab_rrk","Grab RRK"],
+  ["grab_fff","Grab FFF"],["grab_den","Grab DEN"],
+  ["catering","Catering"],["event","Event"],["market","ตลาดนัด"]
+];
+const chLabel=ch=>(channels.find(c=>c[0]===ch)||[null,ch])[1];
+const isGrab=ch=>String(ch||"").startsWith("grab_");
+const isLabor=e=>/(แรง|เงินเดือน|labor|ค่าจ้าง|ประกันสังคม|pt รายวัน|ft)/i.test(e.category||"");
+const isRent=e=>/(เช่า|rent)/i.test(e.category||"");
+const isUtil=e=>/(ไฟ|น้ำ|แก๊ส|util|electric|gas)/i.test(e.category||"");
+const isMarketing=e=>/(market|โฆษณา|ads|social)/i.test(e.category||"");
+const isCentral=e=>/(central|office|สำนักงาน|admin|จัดการ)/i.test(e.category||"");
+const isGPDel=e=>/(0504|gp delivery|commission|grab commission)/i.test(e.category||"");
+
+let sales=[],purchases=[],exps=[];
+
+/* ── Auth ── */
+async function checkLogin(){
+  const r=await db.auth.getSession();
+  if(!r.data.session){location.href="login.html?next=pl.html";return false;}
+  return true;
+}
+async function logout(){await db.auth.signOut();location.href="login.html"}
+
+/* ── Status ── */
+function setStatus(s){
+  const dot=document.getElementById("statusDot");
+  const txt=document.getElementById("statusTxt");
+  if(s==="ok"){dot.className="ok";txt.textContent="Cloud ✓"}
+  else{dot.className="";txt.textContent=s}
+}
+
+/* ── Month helpers ── */
+function initMonth(){
+  const el=document.getElementById("plMonth");
+  if(el&&!el.value){
+    const d=new Date();
+    el.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  }
+}
+function moveMonth(delta){
+  initMonth();
+  const el=document.getElementById("plMonth");
+  const[y,m]=el.value.split("-").map(Number);
+  const d=new Date(y,m-1+delta,1);
+  el.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+  renderAll();
+}
+function inMonth(dateStr){
+  const el=document.getElementById("plMonth");
+  if(!el||!el.value)return true;
+  return String(dateStr||"").slice(0,7)===el.value;
+}
+function daysInCurrentMonth(){
+  const el=document.getElementById("plMonth");
+  if(!el||!el.value)return 30;
+  const[y,m]=el.value.split("-").map(Number);
+  return new Date(y,m,0).getDate();
+}
+
+/* ── Load ── */
+async function loadData(){
+  setStatus("Loading…");
+  const [rs,rp,re]=await Promise.all([
+    db.from("daily_sales").select("*"),
+    db.from("inventory_purchases").select("*"),
+    db.from("expenses").select("*")
+  ]);
+  sales=rs.data||[];
+  purchases=rp.data||[];
+  exps=re.data||[];
+  setStatus("ok");
+}
+
+/* ── Render All ── */
+function renderAll(){
+  initMonth();
+  const mo=document.getElementById("plMonth").value||"";
+  const thaiMonth=mo?new Date(mo+"-01").toLocaleDateString("th-TH",{month:"long",year:"numeric"}):"";
+  document.getElementById("monthLabel").textContent=thaiMonth;
+  document.getElementById("plLabel").textContent=mo;
+
+  const mSales=sales.filter(r=>inMonth(r.sale_date));
+  const mPurchases=purchases.filter(r=>inMonth(r.purchase_date));
+  const mExp=exps.filter(r=>inMonth(r.expense_date));
+
+  // ── Core numbers ──
+  const grossSales=mSales.reduce((a,r)=>a+Number(r.sales_amount||0),0);
+  const totalDiscount=mSales.reduce((a,r)=>a+Number(r.discount||0),0);
+  const totalRevenue=mSales.reduce((a,r)=>a+Number(r.net_sales||0),0);
+  const totalCogs=mPurchases.reduce((a,r)=>a+Number(r.total_cost||0),0);
+  const totalExp=mExp.reduce((a,r)=>a+Number(r.amount||0),0);
+  const grossProfit=totalRevenue-totalCogs;
+  const grossMargin=totalRevenue?grossProfit/totalRevenue*100:0;
+  const netProfit=grossProfit-totalExp;
+  const netMargin=totalRevenue?netProfit/totalRevenue*100:0;
+  const safe=totalRevenue||1;
+  const bills=mSales.reduce((a,r)=>a+Number(r.bill_count||0),0);
+  const aov=bills?totalRevenue/bills:0;
+  const days=daysInCurrentMonth();
+  const salesDays=[...new Set(mSales.map(s=>s.sale_date).filter(Boolean))].length||days;
+  const dailyAvg=totalRevenue/salesDays;
+
+  // ── Category sums ──
+  const laborAmt=mExp.filter(isLabor).reduce((a,r)=>a+Number(r.amount||0),0);
+  const rentAmt=mExp.filter(isRent).reduce((a,r)=>a+Number(r.amount||0),0);
+  const utilAmt=mExp.filter(isUtil).reduce((a,r)=>a+Number(r.amount||0),0);
+  const mktAmt=mExp.filter(isMarketing).reduce((a,r)=>a+Number(r.amount||0),0);
+  const centralAmt=mExp.filter(isCentral).reduce((a,r)=>a+Number(r.amount||0),0);
+  const gpDelAmt=mExp.filter(isGPDel).reduce((a,r)=>a+Number(r.amount||0),0);
+  const otherAmt=mExp.filter(e=>!isLabor(e)&&!isRent(e)&&!isUtil(e)&&!isMarketing(e)&&!isCentral(e)&&!isGPDel(e)).reduce((a,r)=>a+Number(r.amount||0),0);
+
+  // Fixed vs Variable for BEP
+  const fixedCosts=rentAmt+centralAmt+(laborAmt*0.7); // 70% of labor = fixed
+  const variableRatio=(totalCogs+laborAmt*0.3+gpDelAmt)/safe; // variable costs / revenue
+  const contributionMargin=1-variableRatio;
+  const bepRevenue=contributionMargin>0?fixedCosts/contributionMargin:0;
+  const bepBills=aov>0?Math.ceil(bepRevenue/aov):0;
+
+  renderKPIs(totalRevenue,grossProfit,grossMargin,laborAmt,safe,dailyAvg,salesDays,netProfit,netMargin);
+  renderPL(grossSales,totalDiscount,totalRevenue,totalCogs,mPurchases,mExp,grossProfit,grossMargin,netProfit,safe);
+  renderBEP(bepRevenue,bepBills,aov,totalRevenue,bills,fixedCosts,contributionMargin);
+  renderPie(totalCogs,laborAmt,rentAmt,utilAmt,mktAmt,centralAmt,gpDelAmt,otherAmt,netProfit,totalRevenue);
+  renderHealth(totalCogs,laborAmt,rentAmt,utilAmt,mktAmt,centralAmt,gpDelAmt,otherAmt,safe);
+  renderChannelBars(mSales);
+}
+
+/* ── KPIs ── */
+function renderKPIs(rev,gross,gm,labor,safe,daily,days,net,nm){
+  document.getElementById("kRevenue").textContent=B(rev);
+  document.getElementById("kRevenueSub").textContent=`เดือนนี้ ${days} วัน`;
+  document.getElementById("kGross").textContent=B(gross);
+  document.getElementById("kGrossSub").textContent=`Gross Margin ${P(gm)}`;
+  const gmEl=document.getElementById("kGM");
+  gmEl.textContent=P(gm);
+  gmEl.className="kpi-value "+(gm>=60?"up":gm>=50?"mid":"down");
+  const lrEl=document.getElementById("kLabor");
+  const lr=rev?labor/rev*100:0;
+  lrEl.textContent=P(lr);
+  lrEl.className="kpi-value "+(lr<=20?"up":lr<=25?"mid":"down");
+  document.getElementById("kDaily").textContent=B(daily);
+  document.getElementById("kDailySub").textContent=`เฉลี่ย ${days} วันที่มีข้อมูล`;
+  const netEl=document.getElementById("kNet");
+  netEl.textContent=B(net);
+  netEl.className="kpi-value "+(net>=0?"up":"down");
+  document.getElementById("kNetSub").textContent=`Net Margin ${P(nm)}`;
+}
+
+/* ── P&L Table ── */
+function groupSum(rows,keyFn,amtFn){
+  const o={};rows.forEach(r=>{const k=keyFn(r)||"ไม่ระบุ";o[k]=(o[k]||0)+Number(amtFn(r)||0)});return o;
+}
+function renderPL(grossSales,disc,rev,cogs,purch,exp,gross,gm,net,safe){
+  const revenueG=groupSum(sales.filter(r=>inMonth(r.sale_date)),r=>chLabel(r.channel),r=>r.net_sales);
+  const cogsG=groupSum(purch,r=>r.category||"ไม่ระบุ",r=>r.total_cost);
+  const expG=groupSum(exp,r=>r.category||"ไม่ระบุ",r=>r.amount);
+  const totalExp=exp.reduce((a,r)=>a+Number(r.amount||0),0);
+  let h="";
+  // Revenue
+  h+=`<tr class="tr-section"><td colspan="3">REVENUE</td></tr>`;
+  h+=`<tr><td class="td-indent">Gross Sales</td><td class="td-r td-mono">${B(grossSales)}</td><td class="td-r td-mono">—</td></tr>`;
+  h+=`<tr><td class="td-indent">ส่วนลด</td><td class="td-r td-mono">(${B(disc)})</td><td class="td-r td-mono">—</td></tr>`;
+  Object.entries(revenueG).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
+    h+=`<tr><td class="td-indent">${k}</td><td class="td-r td-mono">${B(v)}</td><td class="td-r td-mono">${(v/safe*100).toFixed(1)}%</td></tr>`;
+  });
+  h+=`<tr class="tr-total"><td>Net Revenue</td><td class="td-r td-mono">${B(rev)}</td><td class="td-r td-mono">100%</td></tr>`;
+  // COGS
+  h+=`<tr class="tr-section"><td colspan="3">COST OF GOODS SOLD</td></tr>`;
+  Object.entries(cogsG).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
+    h+=`<tr><td class="td-indent">${k}</td><td class="td-r td-mono">(${B(v)})</td><td class="td-r td-mono">${(v/safe*100).toFixed(1)}%</td></tr>`;
+  });
+  h+=`<tr class="tr-total"><td>Total COGS</td><td class="td-r td-mono">(${B(cogs)})</td><td class="td-r td-mono">${(cogs/safe*100).toFixed(1)}%</td></tr>`;
+  // Gross Profit
+  h+=`<tr class="tr-gross"><td>GROSS PROFIT</td><td class="td-r td-mono">${B(gross)}</td><td class="td-r td-mono">${gm.toFixed(1)}%</td></tr>`;
+  // Expenses
+  h+=`<tr class="tr-section"><td colspan="3">OPERATING EXPENSES</td></tr>`;
+  Object.entries(expG).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
+    h+=`<tr><td class="td-indent">${k}</td><td class="td-r td-mono">(${B(v)})</td><td class="td-r td-mono">${(v/safe*100).toFixed(1)}%</td></tr>`;
+  });
+  h+=`<tr class="tr-total"><td>Total Expenses</td><td class="td-r td-mono">(${B(totalExp)})</td><td class="td-r td-mono">${(totalExp/safe*100).toFixed(1)}%</td></tr>`;
+  // Net
+  h+=`<tr class="${net>=0?"tr-profit":"tr-loss"}"><td>NET PROFIT${net<0?" (LOSS)":""}</td><td class="td-r td-mono">${B(net)}</td><td class="td-r td-mono">${(net/safe*100).toFixed(1)}%</td></tr>`;
+  document.getElementById("plTbl").innerHTML=h;
+}
+
+/* ── BEP ── */
+function renderBEP(bepRev,bepBills,aov,actualRev,actualBills,fixed,cm){
+  document.getElementById("bepRevenue").textContent=B(bepRev);
+  document.getElementById("bepBills").textContent=bepBills.toLocaleString()+" บิล";
+  document.getElementById("bepBillSub").textContent="AOV "+Bd(aov)+" / บิล";
+  const pct=bepRev>0?Math.min(actualRev/bepRev*100,150):0;
+  const barPct=Math.min(pct,100);
+  const fill=document.getElementById("bepFill");
+  fill.style.width=barPct+"%";
+  fill.style.background=pct>=100?"var(--green)":pct>=75?"var(--accent)":"var(--red)";
+  // marker at 100% = BEP
+  document.getElementById("bepMarker").style.left="100%";
+  document.getElementById("bepTrackMax").textContent="BEP "+B(bepRev);
+  document.getElementById("bepPctLabel").textContent=pct.toFixed(1)+"% ของ BEP";
+  const badge=document.getElementById("bepBadge");
+  if(pct>=100){
+    badge.style.background="var(--green-bg)";badge.style.color="var(--green)";
+    badge.textContent=`✅ ถึง BEP แล้ว ${pct.toFixed(1)}% · เกิน BEP ${B(actualRev-bepRev)}`;
+  } else {
+    badge.style.background="var(--red-bg)";badge.style.color="var(--red)";
+    badge.textContent=`⚠️ ยังไม่ถึง BEP · ต้องขายเพิ่ม ${B(bepRev-actualRev)} (${(100-pct).toFixed(1)}%)`;
+  }
+  document.getElementById("bepFormula").textContent=
+    `Fixed Cost ${B(fixed)} ÷ Contribution Margin ${(cm*100).toFixed(1)}% = BEP ${B(bepRev)}`;
+}
+
+/* ── Cost Structure Pie ── */
+function renderPie(cogs,labor,rent,util,mkt,central,gpDel,other,netProfit,rev){
+  const parts=[
+    {name:"COGS",amount:cogs,color:"#d4a843"},
+    {name:"Labor",amount:labor,color:"#3b82f6"},
+    {name:"Rent",amount:rent,color:"#8b5cf6"},
+    {name:"Utilities",amount:util,color:"#14b8a6"},
+    {name:"Marketing",amount:mkt,color:"#ec4899"},
+    {name:"GP Delivery",amount:gpDel,color:"#f97316"},
+    {name:"Central/Office",amount:central,color:"#64748b"},
+    {name:"Other",amount:other,color:"#94a3b8"},
+  ].filter(p=>p.amount>0);
+  if(netProfit>0) parts.push({name:"Net Profit",amount:netProfit,color:"#1a7a4a"});
+  const safe=rev||1;
+  const pie=document.getElementById("pieRing");
+  let start=0;const segs=[];
+  parts.forEach(p=>{
+    const deg=p.amount/safe*360;
+    const end=start+deg;
+    if(deg>0.5)segs.push(`${p.color} ${start}deg ${end}deg`);
+    start=end;
+  });
+  if(start<360)segs.push(`#e8e3da ${start}deg 360deg`);
+  pie.style.background=`conic-gradient(${segs.join(",")})`;
+  const totalCost=parts.reduce((a,p)=>a+p.amount,0);
+  document.getElementById("pieLegend").innerHTML=parts.map(p=>`
+    <div class="pie-row">
+      <span class="pie-dot" style="background:${p.color}"></span>
+      <span>${p.name}</span>
+      <span class="pie-pct">${(p.amount/safe*100).toFixed(1)}%</span>
+      <span class="pie-amt">${B(p.amount)}</span>
+    </div>`).join("");
+  document.getElementById("pieTotal").textContent=`Revenue ${B(rev)} | ใช้จ่ายรวม ${B(totalCost)} (${(totalCost/safe*100).toFixed(1)}%)`;
+}
+
+/* ── Health Bars ── */
+function renderHealth(cogs,labor,rent,util,mkt,central,gpDel,other,rev){
+  const safe=rev||1;
+  const items=[
+    {name:"COGS",amount:cogs,min:30,max:35,color:"#d4a843"},
+    {name:"Labor",amount:labor,min:15,max:20,color:"#3b82f6"},
+    {name:"Rent",amount:rent,min:10,max:15,color:"#8b5cf6"},
+    {name:"Utilities",amount:util,min:3,max:5,color:"#14b8a6"},
+    {name:"Marketing",amount:mkt,min:3,max:5,color:"#ec4899"},
+    {name:"Central/Office",amount:central,min:3,max:5,color:"#64748b"},
+    {name:"GP Delivery",amount:gpDel,min:20,max:25,color:"#f97316"},
+    {name:"Other",amount:other,min:5,max:10,color:"#94a3b8"},
+  ];
+  const maxPct=35; // track max 35% for display scale
+  document.getElementById("healthBars").innerHTML=items.map(item=>{
+    const actual=item.amount/safe*100;
+    const barW=Math.min(actual/maxPct*100,100);
+    const zoneL=item.min/maxPct*100;
+    const zoneW=Math.min((item.max-item.min)/maxPct*100,100-zoneL);
+    const inZone=actual>=item.min&&actual<=item.max;
+    const over=actual>item.max;
+    const barColor=inZone?"var(--green)":over?"var(--red)":"var(--accent)";
+    const statusText=!item.amount?"—":inZone?`✅ อยู่ในเกณฑ์`:over?`⚠️ สูงเกินเกณฑ์ (+${(actual-item.max).toFixed(1)}%)`:`📉 ต่ำกว่าเกณฑ์`;
+    const statusColor=!item.amount?"var(--text3)":inZone?"var(--green)":over?"var(--red)":"var(--orange)";
+    return`<div class="health-row">
+      <div class="health-top">
+        <div class="health-name">${item.name}</div>
+        <div class="health-pcts">
+          <span class="health-actual" style="color:${barColor}">${actual.toFixed(1)}%</span>
+          <span class="health-range">เกณฑ์ ${item.min}–${item.max}%</span>
+          <span class="td-mono" style="font-size:12px;color:var(--text3)">${B(item.amount)}</span>
+        </div>
+      </div>
+      <div class="health-track" style="background:var(--border)">
+        <div class="health-zone" style="left:${zoneL}%;width:${zoneW}%"></div>
+        <div class="health-bar" style="width:${barW}%;background:${barColor}"></div>
+      </div>
+      <div class="health-status" style="color:${statusColor}">${statusText}</div>
+    </div>`;
+  }).join("");
+}
+
+/* ── Channel Bars ── */
+function renderChannelBars(mSales){
+  const byChannel={};
+  mSales.forEach(s=>{
+    const n=chLabel(s.channel);
+    byChannel[n]=(byChannel[n]||0)+Number(s.net_sales||0);
+  });
+  const entries=Object.entries(byChannel).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const max=Math.max(...entries.map(e=>e[1]),1);
+  document.getElementById("channelBars").innerHTML=entries.length
+    ?entries.map(([k,v])=>`
+      <div class="trend-row">
+        <div class="trend-label">${k}</div>
+        <div class="trend-track"><div class="trend-fill" style="width:${(v/max*100).toFixed(1)}%"></div></div>
+        <div class="trend-val">${B(v)}</div>
+      </div>`).join("")
+    :'<div style="text-align:center;padding:24px;color:var(--text3)">ไม่มีข้อมูล</div>';
+}
+
+/* ── Init ── */
+(async()=>{
+  if(!(await checkLogin()))return;
+  await loadData();
+  initMonth();
+  renderAll();
+})();
+</script>
+</body>
+</html>

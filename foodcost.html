@@ -1,731 +1,956 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NRK Food Cost Engine v4</title>
+<title>NRK — Food Cost</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-* {
-  box-sizing: border-box;
+:root{
+  --bg:#f5f4f0;
+  --surface:#ffffff;
+  --surface2:#faf9f6;
+  --border:#e8e3da;
+  --border2:#d5cfc3;
+  --text:#1a1916;
+  --text2:#6b6560;
+  --text3:#9c968e;
+  --accent:#d4a843;
+  --accent-soft:#fdf3dc;
+  --accent-border:#f0d896;
+  --green:#1a7a4a;
+  --green-bg:#edf7f2;
+  --red:#c0392b;
+  --red-bg:#fdf0ee;
+  --orange:#c47a1e;
+  --orange-bg:#fef4e3;
+  --blue:#2563a8;
+  --blue-bg:#eef4fd;
+  --radius:14px;
+  --radius-sm:9px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow-md:0 2px 8px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.06);
 }
-body {
-  margin: 0;
-  font-family: Arial, "Noto Sans Thai", sans-serif;
-  background: #f6f1ea;
-  color: #222;
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.55}
+
+/* ── Layout ── */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:var(--text);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:56px;
+  box-shadow:0 2px 12px rgba(0,0,0,.15);
 }
-.wrap {
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  min-height: 100vh;
+.topbar-left{display:flex;align-items:center;gap:16px}
+.topbar-brand{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.01em}
+.topbar-brand span{color:var(--accent);font-size:13px;font-weight:500;margin-left:4px;font-family:'DM Mono',monospace}
+.topbar-status{font-size:12px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace}
+.topbar-right{display:flex;align-items:center;gap:10px}
+
+.wrap{max-width:1400px;margin:0 auto;padding:24px 20px}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 18px;border-radius:var(--radius-sm);
+  font-size:14px;font-weight:600;cursor:pointer;
+  transition:all .15s;border:1px solid transparent;
+  font-family:'DM Sans',sans-serif;white-space:nowrap;
 }
-.side {
-  background: #111;
-  color: #fff;
-  padding: 24px;
-  position: sticky;
-  top: 0;
-  height: 100vh;
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:#c49a35}
+.btn-secondary{background:var(--surface);color:var(--text2);border-color:var(--border)}
+.btn-secondary:hover{background:var(--surface2);border-color:var(--border2)}
+.btn-ghost{background:none;border-color:transparent;color:rgba(255,255,255,.55);padding:7px 12px;font-size:13px}
+.btn-ghost:hover{background:rgba(255,255,255,.08);color:#fff}
+.btn-danger{background:var(--red-bg);color:var(--red);border-color:#f5c6c0;padding:7px 12px;font-size:13px}
+.btn-danger:hover{background:#fad8d5}
+.btn-sm{padding:6px 12px;font-size:13px}
+.btn-xs{padding:4px 9px;font-size:12px}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.card-title{font-size:16px;font-weight:700;letter-spacing:-.01em;margin-bottom:16px;color:var(--text)}
+.card-sm-title{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
+
+/* ── Forms ── */
+label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:5px}
+input,select,textarea{
+  width:100%;padding:10px 13px;
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--text);
+  font-size:15px;font-family:'DM Sans',sans-serif;
+  transition:border-color .15s,box-shadow .15s;
 }
-.side h1 {
-  color: #ffd21a;
-  font-size: 22px;
-  margin: 0 0 20px;
+input:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(212,168,67,.12);
 }
-.side a {
-  display: block;
-  color: #fff;
-  text-decoration: none;
-  padding: 12px;
-  border-radius: 12px;
-  margin-top: 8px;
+input[readonly]{background:var(--bg);color:var(--text2);cursor:default}
+input::placeholder{color:var(--text3)}
+optgroup{font-size:12px;color:var(--text3);font-style:normal}
+option{font-size:15px;color:var(--text)}
+
+.fg{display:grid;gap:12px}
+.fg2{grid-template-columns:1fr 1fr}
+.fg3{grid-template-columns:1fr 1fr 1fr}
+.fg4{grid-template-columns:1fr 1fr 1fr 1fr}
+
+/* ── Tables ── */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{
+  padding:10px 12px;
+  border-bottom:2px solid var(--border);
+  text-align:left;
+  font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--text3);white-space:nowrap;background:var(--surface2);
 }
-.side a.active {
-  background: #4a4109;
+td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:14px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.td-r{text-align:right}
+.td-mono{font-family:'DM Mono',monospace;font-size:13px}
+.td-name{font-weight:600}
+
+/* ── Tags / Badges ── */
+.tag{display:inline-block;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+.tag-green{background:var(--green-bg);color:var(--green)}
+.tag-red{background:var(--red-bg);color:var(--red)}
+.tag-orange{background:var(--orange-bg);color:var(--orange)}
+.tag-blue{background:var(--blue-bg);color:var(--blue)}
+.tag-gray{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+.tag-accent{background:var(--accent-soft);color:var(--orange);border:1px solid var(--accent-border)}
+
+/* ── KPI Pills (in recipe detail) ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:16px 0}
+.kpi-pill{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:12px 14px;
 }
-.main {
-  padding: 24px;
-  overflow-x: hidden;
+.kpi-pill-label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.kpi-pill-value{font-size:20px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.kpi-pill-sub{font-size:11px;color:var(--text3);margin-top:4px;font-family:'DM Mono',monospace}
+.kpi-pill.green{border-top:3px solid var(--green)}
+.kpi-pill.red{border-top:3px solid var(--red)}
+.kpi-pill.orange{border-top:3px solid var(--orange)}
+.kpi-pill.accent{border-top:3px solid var(--accent)}
+
+/* ── Main 2-col layout ── */
+.main-layout{display:grid;grid-template-columns:420px 1fr;gap:20px;align-items:start}
+
+/* ── Left panel ── */
+.panel-left{}
+.create-section{margin-bottom:16px}
+
+/* ── Right panel / recipe detail ── */
+.panel-right{}
+.detail-header{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:16px;padding-bottom:14px;
+  border-bottom:1px solid var(--border);
 }
-.card {
-  background: #fff;
-  border-radius: 18px;
-  padding: 18px;
-  margin-bottom: 18px;
-  border: 1px solid #e5d7c7;
-  box-shadow: 0 2px 10px rgba(0,0,0,.03);
-  overflow-x: auto;
+.detail-name{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.detail-meta{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+
+/* ── Line form ── */
+.line-form{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:14px;
+  display:grid;grid-template-columns:1fr 90px 90px auto;gap:10px;
+  align-items:end;margin:14px 0;
 }
-h2, h3 {
-  margin-top: 0;
+
+/* ── Ingredient line rows ── */
+.line-row{
+  display:grid;grid-template-columns:30px 1fr 80px 90px 90px 100px 90px;
+  gap:8px;align-items:center;
+  padding:9px 12px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);margin-bottom:6px;
+  font-size:14px;background:var(--surface);
+  transition:background .12s;
 }
-.topbar {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
+.line-row:hover{background:var(--surface2)}
+.line-num{
+  width:24px;height:24px;border-radius:99px;
+  background:var(--bg);border:1px solid var(--border);
+  font-size:11px;font-weight:700;color:var(--text3);
+  display:flex;align-items:center;justify-content:center;
 }
-input, select, button {
-  padding: 10px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
-  min-width: 0;
-  max-width: 100%;
+.line-type-dot{width:8px;height:8px;border-radius:99px;display:inline-block;margin-right:4px}
+.line-type-ing{background:var(--blue)}
+.line-type-semi{background:var(--orange)}
+.line-type-menu{background:var(--green)}
+.line-head{
+  display:grid;grid-template-columns:30px 1fr 80px 90px 90px 100px 90px;
+  gap:8px;align-items:center;
+  padding:6px 12px;
+  font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--text3);border-bottom:1px solid var(--border);margin-bottom:6px;
 }
-input, select {
-  width: 100%;
+
+/* ── Cost bar visual ── */
+.cost-bar-wrap{height:8px;background:var(--border);border-radius:99px;overflow:hidden;min-width:60px}
+.cost-bar-fill{height:100%;border-radius:99px;transition:width .4s ease}
+
+/* ── Formula hint ── */
+.formula-box{
+  background:var(--accent-soft);border:1px solid var(--accent-border);
+  border-radius:var(--radius-sm);padding:12px 14px;
+  font-size:13px;color:var(--orange);margin:10px 0;
+  font-family:'DM Mono',monospace;
 }
-button {
-  cursor: pointer;
-  font-weight: 700;
-  white-space: nowrap;
+
+/* ── Search bar ── */
+.search-row{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.search-row input{max-width:240px}
+.search-row select{max-width:150px}
+
+/* ── Divider ── */
+.divider{height:1px;background:var(--border);margin:16px 0}
+
+/* ── Help text ── */
+.help{font-size:13px;color:var(--text3);line-height:1.6}
+
+/* ── Empty ── */
+.empty{text-align:center;padding:40px;color:var(--text3);font-size:15px}
+
+/* ── Save toast ── */
+.toast{
+  position:fixed;bottom:20px;right:20px;
+  background:var(--green);color:#fff;
+  padding:11px 18px;border-radius:10px;
+  font-weight:600;font-size:14px;z-index:9999;
+  opacity:0;transition:all .25s;box-shadow:var(--shadow-md);
+  pointer-events:none;
 }
-button.primary {
-  background: #d9c400;
-  border: 0;
+.toast.show{opacity:1}
+
+/* ── Responsive ── */
+@media(max-width:1100px){.main-layout{grid-template-columns:1fr}}
+@media(max-width:700px){
+  .line-form{grid-template-columns:1fr 1fr}
+  .line-row{grid-template-columns:28px 1fr 80px 80px}
+  .line-head{grid-template-columns:28px 1fr 80px 80px}
+  .fg2,.fg3,.fg4{grid-template-columns:1fr 1fr}
 }
-button.danger {
-  background: #fee2e2;
-  color: #991b1b;
-}
-button.secondary {
-  background: #eee;
-}
-.grid2 {
-  display: grid;
-  grid-template-columns: minmax(650px, 1.1fr) minmax(440px, .9fr);
-  gap: 18px;
-  align-items: start;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 1080px;
-}
-th, td {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  white-space: nowrap;
-  text-align: left;
-  vertical-align: top;
-}
-th:nth-child(n+3), td:nth-child(n+3) {
-  text-align: right;
-}
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-  gap: 10px;
-  margin: 12px 0;
-}
-.kpi {
-  background: #fff8df;
-  border: 1px solid #e6d8c8;
-  border-radius: 14px;
-  padding: 12px;
-}
-.kpi small {
-  display: block;
-  opacity: .72;
-  font-weight: 800;
-  margin-bottom: 6px;
-}
-.kpi b {
-  font-size: clamp(18px, 2.2vw, 24px);
-  display: block;
-  overflow-wrap: anywhere;
-}
-.line-form {
-  display: grid;
-  grid-template-columns: 1.5fr .55fr .55fr auto;
-  gap: 8px;
-  align-items: end;
-  margin: 12px 0;
-}
-.line {
-  display: grid;
-  grid-template-columns: 1.4fr .5fr .5fr .7fr .7fr auto;
-  gap: 8px;
-  align-items: center;
-  border-bottom: 1px solid #eee;
-  padding: 8px 0;
-}
-.line.head {
-  font-weight: 900;
-  opacity: .8;
-}
-.help {
-  font-size: 13px;
-  opacity: .72;
-  line-height: 1.45;
-}
-.status {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  background: #111;
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 14px;
-  z-index: 50;
-}
-.good {
-  color: #168a42;
-  font-weight: 900;
-}
-.mid {
-  color: #c47f00;
-  font-weight: 900;
-}
-.bad {
-  color: #b91c1c;
-  font-weight: 900;
-}
-label {
-  display: block;
-  font-size: 13px;
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-.badge {
-  display: inline-block;
-  padding: 5px 8px;
-  border-radius: 999px;
-  background: #fff8df;
-  border: 1px solid #e6d8c8;
-  margin: 3px;
-  font-size: 12px;
-}
-@media(max-width:1000px) {
-  .wrap {
-    grid-template-columns: 1fr;
-  }
-  .side {
-    position: relative;
-    height: auto;
-  }
-  .grid2, .line-form {
-    grid-template-columns: 1fr;
-  }
-  .main {
-    padding: 14px;
-  }
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .card {
-    overflow-x: auto;
-  }
+@media(max-width:500px){
+  .wrap{padding:16px 12px}
+  .line-row{grid-template-columns:1fr 80px}
 }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <aside class="side">
-    <h1>🐥 NRK Food Cost</h1>
-    <a href="index.html">Workspace</a>
-    <a href="foodcost.html" class="active">Food Cost</a>
-    <a href="reports.html">Reports</a>
-    <a href="#" onclick="logout()">Logout</a>
-  </aside>
 
-  <main class="main">
-    <div class="card">
-      <h2>Food Cost Engine v4</h2>
-      <div class="topbar">
-        <input id="searchBox" placeholder="ค้นหาเมนู / semi / brand" oninput="renderRecipes()">
-        <select id="typeFilter" onchange="renderRecipes()">
-          <option value="all">ทั้งหมด</option>
-          <option value="menu">Menu</option>
-          <option value="semi">Semi</option>
-        </select>
-        <button class="primary" onclick="loadAll()">Refresh</button>
+<!-- Topbar -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-brand">🍗 Food Cost<span>NRK ERP</span></div>
+    <div class="topbar-status" id="status">Loading…</div>
+  </div>
+  <div class="topbar-right">
+    <a href="index.html" class="btn btn-ghost">← Dashboard</a>
+    <button class="btn btn-ghost" onclick="logout()">ออกจากระบบ</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="main-layout">
+
+    <!-- ══ LEFT PANEL ══ -->
+    <div class="panel-left">
+
+      <!-- Create / Edit Recipe -->
+      <div class="card create-section">
+        <div class="card-title" id="formTitle">➕ สร้าง Recipe ใหม่</div>
+        <div class="fg fg2" style="margin-bottom:12px">
+          <div>
+            <label>ประเภท</label>
+            <select id="newType" onchange="onTypeChange()">
+              <option value="menu">Menu (ขายลูกค้า)</option>
+              <option value="semi">Semi-Finished (ส่วนผสมกลาง)</option>
+            </select>
+          </div>
+          <div>
+            <label>แบรนด์</label>
+            <select id="newBrand">
+              <option value="">— เลือกแบรนด์ —</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <label>ชื่อเมนู / Semi</label>
+          <input id="newName" placeholder="เช่น ปีกไก่ทอดรสออริจินัล, ซอสบัฟฟาโล">
+        </div>
+        <div class="fg fg3" style="margin-bottom:12px">
+          <div>
+            <label>Output จำนวน</label>
+            <input type="number" id="newYield" value="1" min="0.001" step="0.001">
+          </div>
+          <div>
+            <label>Output หน่วย</label>
+            <input id="newUnit" list="unitList" placeholder="Portion / ชิ้น / ml">
+          </div>
+          <div>
+            <label>GP Delivery %</label>
+            <input type="number" id="newGP" value="25" step="0.1" oninput="previewDelivery()">
+          </div>
+        </div>
+        <div id="priceSection">
+          <div class="fg fg2" style="margin-bottom:8px">
+            <div>
+              <label>ราคาขายหน้าร้าน (รวม VAT)</label>
+              <input type="number" id="newPrice" value="0" step="1" oninput="previewDelivery()">
+            </div>
+            <div>
+              <label>ราคา Delivery (คำนวณ)</label>
+              <input id="newDeliveryPreview" readonly>
+            </div>
+          </div>
+          <div class="formula-box" id="formulaBox">— ใส่ราคาขายก่อน</div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="createRecipe()">✓ บันทึก Recipe</button>
+          <button class="btn btn-secondary" onclick="clearForm()">ล้างฟอร์ม</button>
+        </div>
       </div>
-      <p class="help">สูตร Delivery รวม VAT on GP แล้ว: Delivery รวม VAT = ราคาหน้าร้านรวม VAT ÷ (1 - GP% × 1.07)</p>
+
+      <!-- Recipe List -->
+      <div class="card">
+        <div class="card-title">รายการทั้งหมด</div>
+        <div class="search-row">
+          <input id="searchBox" placeholder="ค้นหาชื่อเมนู..." oninput="renderList()">
+          <select id="typeFilter" onchange="renderList()">
+            <option value="all">ทุกประเภท</option>
+            <option value="menu">Menu</option>
+            <option value="semi">Semi</option>
+          </select>
+          <select id="brandFilter" onchange="renderList()">
+            <option value="all">ทุกแบรนด์</option>
+          </select>
+        </div>
+        <div id="recipeList"></div>
+      </div>
     </div>
 
-    <div class="grid2">
-      <div class="card">
-        <h3>Recipes / Semi</h3>
+    <!-- ══ RIGHT PANEL ══ -->
+    <div class="panel-right">
+      <div class="card" id="detailCard">
+        <div class="empty" id="detailEmpty">
+          👈 เลือก Recipe จากรายการซ้าย หรือสร้างใหม่
+        </div>
+        <div id="detailContent" style="display:none"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast" class="toast">บันทึกแล้ว ✓</div>
+<datalist id="unitList">
+  <option value="Portion"><option value="ชิ้น"><option value="ถ้วย">
+  <option value="ml"><option value="g"><option value="kg"><option value="L">
+  <option value="ถุง"><option value="แพค"><option value="กรัม">
+</datalist>
+
+<script>
+const SUPABASE_URL="https://mjbxskhfvaxxcopzesic.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qYnhza2hmdmF4eGNvcHplc2ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjg4NTIsImV4cCI6MjA5MDk0NDg1Mn0.G2W728EIN6qfALpW06YCdSkVKKnAO1bULMGIlei-Z2U";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+let recipes=[],recipeLines=[],ingredients=[],brands=[];
+let selectedId=null;
+let syncingRecipeCosts=false;
+
+/* ── Helpers ── */
+const B=n=>"฿"+Number(n||0).toLocaleString("th-TH",{maximumFractionDigits:2});
+const typeOf=r=>String(r.type||"").toLowerCase().trim();
+const isSemi=r=>typeOf(r)==="semi";
+const uid=p=>p+"_"+Date.now()+"_"+Math.random().toString(16).slice(2);
+const normName=s=>String(s||"")
+  .replace(/^\s*\[(วัตถุดิบ|ingredient|semi|recipe|menu)\]\s*/i,"")
+  .replace(/\s+/g," ")
+  .trim();
+
+/* Delivery price: GP คิดจากราคา รวม VAT ด้วย
+   Formula: deliveryPrice = storePrice / (1 - GP% * 1.07/100)
+   เพราะ Grab หัก GP จาก delivery price รวม VAT */
+function calcDelivery(storePrice,gp){
+  const eff=(Number(gp||0)/100)*1.07;
+  if(eff>=1)return 0;
+  return Number(storePrice||0)/(1-eff);
+}
+
+function fcClass(fc){
+  if(fc>50)return "tag-red";
+  if(fc>35)return "tag-orange";
+  return "tag-green";
+}
+function profitColor(p){
+  if(p<0)return "var(--red)";
+  if(p<50)return "var(--orange)";
+  return "var(--green)";
+}
+function costBarColor(fc){
+  if(fc>50)return "var(--red)";
+  if(fc>35)return "var(--orange)";
+  return "var(--green)";
+}
+
+/* ── Auth ── */
+async function checkLogin(){
+  const r=await db.auth.getSession();
+  if(!r.data.session){location.href="login.html?next=foodcost.html";return false;}
+  return true;
+}
+async function logout(){await db.auth.signOut();location.href="login.html"}
+
+/* ── Load ── */
+async function loadAll(){
+  document.getElementById("status").textContent="Loading…";
+  const [rb,ri,rr,rl]=await Promise.all([
+    db.from("brands").select("*"),
+    db.from("ingredients").select("*"),
+    db.from("recipes").select("*"),
+    db.from("recipe_lines").select("*")
+  ]);
+  brands=rb.data||[];
+  ingredients=ri.data||[];
+  recipes=rr.data||[];
+  recipeLines=rl.data||[];
+  await syncAllRecipeCosts();
+  document.getElementById("status").textContent="Loaded ✓";
+  populateBrandSelects();
+  renderList();
+  if(selectedId) showRecipe(selectedId);
+}
+
+async function syncAllRecipeCosts(){
+  if(syncingRecipeCosts)return;
+  syncingRecipeCosts=true;
+  try{
+    const updates=[];
+    recipes.forEach(r=>{
+      const cost=recipeCost(r.id);
+      if(Math.abs(cost-Number(r.cost_per_output||0))>0.0001){
+        r.cost_per_output=cost;
+        updates.push(db.from("recipes").update({cost_per_output:cost}).eq("id",r.id));
+      }
+    });
+    if(updates.length)await Promise.all(updates);
+  }finally{
+    syncingRecipeCosts=false;
+  }
+}
+
+function populateBrandSelects(){
+  const opts='<option value="">— ทุกแบรนด์ —</option>'+brands.map(b=>`<option value="${b.id}">${b.id} · ${b.name}</option>`).join("");
+  document.getElementById("newBrand").innerHTML=opts.replace("— ทุกแบรนด์ —","— เลือกแบรนด์ —");
+  document.getElementById("brandFilter").innerHTML='<option value="all">ทุกแบรนด์</option>'+brands.map(b=>`<option value="${b.id}">${b.id} · ${b.name}</option>`).join("");
+}
+
+/* ── Cost Calc ── */
+function getIngCost(ing){
+  return Number(ing.cost_per_use||ing.unit_use_cost||ing.price_per_use||ing.last_cost||0);
+}
+
+function sameRef(row,id,name){
+  return String(row?.id||"")===String(id||"")
+    || (!!name&&normName(row?.name)===normName(name))
+    || (!!id&&normName(row?.name)===normName(id));
+}
+
+function findIngredientRef(id,name){
+  return ingredients.find(x=>sameRef(x,id,name));
+}
+
+function findRecipeRef(id,name){
+  return recipes.find(x=>sameRef(x,id,name));
+}
+
+function lineUnitCost(line,stack=[]){
+  if(!line)return 0;
+  const sourceType=String(line.source_type||"").toLowerCase().trim();
+  if(sourceType==="ingredient"){
+    const ing=findIngredientRef(line.source_id,line.source_name);
+    return ing?getIngCost(ing):Number(line.unit_cost||0);
+  }
+  if(sourceType==="recipe"||sourceType==="semi"||sourceType==="menu"){
+    const r=findRecipeRef(line.source_id,line.source_name);
+    return r?recipeCost(r.id,stack):Number(line.unit_cost||0);
+  }
+  const ing=findIngredientRef(line.source_id,line.source_name);
+  if(ing)return getIngCost(ing);
+  const r=findRecipeRef(line.source_id,line.source_name);
+  if(r)return recipeCost(r.id,stack);
+  return Number(line.unit_cost||0);
+}
+
+function lineCost(line,stack=[]){
+  return Number(line?.quantity||0)*lineUnitCost(line,stack);
+}
+
+function recipeCost(id,stack=[]){
+  if(stack.map(String).includes(String(id))){
+    console.warn("Circular recipe reference blocked",stack.concat([id]));
+    return 0;
+  }
+  const ls=recipeLines.filter(x=>String(x.recipe_id)===String(id));
+  if(!ls.length){const r=recipes.find(x=>String(x.id)===String(id));return Number(r?.cost_per_output||0)}
+  const r=recipes.find(x=>String(x.id)===String(id));
+  const yieldQty=Number(r?.yield_qty||1);
+  const nextStack=stack.concat([id]);
+  const total=ls.reduce((a,l)=>a+lineCost(l,nextStack),0);
+  return total/yieldQty;
+}
+
+function debugRecipeCost(id,stack=[]){
+  const r=findRecipeRef(id,"");
+  if(!r){console.warn("debugRecipeCost: recipe not found",id);return null;}
+  if(stack.map(String).includes(String(r.id))){
+    console.warn("debugRecipeCost: circular reference",stack.concat([r.id]));
+    return {id:r.id,name:r.name,circular:true,total:0,costPerOutput:0,lines:[]};
+  }
+  const ls=recipeLines.filter(x=>String(x.recipe_id)===String(r.id));
+  const nextStack=stack.concat([r.id]);
+  const linesDebug=ls.map(l=>{
+    const ing=findIngredientRef(l.source_id,l.source_name);
+    const rec=findRecipeRef(l.source_id,l.source_name);
+    const resolvedType=ing?"ingredient":rec?"recipe":"fallback";
+    const resolvedName=ing?ing.name:rec?rec.name:(l.source_name||"");
+    const unitCost=resolvedType==="ingredient"?getIngCost(ing):resolvedType==="recipe"?recipeCost(rec.id,nextStack):Number(l.unit_cost||0);
+    return {
+      line_id:l.id,
+      source_type:l.source_type,
+      source_id:l.source_id,
+      source_name:l.source_name,
+      resolved_type:resolvedType,
+      resolved_name:resolvedName,
+      qty:Number(l.quantity||0),
+      unit_cost:unitCost,
+      line_cost:Number(l.quantity||0)*unitCost,
+      saved_unit_cost:Number(l.unit_cost||0),
+      saved_line_cost:Number(l.line_cost||0)
+    };
+  });
+  const total=linesDebug.reduce((a,l)=>a+l.line_cost,0);
+  const out={id:r.id,name:r.name,type:r.type,yield_qty:Number(r.yield_qty||1),saved_cost_per_output:Number(r.cost_per_output||0),total,cost_per_output:total/(Number(r.yield_qty||1)),lines:linesDebug};
+  console.table(linesDebug);
+  console.log("Recipe cost debug",out);
+  return out;
+}
+window.debugRecipeCost=debugRecipeCost;
+
+function debugRecipeHTML(id){
+  const d=debugRecipeCost(id);
+  if(!d)return "";
+  const bad=d.lines.filter(l=>l.resolved_type==="fallback").length;
+  return `<div class="divider"></div>
+    <details ${bad?"open":""}>
+      <summary style="cursor:pointer;font-weight:700;color:${bad?"var(--red)":"var(--text2)"}">
+        Debug Cost ${bad?`- พบ ${bad} รายการที่หา source ไม่เจอ`:"- source OK"}
+      </summary>
+      <div class="tbl-wrap" style="margin-top:10px">
         <table>
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Cost</th>
-              <th>Store Price</th>
-              <th>Profit</th>
-              <th>FC%</th>
-              <th>GP%</th>
-              <th>Delivery Price</th>
-              <th></th>
+              <th>Line</th><th>Saved Type</th><th>Saved Source</th><th>Resolved</th>
+              <th class="td-r">Qty</th><th class="td-r">Unit Cost ใช้คำนวณ</th>
+              <th class="td-r">Line Cost ใช้คำนวณ</th><th class="td-r">Saved Line Cost</th>
             </tr>
           </thead>
-          <tbody id="recipeTable"></tbody>
+          <tbody>
+            ${d.lines.map(l=>`<tr>
+              <td>${l.line_id||""}</td>
+              <td>${l.source_type||""}</td>
+              <td>${l.source_name||l.source_id||""}</td>
+              <td style="font-weight:700;color:${l.resolved_type==="fallback"?"var(--red)":"var(--green)"}">${l.resolved_type}: ${l.resolved_name||""}</td>
+              <td class="td-r td-mono">${Number(l.qty||0).toLocaleString()}</td>
+              <td class="td-r td-mono">${B(l.unit_cost)}</td>
+              <td class="td-r td-mono">${B(l.line_cost)}</td>
+              <td class="td-r td-mono">${B(l.saved_line_cost)}</td>
+            </tr>`).join("")}
+          </tbody>
         </table>
       </div>
-
-      <div class="card">
-        <div id="recipeDetail">เลือกเมนูเพื่อดูรายละเอียด</div>
+      <div class="help" style="margin-top:8px">
+        ถ้า Resolved เป็น fallback แปลว่าระบบหา ingredient/semi ต้นทางไม่เจอ จึงต้องใช้ต้นทุนเก่าที่บันทึกใน line
       </div>
-    </div>
-  </main>
-</div>
-
-<div class="status" id="status">Ready</div>
-
-<script>
-const SUPABASE_URL = 'https://mjbxskhfvaxxcopzesic.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qYnhza2hmdmF4eGNvcHplc2ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjg4NTIsImV4cCI6MjA5MDk0NDg1Mn0.G2W728EIN6qfALpW06YCdSkVKKnAO1bULMGIlei-Z2U';
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-const OWNER_EMAILS = ["littlewingsspicy@gmail.com"];
-
-let recipes = [];
-let recipeLines = [];
-let ingredients = [];
-let selectedRecipeId = null;
-
-function setStatus(text) {
-  document.getElementById("status").textContent = text;
+    </details>`;
 }
 
-function money(n) {
-  return "฿" + Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
-}
-
-function typeOf(r) {
-  return String(r.type || "").toLowerCase().trim();
-}
-
-function isSemi(r) {
-  return typeOf(r) === "semi";
-}
-
-async function checkLogin() {
-  const result = await db.auth.getSession();
-  const user = result.data && result.data.session && result.data.session.user;
-
-  if (!user) {
-    location.href = "login.html?next=foodcost.html";
-    return false;
+function sourceCalc(sourceType,sourceId,qty){
+  qty=Number(qty||0);
+  if(sourceType==="ingredient"){
+    const ing=findIngredientRef(sourceId,"");
+    const unitCost=ing?getIngCost(ing):0;
+    return{name:ing?ing.name:"",unit:ing?(ing.usage_unit||ing.unit||""):""  ,unitCost,lineCost:unitCost*qty};
   }
-
-  if (!OWNER_EMAILS.includes(String(user.email || "").toLowerCase())) {
-    alert("Owner only");
-    location.href = "index.html";
-    return false;
-  }
-
-  return true;
+  const r=findRecipeRef(sourceId,"");
+  const unitCost=r?recipeCost(r.id):0;
+  return{name:r?r.name:"",unit:r?(r.output_unit||"portion"):"portion",unitCost,lineCost:unitCost*qty};
 }
 
-async function logout() {
-  await db.auth.signOut();
-  location.href = "login.html";
+/* ── Form Preview ── */
+function onTypeChange(){
+  const isSemiForm=document.getElementById("newType").value==="semi";
+  document.getElementById("priceSection").style.display=isSemiForm?"none":"block";
 }
 
-function calcDeliveryPrice(storePriceVat, gpPercent) {
-  const effectiveGp = (Number(gpPercent || 0) / 100) * 1.07;
-  if (effectiveGp >= 1) return 0;
-  return Number(storePriceVat || 0) / (1 - effectiveGp);
+function previewDelivery(){
+  const price=Number(document.getElementById("newPrice")?.value||0);
+  const gp=Number(document.getElementById("newGP")?.value||0);
+  if(!price){document.getElementById("newDeliveryPreview").value="";document.getElementById("formulaBox").textContent="— ใส่ราคาขายก่อน";return;}
+  const del=calcDelivery(price,gp);
+  const eff=(gp/100)*1.07*100;
+  document.getElementById("newDeliveryPreview").value=del.toFixed(2);
+  document.getElementById("formulaBox").textContent=
+    `${B(price)} ÷ (1 − ${gp}% × 1.07) = ${B(del)}  |  Effective GP = ${eff.toFixed(2)}%`;
 }
 
-function fcClass(fc) {
-  if (fc > 50) return "bad";
-  if (fc > 35) return "mid";
-  return "good";
-}
-
-function profitClass(p) {
-  if (p < 25) return "bad";
-  if (p < 40) return "mid";
-  return "good";
-}
-
-async function loadAll() {
-  if (!(await checkLogin())) return;
-
-  setStatus("Loading...");
-
-  const recipeResult = await db.from("recipes").select("*").limit(10000);
-  const lineResult = await db.from("recipe_lines").select("*").limit(20000);
-  const ingredientResult = await db.from("ingredients").select("*").limit(10000);
-
-  if (recipeResult.error || lineResult.error || ingredientResult.error) {
-    console.error(recipeResult.error || lineResult.error || ingredientResult.error);
-    alert((recipeResult.error || lineResult.error || ingredientResult.error).message);
-    setStatus("Load error");
-    return;
-  }
-
-  recipes = recipeResult.data || [];
-  recipeLines = lineResult.data || [];
-  ingredients = ingredientResult.data || [];
-
-  renderRecipes();
-  if (selectedRecipeId) showRecipe(selectedRecipeId);
-
-  setStatus("Loaded ✓");
-}
-
-function getIngredientUnitCost(ing) {
-  return Number(
-    ing.cost_per_use ||
-    ing.unit_use_cost ||
-    ing.price_per_use ||
-    ing.last_cost ||
-    ing.cost ||
-    0
-  );
-}
-
-function recipeCost(recipeId, visited) {
-  visited = visited || new Set();
-
-  if (visited.has(String(recipeId))) return 0;
-  visited.add(String(recipeId));
-
-  const lines = recipeLines.filter(x => String(x.recipe_id) === String(recipeId));
-
-  if (!lines.length) {
-    const r = recipes.find(x => String(x.id) === String(recipeId));
-    return Number((r && r.cost_per_output) || 0);
-  }
-
-  return lines.reduce((sum, line) => {
-    const sourceType = String(line.source_type || "").toLowerCase();
-
-    if (sourceType === "recipe" || sourceType === "semi" || sourceType === "menu") {
-      return sum + recipeCost(line.source_id, new Set(visited)) * Number(line.quantity || 1);
-    }
-
-    return sum + Number(line.line_cost || 0);
-  }, 0);
-}
-
-function sourceCalc(sourceType, sourceId, qty) {
-  qty = Number(qty || 0);
-
-  if (sourceType === "ingredient") {
-    const ing = ingredients.find(x => String(x.id) === String(sourceId));
-    const unitCost = ing ? getIngredientUnitCost(ing) : 0;
-    return {
-      name: ing ? ing.name : "",
-      unit: ing ? (ing.usage_unit || ing.unit_use || ing.unit || "") : "",
-      unitCost,
-      lineCost: unitCost * qty
-    };
-  }
-
-  const r = recipes.find(x => String(x.id) === String(sourceId));
-  const unitCost = r ? recipeCost(r.id) : 0;
-
-  return {
-    name: r ? r.name : "",
-    unit: r ? (r.output_unit || "portion") : "portion",
-    unitCost,
-    lineCost: unitCost * qty
-  };
-}
-
-function renderRecipes() {
-  const q = String(document.getElementById("searchBox").value || "").toLowerCase();
-  const typeFilter = document.getElementById("typeFilter").value;
-  const tbody = document.getElementById("recipeTable");
-
-  const filtered = recipes.filter(r => {
-    const text = [r.name, r.type, r.brand_id].join(" ").toLowerCase();
-    const typeOk = typeFilter === "all" || typeOf(r) === typeFilter;
-    return text.includes(q) && typeOk;
+/* ── Source Options ── */
+function sourceOptionsHTML(currentId){
+  const sortTH=(a,b)=>String(a.name||"").localeCompare(String(b.name||""),"th");
+  let h=`<option value="">— เลือกวัตถุดิบ / Semi / Menu —</option>`;
+  h+=`<optgroup label="🧂 Ingredients">`;
+  [...ingredients].sort(sortTH).forEach(i=>{
+    h+=`<option value="ingredient|${i.id}">${i.name} (${B(getIngCost(i))}/${i.usage_unit||"unit"})</option>`;
   });
+  h+=`</optgroup>`;
+  h+=`<optgroup label="🔶 Semi-Finished">`;
+  recipes.filter(r=>isSemi(r)&&String(r.id)!==String(currentId)).sort(sortTH).forEach(r=>{
+    h+=`<option value="recipe|${r.id}">${r.name} (${B(recipeCost(r.id))}/${r.output_unit||"unit"})</option>`;
+  });
+  h+=`</optgroup>`;
+  h+=`<optgroup label="🍽️ Menu">`;
+  recipes.filter(r=>!isSemi(r)&&String(r.id)!==String(currentId)).sort(sortTH).forEach(r=>{
+    h+=`<option value="recipe|${r.id}">${r.name} (${B(recipeCost(r.id))}/${r.output_unit||"unit"})</option>`;
+  });
+  h+=`</optgroup>`;
+  return h;
+}
 
-  tbody.innerHTML = filtered.map(r => {
-    const cost = recipeCost(r.id);
-    const price = Number(r.base_price || 0);
-    const profit = price - cost;
-    const fc = price ? cost / price * 100 : 0;
-    const gp = Number(r.delivery_gp_percent || 0);
-    const delivery = calcDeliveryPrice(price, gp);
-    const semi = isSemi(r);
+/* ── Create Recipe ── */
+async function createRecipe(){
+  const name=document.getElementById("newName").value.trim();
+  const type=document.getElementById("newType").value;
+  const brand=document.getElementById("newBrand").value;
+  const unit=document.getElementById("newUnit").value.trim()||"Portion";
+  const yieldQty=Number(document.getElementById("newYield").value||1);
+  const gp=Number(document.getElementById("newGP").value||0);
+  const isSemiForm=type==="semi";
+  const price=isSemiForm?0:Number(document.getElementById("newPrice").value||0);
+  const del=isSemiForm?0:calcDelivery(price,gp);
+  if(!name)return alert("กรุณาใส่ชื่อเมนู");
+  const row={id:uid("rec"),name,type,brand_id:brand||null,output_unit:unit,yield_qty:yieldQty,
+    cost_per_output:0,base_price:price,vat_price:price?price/1.07:0,
+    gp_price:del,final_price:del,delivery_gp_percent:gp,is_active:true};
+  const res=await db.from("recipes").insert(row).select().single();
+  if(res.error)return alert(res.error.message);
+  selectedId=res.data.id;
+  clearForm();
+  await loadAll();
+  showRecipe(selectedId);
+  toast();
+}
 
-    return `
-      <tr>
-        <td>${r.name || ""}</td>
-        <td>${r.type || ""}</td>
-        <td>${money(cost)}</td>
-        <td>${semi ? "—" : money(price)}</td>
-        <td>${semi ? "—" : `<span class="${profitClass(profit)}">${money(profit)}</span>`}</td>
-        <td>${semi ? "—" : `<span class="${fcClass(fc)}">${fc.toFixed(1)}%</span>`}</td>
-        <td>${semi ? "—" : gp.toFixed(1) + "%"}</td>
-        <td>${semi ? "—" : money(delivery)}</td>
-        <td style="text-align:left">
-          <button onclick="showRecipe('${r.id}')">ดู</button>
-          ${semi ? "" : `<button class="secondary" onclick="editPrice('${r.id}')">แก้ราคา</button>`}
-        </td>
-      </tr>
-    `;
+function clearForm(){
+  ["newName","newPrice","newDeliveryPreview"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=""});
+  document.getElementById("newType").value="menu";
+  document.getElementById("newBrand").value="";
+  document.getElementById("newYield").value=1;
+  document.getElementById("newGP").value=25;
+  document.getElementById("formulaBox").textContent="— ใส่ราคาขายก่อน";
+  onTypeChange();
+}
+
+/* ── Recipe List ── */
+function renderList(){
+  const q=String(document.getElementById("searchBox")?.value||"").toLowerCase();
+  const tf=document.getElementById("typeFilter")?.value||"all";
+  const bf=document.getElementById("brandFilter")?.value||"all";
+  const list=recipes.filter(r=>{
+    const text=[r.name,r.type,r.brand_id].join(" ").toLowerCase();
+    return text.includes(q)&&(tf==="all"||typeOf(r)===tf)&&(bf==="all"||String(r.brand_id||"")=== bf);
+  });
+  const el=document.getElementById("recipeList");
+  if(!list.length){el.innerHTML='<div class="empty" style="padding:24px">ไม่พบ Recipe</div>';return;}
+  el.innerHTML=list.map(r=>{
+    const cost=recipeCost(r.id);
+    const recipeTotalCost=recipeLines
+      .filter(l=>String(l.recipe_id)===String(r.id))
+      .reduce((a,l)=>a+lineCost(l,[r.id]),0);
+    const displayCost=isSemi(r)?recipeTotalCost:cost;
+    const price=Number(r.base_price||0);
+    const profit=price-cost;
+    const fc=price?cost/price*100:0;
+    const isSelected=String(r.id)===String(selectedId);
+    const linesCount=recipeLines.filter(l=>String(l.recipe_id)===String(r.id)).length;
+    return`<div onclick="showRecipe('${r.id}')" style="
+      display:flex;justify-content:space-between;align-items:center;
+      padding:12px 14px;border-radius:var(--radius-sm);cursor:pointer;
+      border:1px solid ${isSelected?"var(--accent)":"var(--border)"};
+      background:${isSelected?"var(--accent-soft)":"var(--surface)"};
+      margin-bottom:6px;transition:all .15s;
+    ">
+      <div>
+        <div style="font-weight:600;font-size:15px;margin-bottom:3px">${r.name||""}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="tag ${isSemi(r)?"tag-orange":"tag-blue"}">${r.type||""}</span>
+          ${r.brand_id?`<span class="tag tag-gray">${r.brand_id}</span>`:""}
+          <span class="tag tag-gray">${linesCount} ส่วนผสม</span>
+        </div>
+      </div>
+      <div style="text-align:right;font-family:'DM Mono',monospace;font-size:13px">
+        <div style="font-weight:700">${B(displayCost)}</div>
+        ${!isSemi(r)&&price?`<div class="${fcClass(fc)} tag" style="margin-top:3px">FC ${fc.toFixed(1)}%</div>`:""}
+      </div>
+    </div>`;
   }).join("");
 }
 
-function sourceOptions(currentRecipeId) {
-  let html = "";
+/* ── Show Recipe Detail ── */
+function showRecipe(id){
+  selectedId=id;
+  renderList();
+  const r=recipes.find(x=>String(x.id)===String(id));
+  if(!r){document.getElementById("detailEmpty").style.display="flex";document.getElementById("detailContent").style.display="none";return;}
+  document.getElementById("detailEmpty").style.display="none";
+  document.getElementById("detailContent").style.display="block";
+  const ls=recipeLines.filter(x=>String(x.recipe_id)===String(id));
+  const cost=recipeCost(id);
+  const price=Number(r.base_price||0);
+  const gp=Number(r.delivery_gp_percent||0);
+  const del=calcDelivery(price,gp);
+  const profit=price-cost;
+  const fc=price?cost/price*100:0;
+  const fcDel=del?cost/del*100:0;
+  const totalCost=ls.reduce((a,l)=>a+lineCost(l,[id]),0);
+  const mainCostValue=isSemi(r)?totalCost:cost;
+  const mainCostSub=isSemi(r)?`Cost/output ${B(cost)} / ${r.output_unit||"unit"}`:`${r.yield_qty||1} ${r.output_unit||"unit"}`;
+  let h=`
+    <div class="detail-header">
+      <div>
+        <div class="detail-name">${r.name||""}</div>
+        <div class="detail-meta">
+          <span class="tag ${isSemi(r)?"tag-orange":"tag-blue"}">${r.type||""}</span>
+          ${r.brand_id?`<span class="tag tag-gray">${r.brand_id}</span>`:""}
+          <span class="tag tag-gray">Output: ${r.yield_qty||1} ${r.output_unit||"unit"}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" onclick="editRecipe('${id}')">✏️ แก้ไข</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRecipe('${id}')">ลบ</button>
+      </div>
+    </div>`;
 
-  html += `<optgroup label="Ingredients">`;
-  ingredients.slice().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"th")).forEach(i => {
-    html += `<option value="ingredient|${i.id}">${i.name || ""}</option>`;
-  });
-  html += `</optgroup>`;
+  // KPI pills
+  h+=`<div class="kpi-row">
+    <div class="kpi-pill accent">
+      <div class="kpi-pill-label">ต้นทุน/Output</div>
+      <div class="kpi-pill-value">${B(mainCostValue)}</div>
+      <div class="kpi-pill-sub">${mainCostSub}</div>
+    </div>`;
+  if(!isSemi(r)){
+    h+=`<div class="kpi-pill ${profit>=0?"green":"red"}">
+      <div class="kpi-pill-label">ราคาหน้าร้าน</div>
+      <div class="kpi-pill-value">${B(price)}</div>
+      <div class="kpi-pill-sub">รวม VAT • กำไร ${B(profit)}</div>
+    </div>
+    <div class="kpi-pill ${fc<=35?"green":fc<=50?"orange":"red"}">
+      <div class="kpi-pill-label">Food Cost %</div>
+      <div class="kpi-pill-value">${fc.toFixed(1)}%</div>
+      <div class="kpi-pill-sub">เป้าหมาย ≤ 35%</div>
+    </div>
+    <div class="kpi-pill orange">
+      <div class="kpi-pill-label">ราคา Delivery</div>
+      <div class="kpi-pill-value">${B(del)}</div>
+      <div class="kpi-pill-sub">GP ${gp}% · FC ${fcDel.toFixed(1)}%</div>
+    </div>`;
+  }
+  h+=`</div>`;
 
-  html += `<optgroup label="Semi">`;
-  recipes.filter(r => typeOf(r) === "semi" && String(r.id) !== String(currentRecipeId)).forEach(r => {
-    html += `<option value="recipe|${r.id}">${r.name || ""}</option>`;
-  });
-  html += `</optgroup>`;
+  // Formula box
+  if(!isSemi(r)&&price){
+    const eff=(gp/100)*1.07*100;
+    h+=`<div class="formula-box">${B(price)} ÷ (1 − ${gp}% × 1.07) = ${B(del)}  |  Effective GP ${eff.toFixed(2)}%</div>`;
+  }
 
-  html += `<optgroup label="Menu">`;
-  recipes.filter(r => typeOf(r) !== "semi" && String(r.id) !== String(currentRecipeId)).forEach(r => {
-    html += `<option value="recipe|${r.id}">${r.name || ""}</option>`;
-  });
-  html += `</optgroup>`;
+  h+=`<div class="divider"></div>`;
 
-  return html;
+  // Add ingredient form
+  h+=`<div class="card-sm-title">เพิ่มส่วนผสม</div>
+  <div class="line-form">
+    <div>
+      <label>เลือกจาก Ingredient / Semi / Menu</label>
+      <select id="newSrc" onchange="onSrcChange('${id}')">${sourceOptionsHTML(id)}</select>
+    </div>
+    <div><label>จำนวน</label><input type="number" id="newQty" step="0.001" value="1" oninput="previewLineCost()"></div>
+    <div><label>หน่วย</label><input id="newLineUnit" list="unitList" placeholder="หน่วย"></div>
+    <button class="btn btn-primary" onclick="addLine('${id}')">+ เพิ่ม</button>
+  </div>
+  <div style="display:flex;gap:16px;font-size:13px;color:var(--text2);margin-bottom:10px;flex-wrap:wrap">
+    <span>Unit Cost: <b id="previewUC">฿0</b></span>
+    <span>Line Cost: <b id="previewLC">฿0</b></span>
+  </div>`;
+
+  // Lines header + rows
+  if(ls.length){
+    h+=`<div class="line-head">
+      <div>#</div><div>รายการ</div><div>จำนวน</div>
+      <div class="td-r">Cost/unit</div><div class="td-r">Line Cost</div>
+      <div>% ต้นทุน</div><div></div>
+    </div>`;
+    ls.forEach((l,i)=>{
+      const actualUnitCost=lineUnitCost(l,[id]);
+      const actualLineCost=lineCost(l,[id]);
+      const pct=totalCost?actualLineCost/totalCost*100:0;
+      const sourceRecipe=recipes.find(x=>String(x.id)===String(l.source_id));
+      const dotClass=l.source_type==="ingredient"?"line-type-ing":sourceRecipe&&isSemi(sourceRecipe)?"line-type-semi":"line-type-menu";
+      h+=`<div class="line-row">
+        <div class="line-num">${i+1}</div>
+        <div><span class="line-type-dot ${dotClass}"></span>${l.source_name||""}<div style="font-size:11px;color:var(--text3)">${l.source_type||""} · ${l.usage_unit||""}</div></div>
+        <div style="font-family:'DM Mono',monospace">${Number(l.quantity||0).toLocaleString()}</div>
+        <div class="td-r td-mono">${B(actualUnitCost)}</div>
+        <div class="td-r td-mono" style="font-weight:700">${B(actualLineCost)}</div>
+        <div>
+          <div class="cost-bar-wrap"><div class="cost-bar-fill" style="width:${Math.min(pct,100).toFixed(1)}%;background:${costBarColor(pct)}"></div></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">${pct.toFixed(1)}%</div>
+        </div>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-secondary btn-xs" onclick="editLine('${l.id}','${id}')">แก้</button>
+          <button class="btn btn-danger btn-xs" onclick="deleteLine('${l.id}','${id}')">ลบ</button>
+        </div>
+      </div>`;
+    });
+    h+=`<div style="text-align:right;font-weight:700;font-size:16px;color:var(--text);margin-top:10px;font-family:'DM Mono',monospace">
+      รวมต้นทุน ${B(totalCost)}
+    </div>`;
+  }else{
+    h+=`<div class="empty" style="padding:24px">ยังไม่มีส่วนผสม — เพิ่มด้านบนได้เลย</div>`;
+  }
+
+  h+=debugRecipeHTML(id);
+  document.getElementById("detailContent").innerHTML=h;
 }
 
-function showRecipe(recipeId) {
-  selectedRecipeId = recipeId;
-
-  const recipe = recipes.find(x => String(x.id) === String(recipeId));
-  if (!recipe) return;
-
-  const lines = recipeLines.filter(x => String(x.recipe_id) === String(recipeId));
-  const cost = recipeCost(recipeId);
-  const price = Number(recipe.base_price || 0);
-  const gp = Number(recipe.delivery_gp_percent || 0);
-  const profit = price - cost;
-  const delivery = calcDeliveryPrice(price, gp);
-
-  let html = `
-    <h2>${recipe.name || ""}</h2>
-
-    <div class="kpi-grid">
-      <div class="kpi"><small>Cost</small><b>${money(cost)}</b></div>
-      <div class="kpi"><small>Store Price</small><b>${isSemi(recipe) ? "—" : money(price)}</b></div>
-      <div class="kpi"><small>Profit</small><b>${isSemi(recipe) ? "—" : money(profit)}</b></div>
-      <div class="kpi"><small>Delivery Recommended</small><b>${isSemi(recipe) ? "—" : money(delivery)}</b><div class="help">รวม VAT on GP</div></div>
-    </div>
-
-    <p class="help">
-      <span class="badge">GP: ${gp.toFixed(1)}%</span>
-      <span class="badge">Effective GP รวม VAT: ${(gp * 1.07).toFixed(2)}%</span>
-    </p>
-
-    <hr>
-
-    <h3>เพิ่มส่วนผสม</h3>
-
-    <div class="line-form">
-      <div>
-        <label>เลือกจาก Ingredient / Semi / Menu</label>
-        <select id="newSource">${sourceOptions(recipeId)}</select>
-      </div>
-
-      <div>
-        <label>Qty</label>
-        <input id="newQty" type="number" step="0.001" value="1">
-      </div>
-
-      <div>
-        <label>Unit</label>
-        <input id="newUnit" placeholder="unit">
-      </div>
-
-      <button class="primary" onclick="addLine('${recipeId}')">เพิ่ม</button>
-    </div>
-
-    <hr>
-
-    <div class="line head">
-      <div>รายการ</div>
-      <div>Qty</div>
-      <div>Unit</div>
-      <div>Cost/U</div>
-      <div>Total</div>
-      <div></div>
-    </div>
-  `;
-
-  html += lines.map(line => `
-    <div class="line">
-      <div><b>${line.source_type || "ingredient"}</b><br>${line.source_name || ""}</div>
-      <div>${Number(line.quantity || 0).toLocaleString()}</div>
-      <div>${line.usage_unit || ""}</div>
-      <div>${money(line.unit_cost)}</div>
-      <div>${money(line.line_cost)}</div>
-      <div>
-        <button onclick="editLine('${line.id}')">แก้</button>
-        <button class="danger" onclick="deleteLine('${line.id}')">ลบ</button>
-      </div>
-    </div>
-  `).join("");
-
-  if (!lines.length) {
-    html += `<p class="help">ยังไม่มีส่วนผสม</p>`;
-  }
-
-  document.getElementById("recipeDetail").innerHTML = html;
+function onSrcChange(recipeId){
+  const raw=document.getElementById("newSrc")?.value||"";
+  const[t,sid]=raw.split("|");
+  const calc=sourceCalc(t,sid,Number(document.getElementById("newQty")?.value||1));
+  if(document.getElementById("newLineUnit")) document.getElementById("newLineUnit").value=calc.unit||"";
+  if(document.getElementById("previewUC")) document.getElementById("previewUC").textContent=B(calc.unitCost);
+  if(document.getElementById("previewLC")) document.getElementById("previewLC").textContent=B(calc.lineCost);
 }
 
-async function addLine(recipeId) {
-  const raw = document.getElementById("newSource").value;
-  const qty = Number(document.getElementById("newQty").value || 0);
-  const unitTyped = document.getElementById("newUnit").value.trim();
+function previewLineCost(){
+  const raw=document.getElementById("newSrc")?.value||"";
+  const[t,sid]=raw.split("|");
+  const qty=Number(document.getElementById("newQty")?.value||0);
+  const calc=sourceCalc(t,sid,qty);
+  if(document.getElementById("previewUC")) document.getElementById("previewUC").textContent=B(calc.unitCost);
+  if(document.getElementById("previewLC")) document.getElementById("previewLC").textContent=B(calc.lineCost);
+}
 
-  const parts = raw.split("|");
-  const sourceType = parts[0];
-  const sourceId = parts[1];
+async function addLine(recipeId){
+  const raw=document.getElementById("newSrc")?.value||"";
+  const[sourceType,sourceId]=raw.split("|");
+  const qty=Number(document.getElementById("newQty")?.value||0);
+  const unitTyped=document.getElementById("newLineUnit")?.value.trim()||"";
+  if(!sourceType||!sourceId||qty<=0)return alert("เลือกส่วนผสมและใส่จำนวนก่อน");
+  if(String(sourceId)===String(recipeId))return alert("ห้ามใช้เมนูตัวเองเป็นส่วนผสม");
+  const c=sourceCalc(sourceType,sourceId,qty);
+  const row={id:uid("line"),recipe_id:recipeId,source_type:sourceType,source_id:sourceId,
+    source_name:c.name,quantity:qty,usage_unit:unitTyped||c.unit,unit_cost:c.unitCost,line_cost:c.lineCost};
+  const res=await db.from("recipe_lines").insert(row);
+  if(res.error)return alert(res.error.message);
+  recipeLines.push(row);
+  await recalcRecipe(recipeId);
+  await loadAll();
+  showRecipe(recipeId);
+  toast();
+}
 
-  if (!sourceType || !sourceId || qty <= 0) {
-    alert("กรุณาเลือกส่วนผสมและใส่จำนวน");
-    return;
-  }
+async function editLine(lineId,recipeId){
+  const line=recipeLines.find(x=>String(x.id)===String(lineId));if(!line)return;
+  const qtyStr=prompt("จำนวน",line.quantity);if(qtyStr===null)return;
+  const unitStr=prompt("หน่วย",line.usage_unit||"");if(unitStr===null)return;
+  const costStr=prompt("Cost per unit",line.unit_cost||0);if(costStr===null)return;
+  const qty=Number(qtyStr||0),uc=Number(costStr||0);
+  const res=await db.from("recipe_lines").update({quantity:qty,usage_unit:unitStr,unit_cost:uc,line_cost:uc*qty}).eq("id",lineId);
+  if(res.error)return alert(res.error.message);
+  Object.assign(line,{quantity:qty,usage_unit:unitStr,unit_cost:uc,line_cost:uc*qty});
+  await recalcRecipe(recipeId);
+  await loadAll();
+  showRecipe(recipeId);
+  toast();
+}
 
-  if (String(sourceId) === String(recipeId)) {
-    alert("ห้ามใช้เมนูตัวเองเป็นส่วนผสม");
-    return;
-  }
-
-  const calc = sourceCalc(sourceType, sourceId, qty);
-
-  const row = {
-    recipe_id: recipeId,
-    source_type: sourceType,
-    source_id: sourceId,
-    source_name: calc.name,
-    quantity: qty,
-    usage_unit: unitTyped || calc.unit,
-    unit_cost: calc.unitCost,
-    line_cost: calc.lineCost
-  };
-
-  const result = await db.from("recipe_lines").insert(row);
-
-  if (result.error) {
-    alert(result.error.message);
-    return;
-  }
-
+async function deleteLine(lineId,recipeId){
+  if(!confirm("ลบส่วนผสมนี้?"))return;
+  await db.from("recipe_lines").delete().eq("id",lineId);
+  recipeLines=recipeLines.filter(x=>String(x.id)!==String(lineId));
   await recalcRecipe(recipeId);
   await loadAll();
   showRecipe(recipeId);
 }
 
-async function editLine(id) {
-  const line = recipeLines.find(x => String(x.id) === String(id));
-  if (!line) return;
-
-  const qtyText = prompt("Quantity", line.quantity);
-  if (qtyText === null) return;
-
-  const unitText = prompt("Unit", line.usage_unit || "");
-  if (unitText === null) return;
-
-  const qty = Number(qtyText || 0);
-  let unitCost = Number(line.unit_cost || 0);
-
-  if (line.source_type && line.source_id) {
-    const calc = sourceCalc(line.source_type, line.source_id, qty);
-    unitCost = calc.unitCost;
+async function recalcRecipe(id,visited=[]){
+  if(visited.map(String).includes(String(id)))return;
+  const cost=recipeCost(id);
+  await db.from("recipes").update({cost_per_output:cost}).eq("id",id);
+  const r=recipes.find(x=>String(x.id)===String(id));
+  if(r) r.cost_per_output=cost;
+  const nextVisited=visited.concat([id]);
+  const parentIds=[...new Set(recipeLines
+    .filter(l=>String(l.source_id)===String(id)&&String(l.recipe_id)!==String(id))
+    .map(l=>l.recipe_id))];
+  for(const parentId of parentIds){
+    await recalcRecipe(parentId,nextVisited);
   }
+}
 
-  const result = await db.from("recipe_lines")
-    .update({
-      quantity: qty,
-      usage_unit: unitText,
-      unit_cost: unitCost,
-      line_cost: unitCost * qty
-    })
-    .eq("id", id);
-
-  if (result.error) {
-    alert(result.error.message);
-    return;
-  }
-
-  await recalcRecipe(selectedRecipeId);
+async function editRecipe(id){
+  const r=recipes.find(x=>String(x.id)===String(id));if(!r)return;
+  const priceStr=prompt("ราคาขายหน้าร้านรวม VAT",Number(r.base_price||0));if(priceStr===null)return;
+  const gpStr=prompt("GP Delivery %",Number(r.delivery_gp_percent||0));if(gpStr===null)return;
+  const price=Number(priceStr||0),gp=Number(gpStr||0);
+  const del=calcDelivery(price,gp);
+  const res=await db.from("recipes").update({
+    base_price:price,vat_price:price?price/1.07:0,
+    delivery_gp_percent:gp,gp_price:del,final_price:del
+  }).eq("id",id);
+  if(res.error)return alert(res.error.message);
   await loadAll();
-  showRecipe(selectedRecipeId);
+  showRecipe(id);
+  toast();
 }
 
-async function deleteLine(id) {
-  if (!confirm("ลบส่วนผสมนี้?")) return;
-
-  const result = await db.from("recipe_lines").delete().eq("id", id);
-
-  if (result.error) {
-    alert(result.error.message);
-    return;
-  }
-
-  await recalcRecipe(selectedRecipeId);
+async function deleteRecipe(id){
+  if(!confirm("ลบ Recipe นี้ทั้งหมด? (รวม lines)"))return;
+  await db.from("recipe_lines").delete().eq("recipe_id",id);
+  await db.from("recipes").delete().eq("id",id);
+  selectedId=null;
+  document.getElementById("detailEmpty").style.display="flex";
+  document.getElementById("detailContent").style.display="none";
   await loadAll();
-  showRecipe(selectedRecipeId);
 }
 
-async function recalcRecipe(recipeId) {
-  const cost = recipeCost(recipeId);
-
-  const result = await db.from("recipes")
-    .update({ cost_per_output: cost })
-    .eq("id", recipeId);
-
-  if (result.error) {
-    console.warn(result.error.message);
-  }
+function toast(){
+  const el=document.getElementById("toast");
+  el.classList.add("show");
+  setTimeout(()=>el.classList.remove("show"),1400);
 }
 
-async function editPrice(recipeId) {
-  const recipe = recipes.find(x => String(x.id) === String(recipeId));
-  if (!recipe) return;
-
-  const priceText = prompt("Store price รวม VAT", Number(recipe.base_price || 0));
-  if (priceText === null) return;
-
-  const gpText = prompt("GP Delivery %", Number(recipe.delivery_gp_percent || 0));
-  if (gpText === null) return;
-
-  const price = Number(priceText || 0);
-  const gp = Number(gpText || 0);
-  const delivery = calcDeliveryPrice(price, gp);
-
-  const result = await db.from("recipes")
-    .update({
-      base_price: price,
-      vat_price: price / 1.07,
-      delivery_gp_percent: gp,
-      gp_price: delivery,
-      final_price: delivery
-    })
-    .eq("id", recipeId);
-
-  if (result.error) {
-    alert(result.error.message);
-    return;
-  }
-
-  recipe.base_price = price;
-  recipe.vat_price = price / 1.07;
-  recipe.delivery_gp_percent = gp;
-  recipe.gp_price = delivery;
-  recipe.final_price = delivery;
-
-  renderRecipes();
-  showRecipe(recipeId);
-}
-
-loadAll();
+/* ── Init ── */
+(async()=>{
+  if(!(await checkLogin()))return;
+  await loadAll();
+  onTypeChange();
+  previewDelivery();
+})();
 </script>
 </body>
 </html>
