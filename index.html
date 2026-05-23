@@ -1083,7 +1083,8 @@ function ingTable(){
     <td>${i.category||""}</td>
     <td>${i.purchase_unit||""}</td>
     <td class="text-right td-mono">${B(i.unit_purchase_cost)}</td>
-    <td class="text-right td-mono">${Number(i.convert_rate||0).toLocaleString("th-TH")} ${i.usage_unit||""}</td>
+    <td class="text-right td-mono">${Number(i.convert_rate||0).toLocaleString("th-TH")}
+${i.usage_unit || i.purchase_unit || ""}</td>
     <td>${i.usage_unit||""}</td>
     <td>${((i.yield_rate||1)*100).toFixed(0)}%</td>
     <td class="text-right td-mono">${B(i.cost_per_use)}</td>
