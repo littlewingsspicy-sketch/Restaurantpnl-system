@@ -315,6 +315,8 @@ const isUtil=e=>/(ไฟ|น้ำ|แก๊ส|util|electric|gas)/i.test(e.cate
 const isMarketing=e=>/(market|โฆษณา|ads|social)/i.test(e.category||"");
 const isCentral=e=>/(central|office|สำนักงาน|admin|จัดการ)/i.test(e.category||"");
 const isGPDel=e=>/(0504|gp delivery|commission|grab commission)/i.test(e.category||"");
+const isGas=e=>/(แก๊ส|gas|lpg)/i.test(e.category||"");
+const isLoan=e=>/(0701|เงินกู้|สินเชื่อ|ผ่อนชำระ|loan|installment|debt)/i.test(e.category||"");
 
 let sales=[],purchases=[],exps=[];
 
@@ -408,15 +410,20 @@ function renderAll(){
   // ── Category sums ──
   const laborAmt=mExp.filter(isLabor).reduce((a,r)=>a+Number(r.amount||0),0);
   const rentAmt=mExp.filter(isRent).reduce((a,r)=>a+Number(r.amount||0),0);
-  const utilAmt=mExp.filter(isUtil).reduce((a,r)=>a+Number(r.amount||0),0);
+  const utilFixedAmt=mExp.filter(e=>isUtil(e)&&!isGas(e)).reduce((a,r)=>a+Number(r.amount||0),0);
+  const utilVarAmt=mExp.filter(isGas).reduce((a,r)=>a+Number(r.amount||0),0);
+  const utilAmt=utilFixedAmt+utilVarAmt;
   const mktAmt=mExp.filter(isMarketing).reduce((a,r)=>a+Number(r.amount||0),0);
   const centralAmt=mExp.filter(isCentral).reduce((a,r)=>a+Number(r.amount||0),0);
+  const loanAmt=mExp.filter(isLoan).reduce((a,r)=>a+Number(r.amount||0),0);
   const gpDelAmt=mExp.filter(isGPDel).reduce((a,r)=>a+Number(r.amount||0),0);
-  const otherAmt=mExp.filter(e=>!isLabor(e)&&!isRent(e)&&!isUtil(e)&&!isMarketing(e)&&!isCentral(e)&&!isGPDel(e)).reduce((a,r)=>a+Number(r.amount||0),0);
+  const otherAmt=mExp.filter(e=>!isLabor(e)&&!isRent(e)&&!isUtil(e)&&!isGas(e)&&!isMarketing(e)&&!isCentral(e)&&!isGPDel(e)&&!isLoan(e)).reduce((a,r)=>a+Number(r.amount||0),0);
 
-  // Fixed vs Variable for BEP
-  const fixedCosts=rentAmt+centralAmt+(laborAmt*0.7); // 70% of labor = fixed
-  const variableRatio=(totalCogs+laborAmt*0.3+gpDelAmt)/safe; // variable costs / revenue
+  // Fixed Costs: Rent + Labor (ทั้งหมด) + Central/Office + น้ำ/ไฟ
+  const fixedCosts=rentAmt+laborAmt+centralAmt+utilFixedAmt+loanAmt;
+  // Variable Costs: COGS + แก๊ส + GP Delivery + Marketing + Other
+  const variableCosts=totalCogs+utilVarAmt+gpDelAmt+mktAmt+otherAmt;
+  const variableRatio=variableCosts/safe;
   const contributionMargin=1-variableRatio;
   const bepRevenue=contributionMargin>0?fixedCosts/contributionMargin:0;
   const bepBills=aov>0?Math.ceil(bepRevenue/aov):0;
@@ -424,8 +431,8 @@ function renderAll(){
   renderKPIs(totalRevenue,grossProfit,grossMargin,laborAmt,safe,dailyAvg,salesDays,netProfit,netMargin);
   renderPL(grossSales,totalDiscount,totalRevenue,totalCogs,mPurchases,mExp,grossProfit,grossMargin,netProfit,safe);
   renderBEP(bepRevenue,bepBills,aov,totalRevenue,bills,fixedCosts,contributionMargin);
-  renderPie(totalCogs,laborAmt,rentAmt,utilAmt,mktAmt,centralAmt,gpDelAmt,otherAmt,netProfit,totalRevenue);
-  renderHealth(totalCogs,laborAmt,rentAmt,utilAmt,mktAmt,centralAmt,gpDelAmt,otherAmt,safe);
+  renderPie(totalCogs,laborAmt,rentAmt,utilAmt,mktAmt,centralAmt,gpDelAmt,loanAmt,otherAmt,netProfit,totalRevenue);
+  renderHealth(totalCogs,laborAmt,rentAmt,utilAmt,mktAmt,centralAmt,gpDelAmt,loanAmt,otherAmt,safe);
   renderChannelBars(mSales);
 }
 
@@ -514,7 +521,7 @@ function renderBEP(bepRev,bepBills,aov,actualRev,actualBills,fixed,cm){
 }
 
 /* ── Cost Structure Pie ── */
-function renderPie(cogs,labor,rent,util,mkt,central,gpDel,other,netProfit,rev){
+function renderPie(cogs,labor,rent,util,mkt,central,gpDel,loan,other,netProfit,rev){
   const parts=[
     {name:"COGS",amount:cogs,color:"#d4a843"},
     {name:"Labor",amount:labor,color:"#3b82f6"},
@@ -523,6 +530,7 @@ function renderPie(cogs,labor,rent,util,mkt,central,gpDel,other,netProfit,rev){
     {name:"Marketing",amount:mkt,color:"#ec4899"},
     {name:"GP Delivery",amount:gpDel,color:"#f97316"},
     {name:"Central/Office",amount:central,color:"#64748b"},
+    {name:"สินเชื่อ/เงินกู้",amount:loan,color:"#e11d48"},
     {name:"Other",amount:other,color:"#94a3b8"},
   ].filter(p=>p.amount>0);
   if(netProfit>0) parts.push({name:"Net Profit",amount:netProfit,color:"#1a7a4a"});
@@ -549,7 +557,7 @@ function renderPie(cogs,labor,rent,util,mkt,central,gpDel,other,netProfit,rev){
 }
 
 /* ── Health Bars ── */
-function renderHealth(cogs,labor,rent,util,mkt,central,gpDel,other,rev){
+function renderHealth(cogs,labor,rent,util,mkt,central,gpDel,loan,other,rev){
   const safe=rev||1;
   const items=[
     {name:"COGS",amount:cogs,min:30,max:35,color:"#d4a843"},
@@ -559,6 +567,7 @@ function renderHealth(cogs,labor,rent,util,mkt,central,gpDel,other,rev){
     {name:"Marketing",amount:mkt,min:3,max:5,color:"#ec4899"},
     {name:"Central/Office",amount:central,min:3,max:5,color:"#64748b"},
     {name:"GP Delivery",amount:gpDel,min:20,max:25,color:"#f97316"},
+    {name:"สินเชื่อ/เงินกู้",amount:loan,min:0,max:10,color:"#e11d48"},
     {name:"Other",amount:other,min:5,max:10,color:"#94a3b8"},
   ];
   const maxPct=35; // track max 35% for display scale
