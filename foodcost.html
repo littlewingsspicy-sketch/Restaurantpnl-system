@@ -729,7 +729,7 @@ function showRecipe(id){
   const fcDel=del?cost/del*100:0;
   const totalCost=ls.reduce((a,l)=>a+lineCost(l,[id]),0);
   const mainCostValue=isSemi(r)?totalCost:cost;
-  const mainCostSub=isSemi(r)?`Cost/output ${B(cost)} / ${r.output_unit||"unit"}`:`${r.yield_qty||1} ${r.output_unit||"unit"}`;
+  const mainCostSub=isSemi(r)?`Cost/unit ${B(cost)} / ${r.output_unit||"unit"}`:`${r.yield_qty||1} ${r.output_unit||"unit"}`;
   let h=`
     <div class="detail-header">
       <div>
