@@ -1056,7 +1056,9 @@ function editIngredient(id){
 }
 function ingTable(){
   const tbl=document.getElementById("ingTbl");if(!tbl)return;
-  tbl.innerHTML=ings.map(i=>`<tr>
+  tbl.innerHTML=ings
+  .filter(i => i.is_active !== false)
+  .map(i=>`<tr>
     <td>${i.name}</td>
     <td>${i.category||""}</td>
     <td>${i.purchase_unit||""}</td>
@@ -1067,8 +1069,23 @@ function ingTable(){
     <td><button class="btn btn-secondary btn-sm" onclick="editIngredient('${i.id}')">แก้ไข</button> <button class="btn btn-danger btn-sm" onclick="delIng('${i.id}')">ลบ</button></td>
   </tr>`).join("")||'<tr><td colspan="8" class="empty">ยังไม่มีวัตถุดิบ</td></tr>';
 }
-async function delIng(id){if(!confirm("ลบ?"))return;await db.from("ingredients").delete().eq("id",id);await load();ingTable()}
+async function delIng(id){
+  if(!confirm("ปิดใช้งานวัตถุดิบนี้? ข้อมูลเก่าจะยังอยู่")) return;
 
+  const { error } = await db
+    .from("ingredients")
+    .update({ is_active: false })
+    .eq("id", id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  await load(false);
+  ingTable();
+  showSaveHint();
+}
 /* ─────────────── RECIPES ─────────────── */
 function deliveryPrice(price,gp){const g=Number(gp||0)/100;return g>=1?0:Number(price||0)/(1-g)}
 function selectable(){
