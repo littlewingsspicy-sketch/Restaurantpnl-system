@@ -412,17 +412,17 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 <div class="form-grid">
 <div><label>ชื่อวัตถุดิบ</label><input id="inm" placeholder="เช่น ไก่ทอด, น้ำมัน"/></div>
 <div><label>หมวด</label><select id="icat"><option value="วัตถุดิบอาหาร">วัตถุดิบอาหาร</option><option value="เครื่องดื่ม">เครื่องดื่ม</option><option value="Packaging">Packaging</option><option value="Kitchen Utility / Gas">Kitchen Utility / Gas</option><option value="ของหวาน">ของหวาน</option><option value="วัสดุสิ้นเปลือง">วัสดุสิ้นเปลือง</option><option value="อื่นๆ">อื่นๆ</option></select></div>
-<div><label>หน่วยรับ</label><input id="ipu" placeholder="ฟอง / ถุง / กก. / ลิตร"/></div>
+<div><label>หน่วยรับ</label><input id="ipu" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วยรับ"/></div>
 <div><label>ราคา / หน่วยรับ (฿)</label><input id="ipp" oninput="calcIngredientPreview()" placeholder="เช่น 90" type="number"/></div>
 <div><label>จำนวนต่อหน่วยรับ (หน่วยใช้)</label><input id="icv" oninput="calcIngredientPreview()" placeholder="เช่น 1000" type="number" value="1"/></div>
-<div><label>หน่วยใช้</label><input id="iuu" placeholder="กรัม / ml / ฟอง"/></div>
+<div><label>หน่วยใช้</label><input id="ipu" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วยรับ"/></div>
 <div><label>Yield %</label><input id="iy" oninput="calcIngredientPreview()" type="number" value="100"/></div>
 <div><label>ราคา / หน่วยใช้ (Auto)</label><input id="icpu" readonly=""/></div>
 </div>
 <p class="help" style="margin-top:8px">สูตร: ราคา/หน่วยใช้ = (ราคา/หน่วยรับ) ÷ จำนวนต่อหน่วยรับ ÷ (Yield/100)</p>
 <div class="btn-row"><button class="btn btn-primary" onclick="saveIng()">บันทึกวัตถุดิบ</button><button class="btn btn-secondary" onclick="clearIng()">ล้าง</button></div>
 </div>
-<div class="card"><div class="tbl-wrap"><table><thead><tr><th>ชื่อ</th><th>หมวด</th><th>หน่วยรับ</th><th class="text-right">ราคา/หน่วยรับ</th><th>หน่วยใช้</th><th>Yield%</th><th class="text-right">Cost/หน่วยใช้</th><th></th></tr></thead><tbody id="ingTbl"></tbody></table></div></div>
+<div class="card"><div class="tbl-wrap"><table><thead><tr><th>ชื่อ</th><th>หมวด</th><th>หน่วยรับ</th><th class="text-right">ราคา/หน่วยรับ</th><th class="text-right">จำนวนต่อหน่วยรับ</th><th>หน่วยใช้</th><th>Yield%</th><th class="text-right">Cost/หน่วยใช้</th><th></th></tr></thead><tbody id="ingTbl"></tbody></table></div></div>
 </section>
 <!-- ── FOOD COST ── -->
 <!-- ── BRANDS ── -->
@@ -450,7 +450,7 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 <option value="kg"><option value="g"><option value="L"><option value="ml">
 <option value="pcs"><option value="pack"><option value="bottle"><option value="tray">
 <option value="bag"><option value="cup"><option value="box"><option value="set">
-<option value="ถุง"><option value="แพค"><option value="ขวด"><option value="ลัง">
+<option value="ถุง"><option value="แพค"><option value="ขวด"><option value="ลัง"><option value="แกลลอน">
 <option value="ชิ้น"><option value="ฟอง"><option value="กรัม"><option value="กิโลกรัม"><option value="ลิตร">
 </option></option></option></option></option></option></option></option></option></option></option></option></option></option></option></option></option></option></option></option></option></datalist>
 <div class="savehint" id="savehint">บันทึกแล้ว ✓</div>
@@ -832,7 +832,7 @@ function renderWorkspace(){
           <div>
             <div class="ws-section-title">COGS / Purchases</div>
             <div class="ws-purchase-row">
-              <input id="ws_ing_${date}" list="ingList_${date}" placeholder="ค้นหาวัตถุดิบ">
+             <input id="ws_ing_${date}" list="ingList_${date}" placeholder="ค้นหาวัตถุดิบ" oninput="autoFillWorkspaceIngredient('${date}')">
               <datalist id="ingList_${date}">${ings.map(i=>`<option value="${i.name}"></option>`).join("")}</datalist>
               <select id="ws_cat_${date}">
                 <option value="วัตถุดิบอาหาร">วัตถุดิบอาหาร</option>
@@ -1058,16 +1058,37 @@ function ingTable(){
   const tbl=document.getElementById("ingTbl");if(!tbl)return;
   tbl.innerHTML=ings
   .filter(i => i.is_active !== false)
+  .sort((a,b)=>{
+
+    // เรียงหมวดก่อน
+    const catCompare =
+      String(a.category || "")
+      .localeCompare(
+        String(b.category || ""),
+        "th"
+      );
+
+    if(catCompare !== 0) return catCompare;
+
+    // ถ้าหมวดเดียวกัน เรียงชื่อ
+    return String(a.name || "")
+      .localeCompare(
+        String(b.name || ""),
+        "th"
+      );
+
+  })
   .map(i=>`<tr>
     <td>${i.name}</td>
     <td>${i.category||""}</td>
     <td>${i.purchase_unit||""}</td>
     <td class="text-right td-mono">${B(i.unit_purchase_cost)}</td>
+    <td class="text-right td-mono">${Number(i.convert_rate||0).toLocaleString("th-TH")} ${i.usage_unit||""}</td>
     <td>${i.usage_unit||""}</td>
     <td>${((i.yield_rate||1)*100).toFixed(0)}%</td>
     <td class="text-right td-mono">${B(i.cost_per_use)}</td>
     <td><button class="btn btn-secondary btn-sm" onclick="editIngredient('${i.id}')">แก้ไข</button> <button class="btn btn-danger btn-sm" onclick="delIng('${i.id}')">ลบ</button></td>
-  </tr>`).join("")||'<tr><td colspan="8" class="empty">ยังไม่มีวัตถุดิบ</td></tr>';
+  </tr>`).join("")||'<tr><td colspan="9" class="empty">ยังไม่มีวัตถุดิบ</td></tr>';
 }
 async function delIng(id){
   if(!confirm("ปิดใช้งานวัตถุดิบนี้? ข้อมูลเก่าจะยังอยู่")) return;
@@ -1316,6 +1337,27 @@ async function editWorkspaceExpense(id){
   if(error) return alert(error.message);
 
   await load();
+}
+function autoFillWorkspaceIngredient(date){
+  const input = document.getElementById(`ws_ing_${date}`);
+  if(!input) return;
+
+  const name = input.value;
+
+  const ing = ings.find(i => i.name === name);
+
+  if(!ing) return;
+
+  const catEl = document.getElementById(`ws_cat_${date}`);
+  const unitEl = document.getElementById(`ws_unit_${date}`);
+
+  if(catEl){
+    catEl.value = ing.category || "อื่นๆ";
+  }
+
+  if(unitEl){
+    unitEl.value = ing.purchase_unit || "";
+  }
 }
 </script>
 </body>
