@@ -409,20 +409,21 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 <section class="page" id="ing">
 <div class="card">
 <div class="card-title">เพิ่ม / แก้ไข วัตถุดิบ</div>
-<div class="form-grid">
+<div class="form-grid3">
 <div><label>ชื่อวัตถุดิบ</label><input id="inm" placeholder="เช่น ไก่ทอด, น้ำมัน"/></div>
-<div><label>หมวด</label><select id="icat"><option value="วัตถุดิบอาหาร">วัตถุดิบอาหาร</option><option value="เครื่องดื่ม">เครื่องดื่ม</option><option value="Packaging">Packaging</option><option value="Kitchen Utility / Gas">Kitchen Utility / Gas</option><option value="ของหวาน">ของหวาน</option><option value="วัสดุสิ้นเปลือง">วัสดุสิ้นเปลือง</option><option value="อื่นๆ">อื่นๆ</option></select></div>
+<div><label>หมวดหมู่</label><select id="icat"><option value="วัตถุดิบอาหาร">วัตถุดิบอาหาร</option><option value="เครื่องดื่ม">เครื่องดื่ม</option><option value="Packaging">Packaging</option><option value="Kitchen Utility / Gas">Kitchen Utility / Gas</option><option value="ของหวาน">ของหวาน</option><option value="วัสดุสิ้นเปลือง">วัสดุสิ้นเปลือง</option><option value="อื่นๆ">อื่นๆ</option></select></div>
+<div><label>จำนวนรับ</label><input id="ipq" oninput="calcIngredientPreview()" placeholder="เช่น 1" type="number" value="1"/></div>
 <div><label>หน่วยรับ</label><input id="ipu" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วยรับ"/></div>
-<div><label>ราคา / หน่วยรับ (฿)</label><input id="ipp" oninput="calcIngredientPreview()" placeholder="เช่น 90" type="number"/></div>
-<div><label>จำนวนต่อหน่วยรับ (หน่วยใช้)</label><input id="icv" oninput="calcIngredientPreview()" placeholder="เช่น 1000" type="number" value="1"/></div>
-<div><label>หน่วยใช้</label><input id="ipu" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วยรับ"/></div>
-<div><label>Yield %</label><input id="iy" oninput="calcIngredientPreview()" type="number" value="100"/></div>
-<div><label>ราคา / หน่วยใช้ (Auto)</label><input id="icpu" readonly=""/></div>
+<div><label>ราคา (฿)</label><input id="ipp" oninput="calcIngredientPreview()" placeholder="เช่น 90" type="number"/></div>
+<div><label>จำนวนหน่วยใช้</label><input id="icv" oninput="calcIngredientPreview()" placeholder="เช่น 1000" type="number" value="1"/></div>
+<div><label>หน่วยใช้</label><input id="iuu" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วยใช้"/></div>
+<div><label>Yield วัตถุดิบ %</label><input id="iy" oninput="calcIngredientPreview()" type="number" value="100"/></div>
+<div><label>ต้นทุนต่อหน่วยใช้ (Auto)</label><input id="icpu" readonly=""/></div>
 </div>
-<p class="help" style="margin-top:8px">สูตร: ราคา/หน่วยใช้ = (ราคา/หน่วยรับ) ÷ จำนวนต่อหน่วยรับ ÷ (Yield/100)</p>
+<p class="help" style="margin-top:8px">สูตร: ต้นทุนต่อหน่วยใช้ = ราคา ÷ (จำนวนรับ × จำนวนหน่วยใช้ × Yield)</p>
 <div class="btn-row"><button class="btn btn-primary" onclick="saveIng()">บันทึกวัตถุดิบ</button><button class="btn btn-secondary" onclick="clearIng()">ล้าง</button></div>
 </div>
-<div class="card"><div class="tbl-wrap"><table><thead><tr><th>ชื่อ</th><th>หมวด</th><th>หน่วยรับ</th><th class="text-right">ราคา/หน่วยรับ</th><th class="text-right">จำนวนต่อหน่วยรับ</th><th>หน่วยใช้</th><th>Yield%</th><th class="text-right">Cost/หน่วยใช้</th><th></th></tr></thead><tbody id="ingTbl"></tbody></table></div></div>
+<div class="card"><div class="tbl-wrap"><table><thead><tr><th>ชื่อวัตถุดิบ</th><th>หมวดหมู่</th><th class="text-right">จำนวนรับ</th><th>หน่วยรับ</th><th class="text-right">ราคา</th><th class="text-right">จำนวนหน่วยใช้</th><th>หน่วยใช้</th><th>Yield วัตถุดิบ</th><th class="text-right">ต้นทุนต่อหน่วยใช้</th><th></th></tr></thead><tbody id="ingTbl"></tbody></table></div></div>
 </section>
 <!-- ── FOOD COST ── -->
 <!-- ── BRANDS ── -->
@@ -901,8 +902,8 @@ async function addWorkspacePurchase(date){
   const row={id:uid("pur"),purchase_date:date,ingredient_id:ing.id,ingredient_name:ing.name,category:cat,quantity:qty,purchase_unit:unit,total_cost:total,unit_purchase_cost:uc};
   const res=await db.from("inventory_purchases").insert(row);
   if(res.error){alert(res.error.message);return;}
-  const cpu=calcIngredientCpu(uc,ing.convert_rate||1,(ing.yield_rate||1)*100);
-  await db.from("ingredients").update({unit_purchase_cost:uc,cost_per_use:cpu,updated_at:new Date().toISOString()}).eq("id",ing.id);
+  const cpu=calcIngredientCpu(total,qty,ing.convert_rate||1,(ing.yield_rate||1)*100);
+  await db.from("ingredients").update({unit_purchase_cost:total,cost_per_use:cpu,latest_purchase_qty:qty,updated_at:new Date().toISOString()}).eq("id",ing.id);
   await load(false);
   OPEN_DAYS.add("day_"+date);
   renderWorkspace();
@@ -1022,23 +1023,45 @@ async function deleteCashIn(id){
 }
 
 /* ─────────────── INGREDIENTS ─────────────── */
-function calcIngredientCpu(price,qty,yieldPct){
+function ingredientPurchaseQty(i){
+  return Number(i?.purchase_qty ?? i?.latest_purchase_qty ?? 1) || 1;
+}
+function calcIngredientCpu(price,purchaseQty,convertRate,yieldPct){
+  const pq=Number(purchaseQty)||1;
+  const cr=Number(convertRate)||1;
   const y=(Number(yieldPct)||100)/100;
-  return qty&&y?Number(price||0)/Number(qty)/y:0;
+  return pq&&cr&&y ? Number(price||0)/(pq*cr*y) : 0;
 }
 function calcIngredientPreview(){
-  document.getElementById("icpu").value=calcIngredientCpu(N("ipp"),N("icv"),N("iy")).toFixed(4);
+  const el=document.getElementById("icpu");
+  if(el) el.value=calcIngredientCpu(N("ipp"),N("ipq"),N("icv"),N("iy")).toFixed(4);
 }
 async function saveIng(){
   const id=editIng||uid("ing");
-  const cpu=calcIngredientCpu(N("ipp"),N("icv"),N("iy"));
-  const row={id,name:V("inm"),category:V("icat"),purchase_unit:V("ipu"),usage_unit:V("iuu"),convert_rate:N("icv")||1,yield_rate:(N("iy")||100)/100,unit_purchase_cost:N("ipp"),cost_per_use:cpu,is_active:true};
+  const purchaseQty=N("ipq")||1;
+  const convertRate=N("icv")||1;
+  const cpu=calcIngredientCpu(N("ipp"),purchaseQty,convertRate,N("iy"));
+  const row={
+    id,
+    name:V("inm"),
+    category:V("icat"),
+    purchase_unit:V("ipu"),
+    usage_unit:V("iuu"),
+    convert_rate:convertRate,
+    yield_rate:(N("iy")||100)/100,
+    unit_purchase_cost:N("ipp"),
+    cost_per_use:cpu,
+    is_active:true,
+    latest_purchase_qty:purchaseQty
+  };
   if(!row.name)return alert("ใส่ชื่อวัตถุดิบ");
   const {error}=await db.from("ingredients").upsert(row);
   if(error)return alert(error.message);
   editIng=null;clearIng();await load();showSaveHint();
 }
-function clearIng(){["inm","ipu","iuu","ipp","icpu"].forEach(i=>{const el=document.getElementById(i);if(el)el.value=""});
+function clearIng(){
+  ["inm","ipu","iuu","ipp","icpu"].forEach(i=>{const el=document.getElementById(i);if(el)el.value=""});
+  const ipq=document.getElementById("ipq");if(ipq)ipq.value=1;
   const icv=document.getElementById("icv");if(icv)icv.value=1;
   const iy=document.getElementById("iy");if(iy)iy.value=100;
 }
@@ -1046,10 +1069,11 @@ function editIngredient(id){
   const i=ings.find(x=>x.id==id);if(!i)return;editIng=id;
   document.getElementById("inm").value=i.name||"";
   document.getElementById("icat").value=i.category||"";
+  document.getElementById("ipq").value=ingredientPurchaseQty(i);
   document.getElementById("ipu").value=i.purchase_unit||"";
-  document.getElementById("iuu").value=i.usage_unit||"";
   document.getElementById("ipp").value=i.unit_purchase_cost||0;
   document.getElementById("icv").value=i.convert_rate||1;
+  document.getElementById("iuu").value=i.usage_unit||"";
   document.getElementById("iy").value=(i.yield_rate||1)*100;
   calcIngredientPreview();
   location.hash="#ing";
@@ -1059,37 +1083,22 @@ function ingTable(){
   tbl.innerHTML=ings
   .filter(i => i.is_active !== false)
   .sort((a,b)=>{
-
-    // เรียงหมวดก่อน
-    const catCompare =
-      String(a.category || "")
-      .localeCompare(
-        String(b.category || ""),
-        "th"
-      );
-
-    if(catCompare !== 0) return catCompare;
-
-    // ถ้าหมวดเดียวกัน เรียงชื่อ
-    return String(a.name || "")
-      .localeCompare(
-        String(b.name || ""),
-        "th"
-      );
-
+    const catCompare=String(a.category||"").localeCompare(String(b.category||""),"th");
+    if(catCompare!==0) return catCompare;
+    return String(a.name||"").localeCompare(String(b.name||""),"th");
   })
   .map(i=>`<tr>
     <td>${i.name}</td>
     <td>${i.category||""}</td>
+    <td class="text-right td-mono">${Number(ingredientPurchaseQty(i)).toLocaleString("th-TH")}</td>
     <td>${i.purchase_unit||""}</td>
     <td class="text-right td-mono">${B(i.unit_purchase_cost)}</td>
-    <td class="text-right td-mono">${Number(i.convert_rate||0).toLocaleString("th-TH")}
-${i.usage_unit || i.purchase_unit || ""}</td>
+    <td class="text-right td-mono">${Number(i.convert_rate||0).toLocaleString("th-TH")}</td>
     <td>${i.usage_unit||""}</td>
     <td>${((i.yield_rate||1)*100).toFixed(0)}%</td>
     <td class="text-right td-mono">${B(i.cost_per_use)}</td>
     <td><button class="btn btn-secondary btn-sm" onclick="editIngredient('${i.id}')">แก้ไข</button> <button class="btn btn-danger btn-sm" onclick="delIng('${i.id}')">ลบ</button></td>
-  </tr>`).join("")||'<tr><td colspan="9" class="empty">ยังไม่มีวัตถุดิบ</td></tr>';
+  </tr>`).join("")||'<tr><td colspan="10" class="empty">ยังไม่มีวัตถุดิบ</td></tr>';
 }
 async function delIng(id){
   if(!confirm("ปิดใช้งานวัตถุดิบนี้? ข้อมูลเก่าจะยังอยู่")) return;
@@ -1108,145 +1117,6 @@ async function delIng(id){
   ingTable();
   showSaveHint();
 }
-/* ─────────────── RECIPES ─────────────── */
-function deliveryPrice(price,gp){const g=Number(gp||0)/100;return g>=1?0:Number(price||0)/(1-g)}
-function selectable(){
-  return ings.map(i=>({t:"ingredient",id:i.id,n:"[วัตถุดิบ] "+i.name,u:i.usage_unit,c:Number(i.cost_per_use||0)}))
-    .concat(recipes.filter(r=>r.type=="semi").map(r=>({t:"semi",id:r.id,n:"[Semi] "+r.name,u:r.output_unit||"unit",c:Number(r.cost_per_output||0)})));
-}
-function recipeSelects(){
-  document.getElementById("rb").innerHTML=brands.map(b=>`<option value="${b.id}">${b.id} - ${b.name}</option>`).join("");
-  document.getElementById("rs").innerHTML='<option value="">— เลือก —</option>'+selectable().map(x=>`<option value="${x.t}|${x.id}">${x.n} (${B(x.c)}/${x.u||"unit"})</option>`).join("");
-  const bf=document.getElementById("recipeBrandFilter");
-  if(bf) bf.innerHTML='<option value="all">ทุกแบรนด์</option>'+brands.map(b=>`<option value="${b.id}">${b.id} - ${b.name}</option>`).join("");
-}
-function toggleRecipePrice(){
-  document.getElementById("priceBox").style.display=V("rt")==="semi"?"none":"block";
-}
-document.addEventListener("DOMContentLoaded",()=>{
-  const rs=document.getElementById("rs");
-  const rq=document.getElementById("rq");
-  if(rs) rs.onchange=()=>{const [t,id]=(V("rs")||"|").split("|"),it=selectable().find(x=>x.t==t&&x.id==id);if(it){document.getElementById("ru").value=it.u||"";document.getElementById("ruc").textContent=B(it.c);document.getElementById("rlc").textContent=B(it.c*N("rq"))}};
-  if(rq) rq.oninput=()=>{const [t,id]=(V("rs")||"|").split("|"),it=selectable().find(x=>x.t==t&&x.id==id);document.getElementById("rlc").textContent=B((it?it.c:0)*N("rq"))};
-});
-function addLine(){
-  const [t,id]=(V("rs")||"|").split("|"),it=selectable().find(x=>x.t==t&&x.id==id),q=N("rq");
-  if(!it||!q)return alert("เลือกวัตถุดิบและใส่จำนวนก่อน");
-  work.push({source_type:t,source_id:id,source_name:it.n.replace(/\[.*?\] /,""),quantity:q,usage_unit:V("ru")||it.u,unit_cost:it.c,line_cost:q*it.c});
-  document.getElementById("rq").value="";
-  document.getElementById("ru").value="";
-  document.getElementById("ruc").textContent=B(0);
-  document.getElementById("rlc").textContent=B(0);
-  renderWork();
-}
-function renderWork(){
-  const total=work.reduce((a,l)=>a+Number(l.line_cost||0),0);
-  const outQty=N("ry")||1,cpu=total/outQty;
-  const priceVatIn=N("rp"),priceVatOut=priceVatIn/1.07;
-  const gp=N("rgp"),del=deliveryPrice(priceVatIn,gp);
-  const isSemi=V("rt")==="semi";
-  document.getElementById("pb").textContent="หน้าร้าน (รวม VAT) "+B(priceVatIn);
-  document.getElementById("pg").textContent="ถอด VAT "+B(priceVatOut);
-  document.getElementById("pv").textContent="Delivery "+B(del);
-  document.getElementById("pf").textContent="GP "+gp+"%";
-  document.getElementById("workTbl").innerHTML=work.map((l,i)=>`<tr>
-    <td>${l.source_name}</td><td>${l.quantity}</td><td>${l.usage_unit}</td>
-    <td class="text-right td-mono">${B(l.unit_cost)}</td>
-    <td class="text-right td-mono">${B(l.line_cost)}</td>
-    <td><button class="btn btn-danger btn-sm" onclick="work.splice(${i},1);renderWork()">ลบ</button></td>
-  </tr>`).join("");
-  document.getElementById("rtotal").textContent=`ต้นทุนรวม ${B(total)} | Cost/output ${B(cpu)} / ${V("rou")||"unit"}`;
-  if(isSemi){
-    document.getElementById("rfc").textContent="Semi — ไม่คำนวณ FC%";
-  }else{
-    const fcStore=priceVatOut?cpu/priceVatOut*100:0;
-    const fcDel=del?cpu/del*100:0;
-    document.getElementById("rfc").textContent=`FC หน้าร้าน ${priceVatOut?fcStore.toFixed(1)+"%":"—"} | FC Delivery ${del?fcDel.toFixed(1)+"%":"—"}`;
-  }
-}
-async function saveRecipe(){
-  const id=editRec||uid("rec");
-  const total=work.reduce((a,l)=>a+Number(l.line_cost||0),0);
-  const outQty=N("ry")||1;
-  const isSemi=V("rt")==="semi";
-  const priceVatIn=isSemi?0:N("rp");
-  const priceVatOut=priceVatIn/1.07;
-  const gp=N("rgp"),del=deliveryPrice(priceVatIn,gp);
-  const row={id,name:V("rn"),type:V("rt"),brand_id:V("rb")||null,yield_qty:outQty,output_unit:V("rou"),base_price:priceVatIn,gp_price:del,vat_price:priceVatOut,final_price:del,total_cost:total,cost_per_output:total/outQty,delivery_gp_percent:gp,is_active:true};
-  if(!row.name)return alert("ใส่ชื่อเมนู");
-  const {error}=await db.from("recipes").upsert(row);if(error)return alert(error.message);
-  if(editRec)await db.from("recipe_lines").delete().eq("recipe_id",id);
-  for(const l of work)await db.from("recipe_lines").insert({...l,id:uid("line"),recipe_id:id});
-  editRec=null;clearRecipe();await load();showSaveHint();
-}
-function clearRecipe(){["rn","rp","rq","ru","rou"].forEach(i=>{const el=document.getElementById(i);if(el)el.value=""});
-  const ry=document.getElementById("ry");if(ry)ry.value=1;
-  const rgp=document.getElementById("rgp");if(rgp)rgp.value=23;
-  work=[];renderWork();
-}
-function recipeTable(){
-  const tbl=document.getElementById("recTbl");if(!tbl)return;
-  const bf=document.getElementById("recipeBrandFilter");
-  if(bf&&brands.length){
-    const cur=bf.value||"all";
-    bf.innerHTML='<option value="all">ทุกแบรนด์</option>'+brands.map(b=>`<option value="${b.id}">${b.id} - ${b.name}</option>`).join("");
-    bf.value=cur;
-  }
-  const tf=document.getElementById("recipeTypeFilter")?.value||"all";
-  const bfv=bf?.value||"all";
-  const list=recipes.filter(r=>{
-    const t=String(r.type||"").toLowerCase().trim();
-    return (tf==="all"||t===tf)&&(bfv==="all"||String(r.brand_id||"")===bfv);
-  });
-  if(!list.length){tbl.innerHTML='<tr><td colspan="8" class="empty">ไม่มีรายการ</td></tr>';return}
-  tbl.innerHTML=list.map(r=>{
-    const t=String(r.type||"").toLowerCase().trim();
-    const cost=Number(r.cost_per_output||0);
-    const price=Number(r.base_price||0);
-    const profitVal=price-cost;
-    const fcPct=price?(cost/price*100):0;
-    const profitTag=t==="semi"?"<span class='tag tag-gray'>Semi</span>":profitVal>=50?`<span class='tag tag-green'>${B(profitVal)}</span>`:`<span class='tag tag-red'>${B(profitVal)}</span>`;
-    const fcTag=t==="semi"?"—":fcPct<=35?`<span class='tag tag-green'>${fcPct.toFixed(1)}%</span>`:fcPct<=50?`<span class='tag tag-orange'>${fcPct.toFixed(1)}%</span>`:`<span class='tag tag-red'>${fcPct.toFixed(1)}%</span>`;
-    const editBtn=t==="semi"?"":` <button class="btn btn-secondary btn-sm" onclick="editRecipePrice('${r.id}')">แก้ราคา</button>`;
-    return `<tr>
-      <td>${r.name||""}</td>
-      <td><span class="tag tag-gray">${r.type||""}</span></td>
-      <td>${r.brand_id||""}</td>
-      <td class="text-right td-mono">${B(cost)}</td>
-      <td class="text-right td-mono">${t==="semi"?"—":B(price)}</td>
-      <td>${profitTag}</td>
-      <td>${fcTag}</td>
-      <td><button class="btn btn-secondary btn-sm" onclick="showRecipe('${r.id}')">ดู</button>${editBtn} <button class="btn btn-danger btn-sm" onclick="delRecipe('${r.id}')">ลบ</button></td>
-    </tr>`;
-  }).join("");
-}
-function showRecipe(id){
-  const r=recipes.find(x=>x.id==id);if(!r)return;
-  const ls=lines.filter(l=>l.recipe_id==id);
-  const dt=document.getElementById("recipeDetail");
-  const dtTitle=document.getElementById("recipeDetailTitle");
-  if(dtTitle){dtTitle.style.display="block";dtTitle.textContent=r.name}
-  if(dt){
-    dt.style.display="block";
-    dt.innerHTML=`<p style="margin-bottom:8px;color:var(--text2);font-size:12px">Type: ${r.type} | Brand: ${r.brand_id||"—"} | Output: ${r.yield_qty||1} ${r.output_unit||""}</p>
-    <table style="font-size:12px"><thead><tr><th>รายการ</th><th>จำนวน</th><th>หน่วย</th><th class="text-right">ต้นทุน</th></tr></thead><tbody>
-    ${ls.map(l=>`<tr><td>${l.source_name||""}</td><td>${l.quantity||0}</td><td>${l.usage_unit||""}</td><td class="text-right td-mono">${B(l.line_cost)}</td></tr>`).join("")}
-    </tbody></table>
-    <div style="margin-top:8px;font-weight:700">Cost/output: ${B(r.cost_per_output)} | ราคาขาย: ${B(r.base_price)} | Delivery: ${B(r.final_price)}</div>`;
-  }
-}
-async function editRecipePrice(id){
-  const r=recipes.find(x=>x.id===id);if(!r)return;
-  if(String(r.type||"").toLowerCase().trim()==="semi"){alert("Semi ไม่ต้องใส่ราคาขาย");return}
-  const priceText=prompt("ราคาหน้าร้านรวม VAT",Number(r.base_price||0));if(priceText===null)return;
-  const gpText=prompt("GP Delivery %",Number(r.delivery_gp_percent||23));if(gpText===null)return;
-  const price=Number(priceText||0),gp=Number(gpText||0);
-  const delivery=gp>=100?0:price/(1-gp/100),vatOut=price/1.07;
-  const {error}=await db.from("recipes").update({base_price:price,vat_price:vatOut,gp_price:delivery,final_price:delivery,delivery_gp_percent:gp}).eq("id",id);
-  if(error)return alert(error.message);
-  await load();showSaveHint();
-}
-async function delRecipe(id){if(!confirm("ลบ?"))return;await db.from("recipe_lines").delete().eq("recipe_id",id);await db.from("recipes").delete().eq("id",id);await load()}
 
 /* ─────────────── BRANDS ─────────────── */
 async function saveBrand(){
