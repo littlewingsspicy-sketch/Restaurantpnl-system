@@ -1148,10 +1148,25 @@ function ingredientPurchaseQty(i){
   return Number(i?.purchase_qty ?? i?.latest_purchase_qty ?? 1) || 1;
 }
 function calcIngredientCpu(price,purchaseQty,convertRate,yieldPct){
-  const pq=Number(purchaseQty)||1;
-  const cr=Number(convertRate)||1;
-  const y=(Number(yieldPct)||100)/100;
-  return pq&&cr&&y ? Number(price||0)/(pq*cr*y) : 0;
+
+  const p = Number(price || 0);
+
+  // จำนวนที่ซื้อจริง เช่น 5 kg
+  const pq = Number(purchaseQty || 1);
+
+  // สูตรแปลงต่อ 1 หน่วยรับ
+  // เช่น 1 kg = 1000 g
+  const cr = Number(convertRate || 1);
+
+  // Yield %
+  const y = Number(yieldPct || 100) / 100;
+
+  // สูตร:
+  // ราคา ÷ (จำนวนซื้อ × จำนวนหน่วยใช้ต่อ 1 หน่วยรับ × Yield)
+
+  return (pq && cr && y)
+    ? p / (pq * cr * y)
+    : 0;
 }
 function calcIngredientPreview(){
   const el=document.getElementById("icpu");
