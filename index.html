@@ -983,9 +983,44 @@ async function addWorkspacePurchase(date){
   const row={id:uid("pur"),purchase_date:date,ingredient_id:ing.id,ingredient_name:ing.name,category:cat,quantity:qty,purchase_unit:unit,total_cost:total,unit_purchase_cost:uc};
   const res=await db.from("inventory_purchases").insert(row);
   if(res.error){alert(res.error.message);return;}
-  const cpu=calcIngredientCpu(total,qty,ing.convert_rate||1,(ing.yield_rate||1)*100);
-  await db.from("ingredients").update({unit_purchase_cost:total,cost_per_use:cpu,latest_purchase_qty:qty,updated_at:new Date().toISOString()}).eq("id",ing.id);
-  await load(false);
+  const purchaseQty = qty || 1;
+const purchaseTotal = total;
+const convertRate = Number(ing.convert_rate || 1);
+const yieldRate = Number(ing.yield_rate || 1);
+const yieldPct = yieldRate * 100;
+
+const cpu = calcIngredientCpu(
+  purchaseTotal,
+  purchaseQty,
+  convertRate,
+  yieldPct
+);
+
+await db.from("ingredients").update({
+  unit_purchase_cost: purchaseTotal,
+  cost_per_use: cpu,
+  latest_purchase_qty: purchaseQty,
+  purchase_unit: unit,
+  updated_at: new Date().toISOString()
+}).eq("id", ing.id);
+
+await db.from("ingredient_cost_history").insert({
+  id: uid("costhist"),
+  cost_date: date,
+  ingredient_id: ing.id,
+  ingredient_name: ing.name,
+  purchase_qty: purchaseQty,
+  purchase_unit: unit,
+  purchase_total: purchaseTotal,
+  convert_rate: convertRate,
+  usage_unit: ing.usage_unit || "",
+  yield_rate: yieldRate,
+  cost_per_use: cpu,
+  source: "workspace_purchase",
+  source_id: row.id
+});
+
+await load(false);
   OPEN_DAYS.add("day_"+date);
   renderWorkspace();
   showSaveHint();
