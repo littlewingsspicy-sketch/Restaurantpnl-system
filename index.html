@@ -426,15 +426,17 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 <div><label>จำนวนรับ</label><input id="ipq" oninput="calcIngredientPreview()" placeholder="เช่น 1" type="number" value="1"/></div>
 <div><label>หน่วยรับ</label><input id="ipu" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วยรับ"/></div>
 <div><label>ราคา (฿)</label><input id="ipp" oninput="calcIngredientPreview()" placeholder="เช่น 90" type="number"/></div>
-<div><label>จำนวนหน่วยใช้</label><input id="icv" oninput="calcIngredientPreview()" placeholder="เช่น 1000" type="number" value="1"/></div>
+<div><label>จำนวนหน่วยใช้ต่อ 1 หน่วยรับ </label><input id="icv" oninput="calcIngredientPreview()" placeholder="เช่น 1000 g ต่อ 1 kg / 6 กระป๋องต่อ 1 แพค" type="number" value="1"/></div>
 <div><label>หน่วยใช้</label><input id="iuu" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วยใช้"/></div>
 <div><label>Yield วัตถุดิบ %</label><input id="iy" oninput="calcIngredientPreview()" type="number" value="100"/></div>
 <div><label>ต้นทุนต่อหน่วยใช้ (Auto)</label><input id="icpu" readonly=""/></div>
 </div>
-<p class="help" style="margin-top:8px">สูตร: ต้นทุนต่อหน่วยใช้ = ราคา ÷ (จำนวนรับ × จำนวนหน่วยใช้ × Yield)</p>
+<p class="help" style="margin-top:8px">
+  กรอกจำนวนหน่วยใช้ที่ได้จาก 1 หน่วยรับ เช่น 1 kg = 1000 g, 1 แพค = 6 กระป๋อง
+</p>
 <div class="btn-row"><button class="btn btn-primary" onclick="saveIng()">บันทึกวัตถุดิบ</button><button class="btn btn-secondary" onclick="clearIng()">ล้าง</button></div>
 </div>
-<div class="card"><div class="tbl-wrap"><table><thead><tr><th>ชื่อวัตถุดิบ</th><th>หมวดหมู่</th><th class="text-right">จำนวนรับ</th><th>หน่วยรับ</th><th class="text-right">ราคา</th><th class="text-right">จำนวนหน่วยใช้</th><th>หน่วยใช้</th><th>Yield วัตถุดิบ</th><th class="text-right">ต้นทุนต่อหน่วยใช้</th><th></th></tr></thead><tbody id="ingTbl"></tbody></table></div></div>
+<div class="card"><div class="tbl-wrap"><table><thead><tr><th>ชื่อวัตถุดิบ</th><th>หมวดหมู่</th><th class="text-right">จำนวนรับ</th><th>หน่วยรับ</th><th class="text-right">ราคา</th><th class="text-right">จำนวนหน่วยใช้ต่อ 1 หน่วยรับ</th><th>หน่วยใช้</th><th>Yield วัตถุดิบ</th><th class="text-right">ต้นทุนต่อหน่วยใช้</th><th></th></tr></thead><tbody id="ingTbl"></tbody></table></div></div>
 </section>
 <!-- ── FOOD COST ── -->
 
