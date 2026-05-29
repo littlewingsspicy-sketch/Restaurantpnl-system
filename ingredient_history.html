@@ -7,52 +7,246 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f5f4f0;--surface:#fff;--surface2:#faf9f6;--border:#e8e3da;--border2:#d5cfc3;--text:#1a1916;--text2:#6b6560;--text3:#9c968e;--accent:#d4a843;--accent-soft:#fdf3dc;--green:#1a7a4a;--green-bg:#edf7f2;--red:#c0392b;--red-bg:#fdf0ee;--blue:#2563a8;--blue-bg:#eef4fd;--radius:14px;--radius-sm:9px;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04)}
+:root{--bg:#f5f4f0;--surface:#fff;--surface2:#faf9f6;--border:#e8e3da;--border2:#d5cfc3;--text:#1a1916;--text2:#6b6560;--text3:#9c968e;--accent:#d4a843;--accent-soft:#fdf3dc;--green:#1a7a4a;--green-bg:#edf7f2;--red:#c0392b;--red-bg:#fdf0ee;--orange:#c47a1e;--orange-bg:#fef4e3;--blue:#2563a8;--blue-bg:#eef4fd;--radius:14px;--radius-sm:9px;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.55}
 .topbar{position:sticky;top:0;z-index:50;background:var(--text);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;box-shadow:0 2px 12px rgba(0,0,0,.15)}
 .topbar-brand{font-size:17px;font-weight:700;color:#fff}.topbar-brand span{color:var(--accent);font-size:13px;font-weight:500;margin-left:4px;font-family:'DM Mono',monospace}.topbar-status{font-size:12px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace}.topbar-left,.topbar-right{display:flex;align-items:center;gap:16px}
-.wrap{max-width:1400px;margin:0 auto;padding:24px 20px}.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;border:1px solid transparent;font-family:'DM Sans',sans-serif;white-space:nowrap;text-decoration:none}.btn-ghost{background:none;color:rgba(255,255,255,.55);padding:7px 12px;font-size:13px}.btn-ghost:hover{background:rgba(255,255,255,.08);color:#fff}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}.card-title{font-size:16px;font-weight:700;margin-bottom:16px}.card-sm-title{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text3);margin-bottom:12px}.help{font-size:13px;color:var(--text3);line-height:1.6}
+.wrap{max-width:1400px;margin:0 auto;padding:24px 20px}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid transparent;font-family:'DM Sans',sans-serif;white-space:nowrap;text-decoration:none}
+.btn-ghost{background:none;border-color:transparent;color:rgba(255,255,255,.55);padding:7px 12px;font-size:13px}.btn-ghost:hover{background:rgba(255,255,255,.08);color:#fff}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.card-title{font-size:16px;font-weight:700;margin-bottom:16px}.card-sm-title{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text3);margin-bottom:12px}.help{font-size:13px;color:var(--text3);line-height:1.6}
 input,select{width:100%;padding:10px 13px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-size:15px;font-family:'DM Sans',sans-serif}
 .main-layout{display:grid;grid-template-columns:420px 1fr;gap:20px;align-items:start}.search-row{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}.search-row input{max-width:260px}.search-row select{max-width:170px}
-.item-card{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);background:var(--surface);margin-bottom:6px}.item-card:hover{background:var(--surface2)}.item-card.active{border-color:var(--accent);background:var(--accent-soft)}.item-name{font-weight:600;font-size:15px;margin-bottom:3px}.item-meta{display:flex;gap:6px;flex-wrap:wrap}
+.item-card{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);background:var(--surface);margin-bottom:6px;transition:all .15s}.item-card:hover{background:var(--surface2)}.item-card.active{border-color:var(--accent);background:var(--accent-soft)}
+.item-name{font-weight:600;font-size:15px;margin-bottom:3px}.item-meta{display:flex;gap:6px;flex-wrap:wrap}
 .tag{display:inline-block;padding:3px 9px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}.tag-green{background:var(--green-bg);color:var(--green)}.tag-red{background:var(--red-bg);color:var(--red)}.tag-blue{background:var(--blue-bg);color:var(--blue)}.tag-gray{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
 .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:16px 0}.kpi-pill{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px}.kpi-pill-label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}.kpi-pill-value{font-size:20px;font-weight:700;line-height:1}.kpi-pill-sub{font-size:11px;color:var(--text3);margin-top:4px;font-family:'DM Mono',monospace}.kpi-pill.green{border-top:3px solid var(--green)}.kpi-pill.red{border-top:3px solid var(--red)}.kpi-pill.accent{border-top:3px solid var(--accent)}.kpi-pill.blue{border-top:3px solid var(--blue)}
 .detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)}.detail-name{font-size:22px;font-weight:700}.detail-meta{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
-.chart-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin:14px 0}.chart-title{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px}.chart-note{font-size:12px;color:var(--text3);margin-top:8px}.chart-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 14px}.chart-controls select{max-width:160px}
-.svg-chart{width:100%;min-height:260px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;overflow:hidden}.svg-chart svg{width:100%;height:240px;display:block}
-.month-bar-chart{height:240px;display:flex;align-items:end;gap:8px;padding:12px 6px 28px;border-bottom:1px solid var(--border2);position:relative}.month-bar{flex:1;min-width:18px;background:var(--blue);border-radius:8px 8px 0 0;position:relative}.month-bar:hover{background:#174b86}.month-bar-label{position:absolute;bottom:-24px;left:50%;transform:translateX(-50%) rotate(-35deg);font-size:10px;color:var(--text3);white-space:nowrap}.month-bar-value{position:absolute;top:-24px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text2);font-family:'DM Mono',monospace;white-space:nowrap;display:none}.month-bar:hover .month-bar-value{display:block}
+.chart-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin:14px 0}.chart-title{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px}.line-chart{height:220px;display:flex;align-items:end;gap:8px;padding:12px 6px 28px;border-bottom:1px solid var(--border2);position:relative}.bar{flex:1;min-width:14px;background:var(--accent);border-radius:8px 8px 0 0;position:relative}.bar:hover{background:#c49a35}.bar-label{position:absolute;bottom:-24px;left:50%;transform:translateX(-50%) rotate(-35deg);font-size:10px;color:var(--text3);white-space:nowrap}.bar-value{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text2);font-family:'DM Mono',monospace;white-space:nowrap;display:none}.bar:hover .bar-value{display:block}
 .tbl-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th{padding:10px 12px;border-bottom:2px solid var(--border);text-align:left;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);white-space:nowrap;background:var(--surface2)}td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:14px}tr:hover td{background:var(--surface2)}.td-r{text-align:right}.td-mono{font-family:'DM Mono',monospace;font-size:13px}.empty{text-align:center;padding:40px;color:var(--text3);font-size:15px}.divider{height:1px;background:var(--border);margin:16px 0}
 @media(max-width:1100px){.main-layout{grid-template-columns:1fr}}@media(max-width:500px){.wrap{padding:16px 12px}}
+.chart-note{font-size:12px;color:var(--text3);margin-top:8px}
+.chart-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 14px}
+.chart-controls select{max-width:160px}
+.svg-chart{width:100%;min-height:260px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;overflow:hidden}
+.svg-chart svg{width:100%;height:240px;display:block}
+.month-bar-chart{height:240px;display:flex;align-items:end;gap:8px;padding:12px 6px 28px;border-bottom:1px solid var(--border2);position:relative}
+.month-bar{flex:1;min-width:18px;background:var(--blue);border-radius:8px 8px 0 0;position:relative}
+.month-bar:hover{background:#174b86}
+.month-bar-label{position:absolute;bottom:-24px;left:50%;transform:translateX(-50%) rotate(-35deg);font-size:10px;color:var(--text3);white-space:nowrap}
+.month-bar-value{position:absolute;top:-24px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text2);font-family:'DM Mono',monospace;white-space:nowrap;display:none}
+.month-bar:hover .month-bar-value{display:block}
 </style>
 </head>
 <body>
-<header class="topbar"><div class="topbar-left"><div class="topbar-brand">📈 Ingredient Cost History<span>NRK ERP</span></div><div class="topbar-status" id="status">Loading…</div></div><div class="topbar-right"><a href="index.html" class="btn btn-ghost">← Dashboard</a><button class="btn btn-ghost" onclick="logout()">ออกจากระบบ</button></div></header>
-<div class="wrap"><div class="main-layout"><div class="panel-left"><div class="card"><div class="card-title">รายการวัตถุดิบ</div><div class="search-row"><input id="searchBox" placeholder="ค้นหาวัตถุดิบ..." oninput="renderIngredientList()"><select id="categoryFilter" onchange="renderIngredientList()"><option value="all">ทุกหมวด</option></select></div><div id="ingredientList"></div></div></div><div class="panel-right"><div class="card"><div class="empty" id="detailEmpty">👈 เลือกวัตถุดิบจากรายการซ้าย เพื่อดูประวัติต้นทุน</div><div id="detailContent" style="display:none"></div></div></div></div></div>
+<header class="topbar">
+  <div class="topbar-left"><div class="topbar-brand">📈 Ingredient Cost History<span>NRK ERP</span></div><div class="topbar-status" id="status">Loading…</div></div>
+  <div class="topbar-right"><a href="index.html" class="btn btn-ghost">← Dashboard</a><button class="btn btn-ghost" onclick="logout()">ออกจากระบบ</button></div>
+</header>
+<div class="wrap"><div class="main-layout">
+  <div class="panel-left"><div class="card"><div class="card-title">รายการวัตถุดิบ</div><div class="search-row"><input id="searchBox" placeholder="ค้นหาวัตถุดิบ..." oninput="renderIngredientList()"><select id="categoryFilter" onchange="renderIngredientList()"><option value="all">ทุกหมวด</option></select></div><div id="ingredientList"></div></div></div>
+  <div class="panel-right"><div class="card"><div class="empty" id="detailEmpty">👈 เลือกวัตถุดิบจากรายการซ้าย เพื่อดูประวัติต้นทุน</div><div id="detailContent" style="display:none"></div></div></div>
+</div></div>
 <script>
 const SUPABASE_URL="https://mjbxskhfvaxxcopzesic.supabase.co";
-const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXJhYmFzZSIsInJlZiI6Im1qYnhza2hmdmF4eGNvcHplc2ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjg4NTIsImV4cCI6MjA5MDk0NDg1Mn0.G2W728EIN6qfALpW06YCdSkVKKnAO1bULMGIlei-Z2U";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qYnhza2hmdmF4eGNvcHplc2ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjg4NTIsImV4cCI6MjA5MDk0NDg1Mn0.G2W728EIN6qfALpW06YCdSkVKKnAO1bULMGIlei-Z2U";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 let ingredients=[],historyRows=[],selectedId=null;
 const B=n=>"฿"+Number(n||0).toLocaleString("th-TH",{minimumFractionDigits:2,maximumFractionDigits:4});
 const N=n=>Number(n||0);
 async function checkLogin(){const r=await db.auth.getSession();if(!r.data.session){location.href="login.html?next=ingredient_history.html";return false}return true}
 async function logout(){await db.auth.signOut();location.href="login.html"}
-async function loadAll(){document.getElementById("status").textContent="Loading…";const [ingRes,histRes]=await Promise.all([db.from("ingredients").select("*"),db.from("ingredient_cost_history").select("*").order("cost_date",{ascending:false}).limit(10000)]);if(ingRes.error){alert(ingRes.error.message);return}if(histRes.error){alert(histRes.error.message);return}ingredients=ingRes.data||[];historyRows=histRes.data||[];document.getElementById("status").textContent="Loaded ✓";populateCategoryFilter();renderIngredientList();if(selectedId)showIngredient(selectedId)}
+async function loadAll(){
+  document.getElementById("status").textContent="Loading…";
+  const [ingRes,histRes]=await Promise.all([
+    db.from("ingredients").select("*"),
+    db.from("ingredient_cost_history").select("*").order("cost_date",{ascending:false}).limit(10000)
+  ]);
+  if(ingRes.error){alert(ingRes.error.message);return}
+  if(histRes.error){alert(histRes.error.message);return}
+  ingredients=ingRes.data||[];historyRows=histRes.data||[];
+  document.getElementById("status").textContent="Loaded ✓";
+  populateCategoryFilter();renderIngredientList();if(selectedId)showIngredient(selectedId);
+}
 function activeIngredients(){return ingredients.filter(i=>i.is_active!==false)}
 function getLatestHistory(ingredientId){return historyRows.filter(r=>String(r.ingredient_id)===String(ingredientId)).sort((a,b)=>String(b.cost_date||"").localeCompare(String(a.cost_date||"")))[0]}
 function latestCost(ing){const h=getLatestHistory(ing.id);return h?N(h.cost_per_use):N(ing.cost_per_use)}
 function populateCategoryFilter(){const cats=[...new Set(activeIngredients().map(i=>i.category||"ไม่ระบุ"))].sort((a,b)=>String(a).localeCompare(String(b),"th"));document.getElementById("categoryFilter").innerHTML='<option value="all">ทุกหมวด</option>'+cats.map(c=>`<option value="${c}">${c}</option>`).join("")}
-function renderIngredientList(){const q=String(document.getElementById("searchBox")?.value||"").toLowerCase(),cat=document.getElementById("categoryFilter")?.value||"all";const list=activeIngredients().filter(i=>[i.name,i.category].join(" ").toLowerCase().includes(q)&&(cat==="all"||String(i.category||"ไม่ระบุ")===cat)).sort((a,b)=>{const c=String(a.category||"").localeCompare(String(b.category||""),"th");return c!==0?c:String(a.name||"").localeCompare(String(b.name||""),"th")});const el=document.getElementById("ingredientList");if(!list.length){el.innerHTML='<div class="empty" style="padding:24px">ไม่พบวัตถุดิบ</div>';return}el.innerHTML=list.map(i=>{const rows=historyRows.filter(r=>String(r.ingredient_id)===String(i.id)),cost=latestCost(i),sel=String(i.id)===String(selectedId);return `<div class="item-card ${sel?'active':''}" onclick="showIngredient('${i.id}')"><div><div class="item-name">${i.name||""}</div><div class="item-meta"><span class="tag tag-gray">${i.category||"ไม่ระบุ"}</span><span class="tag tag-blue">${rows.length} records</span></div></div><div style="text-align:right;font-family:'DM Mono',monospace;font-size:13px"><div style="font-weight:700">${B(cost)}</div><div style="color:var(--text3);font-size:11px">/${i.usage_unit||"unit"}</div></div></div>`}).join("")}
+function renderIngredientList(){
+  const q=String(document.getElementById("searchBox")?.value||"").toLowerCase(),cat=document.getElementById("categoryFilter")?.value||"all";
+  const list=activeIngredients().filter(i=>[i.name,i.category].join(" ").toLowerCase().includes(q)&&(cat==="all"||String(i.category||"ไม่ระบุ")===cat)).sort((a,b)=>{const c=String(a.category||"").localeCompare(String(b.category||""),"th");return c!==0?c:String(a.name||"").localeCompare(String(b.name||""),"th")});
+  const el=document.getElementById("ingredientList");if(!list.length){el.innerHTML='<div class="empty" style="padding:24px">ไม่พบวัตถุดิบ</div>';return}
+  el.innerHTML=list.map(i=>{const rows=historyRows.filter(r=>String(r.ingredient_id)===String(i.id)),cost=latestCost(i),sel=String(i.id)===String(selectedId);return `<div class="item-card ${sel?'active':''}" onclick="showIngredient('${i.id}')"><div><div class="item-name">${i.name||""}</div><div class="item-meta"><span class="tag tag-gray">${i.category||"ไม่ระบุ"}</span><span class="tag tag-blue">${rows.length} records</span></div></div><div style="text-align:right;font-family:'DM Mono',monospace;font-size:13px"><div style="font-weight:700">${B(cost)}</div><div style="color:var(--text3);font-size:11px">/${i.usage_unit||"unit"}</div></div></div>`}).join("");
+}
 function minMax(rows){if(!rows.length)return{min:0,max:0,avg:0,first:0,last:0,change:0};const costs=rows.map(r=>N(r.cost_per_use));const min=Math.min(...costs),max=Math.max(...costs),avg=costs.reduce((a,b)=>a+b,0)/costs.length;const sorted=[...rows].sort((a,b)=>String(a.cost_date||"").localeCompare(String(b.cost_date||"")));const first=N(sorted[0]?.cost_per_use),last=N(sorted[sorted.length-1]?.cost_per_use),change=first?((last-first)/first)*100:0;return{min,max,avg,first,last,change}}
-function uniqueYearsForRows(rows){const years=[...new Set(rows.map(r=>String(r.cost_date||"").slice(0,4)).filter(Boolean))];years.sort((a,b)=>Number(b)-Number(a));if(!years.length)years.push(String(new Date().getFullYear()));return years}
-function getSelectedHistoryYear(){const el=document.getElementById("historyYearFilter");return el?.value||String(new Date().getFullYear())}
-function changeHistoryYear(){if(selectedId)showIngredient(selectedId)}
-function renderDailyLineChart(rows,unit){const sorted=[...rows].filter(r=>r.cost_date).sort((a,b)=>String(a.cost_date).localeCompare(String(b.cost_date))).slice(-30);if(!sorted.length)return '<div class="empty" style="padding:24px">ยังไม่มีข้อมูล 30 วันล่าสุด</div>';const costs=sorted.map(r=>N(r.cost_per_use)),max=Math.max(...costs),min=Math.min(...costs),range=Math.max(max-min,.0001);const W=760,H=220,padL=52,padR=18,padT=24,padB=42,chartW=W-padL-padR,chartH=H-padT-padB;const pts=sorted.map((r,i)=>{const x=padL+(sorted.length===1?chartW/2:(i/(sorted.length-1))*chartW);const y=padT+chartH-((N(r.cost_per_use)-min)/range)*chartH;return{x,y,r}});const path=pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' ');return `<div class="chart-card"><div class="chart-title">กราฟเส้น Cost/unit รายวัน — 30 รายการล่าสุด</div><div class="svg-chart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+chartH}" stroke="#d5cfc3" stroke-width="1"/><line x1="${padL}" y1="${padT+chartH}" x2="${padL+chartW}" y2="${padT+chartH}" stroke="#d5cfc3" stroke-width="1"/><text x="4" y="${padT+4}" font-size="11" fill="#9c968e">${B(max)}</text><text x="4" y="${padT+chartH}" font-size="11" fill="#9c968e">${B(min)}</text><path d="${path}" fill="none" stroke="#d4a843" stroke-width="3" vector-effect="non-scaling-stroke"/>${pts.map(p=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="#d4a843"><title>${p.r.cost_date} · ${B(p.r.cost_per_use)}/${unit||"unit"}</title></circle>`).join("")}${pts.map((p,i)=>{if(sorted.length>12&&i%3!==0&&i!==sorted.length-1)return "";return `<text x="${p.x.toFixed(1)}" y="${H-10}" font-size="10" fill="#9c968e" text-anchor="middle">${String(p.r.cost_date||"").slice(5)}</text>`}).join("")}</svg></div><div class="chart-note">ชี้จุดบนกราฟเพื่อดูวันที่และราคา</div></div>`}
-function monthlyAverageRows(rows,year){return Array.from({length:12},(_,i)=>String(i+1).padStart(2,"0")).map(m=>{const key=`${year}-${m}`;const rs=rows.filter(r=>String(r.cost_date||"").slice(0,7)===key);const avg=rs.length?rs.reduce((a,r)=>a+N(r.cost_per_use),0)/rs.length:0;return{month:m,avg,count:rs.length}})}
-function renderMonthlyAvgBarChart(rows,unit,year){const data=monthlyAverageRows(rows,year),max=Math.max(...data.map(d=>d.avg),1),hasData=data.some(d=>d.count>0);if(!hasData)return `<div class="chart-card"><div class="chart-title">กราฟแท่งค่าเฉลี่ยรายเดือน — ${year}</div><div class="empty" style="padding:24px">ยังไม่มีข้อมูลในปี ${year}</div></div>`;return `<div class="chart-card"><div class="chart-title">กราฟแท่ง Average Cost/unit รายเดือน — ${year}</div><div class="month-bar-chart">${data.map(d=>{const h=d.count?Math.max(8,(d.avg/max)*190):0;return `<div class="month-bar" style="height:${h}px;opacity:${d.count?1:.18}"><div class="month-bar-value">${d.count?`${B(d.avg)}/${unit||"unit"} · ${d.count} records`:"ไม่มีข้อมูล"}</div><div class="month-bar-label">${d.month}</div></div>`}).join("")}</div><div class="chart-note">แสดงค่าเฉลี่ย Cost/unit ของแต่ละเดือนในปีที่เลือก</div></div>`}
-function showIngredient(id){selectedId=id;renderIngredientList();const ing=ingredients.find(i=>String(i.id)===String(id));if(!ing)return;const rows=historyRows.filter(r=>String(r.ingredient_id)===String(id)).sort((a,b)=>String(b.cost_date||"").localeCompare(String(a.cost_date||"")));const stats=minMax(rows),latest=rows[0],unit=ing.usage_unit||latest?.usage_unit||"unit";document.getElementById("detailEmpty").style.display="none";document.getElementById("detailContent").style.display="block";const years=uniqueYearsForRows(rows);const selectedYear=getSelectedHistoryYear();const yearForChart=years.includes(selectedYear)?selectedYear:years[0];let h=`<div class="detail-header"><div><div class="detail-name">${ing.name||""}</div><div class="detail-meta"><span class="tag tag-gray">${ing.category||"ไม่ระบุ"}</span><span class="tag tag-blue">${rows.length} records</span><span class="tag ${stats.change>=0?'tag-red':'tag-green'}">Change ${stats.change.toFixed(1)}%</span></div></div></div>`;h+=`<div class="kpi-row"><div class="kpi-pill accent"><div class="kpi-pill-label">Latest Cost/unit</div><div class="kpi-pill-value">${B(latest?latest.cost_per_use:ing.cost_per_use)}</div><div class="kpi-pill-sub">/${unit}</div></div><div class="kpi-pill blue"><div class="kpi-pill-label">Average</div><div class="kpi-pill-value">${B(stats.avg)}</div><div class="kpi-pill-sub">ค่าเฉลี่ยจาก History</div></div><div class="kpi-pill green"><div class="kpi-pill-label">Lowest</div><div class="kpi-pill-value">${B(stats.min)}</div><div class="kpi-pill-sub">ต่ำสุด</div></div><div class="kpi-pill red"><div class="kpi-pill-label">Highest</div><div class="kpi-pill-value">${B(stats.max)}</div><div class="kpi-pill-sub">สูงสุด</div></div></div>`;h+=`<div class="chart-controls"><label style="margin:0">ปีสำหรับกราฟรายเดือน</label><select id="historyYearFilter" onchange="changeHistoryYear()">${years.map(y=>`<option value="${y}" ${String(y)===String(yearForChart)?"selected":""}>${y}</option>`).join("")}</select></div>`;h+=renderDailyLineChart(rows,unit);h+=renderMonthlyAvgBarChart(rows,unit,yearForChart);h+=`<div class="divider"></div><div class="card-sm-title">ประวัติต้นทุน</div><div class="tbl-wrap"><table><thead><tr><th>วันที่</th><th class="td-r">จำนวนรับ</th><th>หน่วยรับ</th><th class="td-r">ราคา</th><th class="td-r">จำนวนหน่วยใช้</th><th>หน่วยใช้</th><th class="td-r">Yield</th><th class="td-r">Cost/unit</th><th>Source</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.cost_date||""}</td><td class="td-r td-mono">${N(r.purchase_qty).toLocaleString("th-TH")}</td><td>${r.purchase_unit||""}</td><td class="td-r td-mono">${B(r.purchase_total)}</td><td class="td-r td-mono">${N(r.convert_rate).toLocaleString("th-TH")}</td><td>${r.usage_unit||""}</td><td class="td-r td-mono">${(N(r.yield_rate)*100).toFixed(0)}%</td><td class="td-r td-mono" style="font-weight:700">${B(r.cost_per_use)}</td><td>${r.source||""}</td></tr>`).join("")||'<tr><td colspan="9" class="empty">ยังไม่มีประวัติต้นทุน</td></tr>'}</tbody></table></div>`;document.getElementById("detailContent").innerHTML=h}
+function renderCostChart(rows,unit){
+  const sorted=[...rows].sort((a,b)=>String(a.cost_date||"").localeCompare(String(b.cost_date||""))),lastRows=sorted.slice(-20);
+  if(!lastRows.length)return '<div class="empty" style="padding:24px">ยังไม่มีประวัติต้นทุน</div>';
+  const costs=lastRows.map(r=>N(r.cost_per_use)),max=Math.max(...costs,1),min=Math.min(...costs,0),range=Math.max(max-min,.0001);
+  return `<div class="chart-card"><div class="chart-title">กราฟ Cost/unit ล่าสุด ${lastRows.length} รายการ</div><div class="line-chart">${lastRows.map(r=>{const cost=N(r.cost_per_use),h=20+((cost-min)/range)*180,label=String(r.cost_date||"").slice(5);return `<div class="bar" style="height:${h}px"><div class="bar-value">${B(cost)}/${unit||"unit"}</div><div class="bar-label">${label}</div></div>`}).join("")}</div></div>`;
+}
+function uniqueYearsForRows(rows){
+  const years=[...new Set(rows.map(r=>String(r.cost_date||"").slice(0,4)).filter(Boolean))];
+  years.sort((a,b)=>Number(b)-Number(a));
+  if(!years.length)years.push(String(new Date().getFullYear()));
+  return years;
+}
+
+function getSelectedHistoryYear(){
+  const el=document.getElementById("historyYearFilter");
+  return el?.value||String(new Date().getFullYear());
+}
+
+function changeHistoryYear(){
+  if(selectedId)showIngredient(selectedId);
+}
+
+function renderDailyLineChart(rows,unit,monthOverride){
+  const month=monthOverride||"";
+
+  const filtered=[...rows]
+    .filter(r=>r.cost_date)
+    .filter(r=>!month || String(r.cost_date).slice(0,7)===month)
+    .sort((a,b)=>String(a.cost_date).localeCompare(String(b.cost_date)))
+    .slice(-30);
+
+  if(!filtered.length){
+    return '<div class="empty" style="padding:24px">ยังไม่มีข้อมูลในเดือนนี้</div>';
+  }
+
+  const costs=filtered.map(r=>N(r.cost_per_use));
+  const max=Math.max(...costs);
+  const min=Math.min(...costs);
+  const range=Math.max(max-min,.0001);
+
+  const W=760,H=260,padL=58,padR=18,padT=36,padB=62;
+  const chartW=W-padL-padR;
+  const chartH=H-padT-padB;
+
+  const pts=filtered.map((r,i)=>{
+    const x=padL+(filtered.length===1?chartW/2:(i/(filtered.length-1))*chartW);
+    const y=padT+chartH-((N(r.cost_per_use)-min)/range)*chartH;
+    return {x,y,r};
+  });
+
+  const path=pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' ');
+
+  return `<div class="chart-card">
+    <div class="chart-title">กราฟเส้น Cost/unit รายวัน ${month?`— ${month}`:"— 30 รายการล่าสุด"}</div>
+    <div class="svg-chart">
+      <svg viewBox="0 0 ${W} ${H}">
+        <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+chartH}" stroke="#d5cfc3"/>
+        <line x1="${padL}" y1="${padT+chartH}" x2="${padL+chartW}" y2="${padT+chartH}" stroke="#d5cfc3"/>
+        <text x="4" y="${padT+4}" font-size="11" fill="#9c968e">${B(max)}</text>
+        <text x="4" y="${padT+chartH}" font-size="11" fill="#9c968e">${B(min)}</text>
+        <path d="${path}" fill="none" stroke="#d4a843" stroke-width="3"/>
+        ${pts.map(p=>`
+          <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="#d4a843"></circle>
+          <text x="${p.x.toFixed(1)}" y="${(p.y-10).toFixed(1)}" font-size="10" fill="#6b6560" text-anchor="middle">${B(p.r.cost_per_use)}</text>
+          <text x="${p.x.toFixed(1)}" y="${H-24}" font-size="10" fill="#9c968e" text-anchor="middle">${String(p.r.cost_date).slice(5)}</text>
+        `).join("")}
+      </svg>
+    </div>
+    <div class="chart-note">แสดงวันที่และราคาในกราฟโดยตรง</div>
+  </div>`;
+}
+
+function monthlyAverageRows(rows,year){
+  return Array.from({length:12},(_,i)=>String(i+1).padStart(2,"0")).map(m=>{
+    const key=`${year}-${m}`;
+    const rs=rows.filter(r=>String(r.cost_date||"").slice(0,7)===key);
+
+    const avg=rs.length
+      ? rs.reduce((a,r)=>a+N(r.cost_per_use),0)/rs.length
+      : 0;
+
+    const totalPurchase=rs.reduce((a,r)=>a+N(r.purchase_total),0);
+    const qty=rs.reduce((a,r)=>a+N(r.purchase_qty),0);
+
+    return{
+      month:m,
+      avg,
+      count:rs.length,
+      totalPurchase,
+      qty
+    };
+  });
+}
+
+function renderMonthlyAvgBarChart(rows,unit,year){
+  const data=monthlyAverageRows(rows,year);
+  const max=Math.max(...data.map(d=>d.avg),1);
+  const hasData=data.some(d=>d.count>0);
+
+  if(!hasData)return `<div class="chart-card">
+    <div class="chart-title">กราฟแท่งค่าเฉลี่ยรายเดือน — ${year}</div>
+    <div class="empty" style="padding:24px">ยังไม่มีข้อมูลในปี ${year}</div>
+  </div>`;
+
+  return `<div class="chart-card">
+    <div class="chart-title">กราฟแท่ง Average Cost/unit รายเดือน — ${year}</div>
+    <div class="month-bar-chart">
+      ${data.map(d=>{
+        const h=d.count?Math.max(8,(d.avg/max)*190):0;
+        return `<div class="month-bar" style="height:${h}px;opacity:${d.count?1:.18}">
+          <div class="month-bar-value">
+  ${d.count
+    ? `${B(d.avg)}/${unit||"unit"} · ซื้อรวม ${B(d.totalPurchase)} · Qty ${d.qty.toLocaleString("th-TH")} · ${d.count} records`
+    : "ไม่มีข้อมูล"}
+</div>
+          <div class="month-bar-label">${d.month}</div>
+        </div>`;
+      }).join("")}
+    </div>
+    <div class="chart-note">แสดงค่าเฉลี่ย Cost/unit ของแต่ละเดือนในปีที่เลือก</div>
+  </div>`;
+}
+function showIngredient(id){
+  selectedId=id;
+  renderIngredientList();
+
+  const ing=ingredients.find(i=>String(i.id)===String(id));
+  if(!ing)return;
+
+  const rows=historyRows
+    .filter(r=>String(r.ingredient_id)===String(id))
+    .sort((a,b)=>String(b.cost_date||"").localeCompare(String(a.cost_date||"")));
+
+  const stats=minMax(rows);
+  const latest=rows[0];
+  const unit=ing.usage_unit||latest?.usage_unit||"unit";
+
+  document.getElementById("detailEmpty").style.display="none";
+  document.getElementById("detailContent").style.display="block";
+
+  const years=uniqueYearsForRows(rows);
+  const selectedYear=getSelectedHistoryYear();
+  const yearForChart=years.includes(selectedYear)?selectedYear:years[0];
+  const selectedMonth=document.getElementById("historyMonthFilter")?.value || String(rows[0]?.cost_date||"").slice(0,7);
+
+  let h=`<div class="detail-header"><div><div class="detail-name">${ing.name||""}</div><div class="detail-meta"><span class="tag tag-gray">${ing.category||"ไม่ระบุ"}</span><span class="tag tag-blue">${rows.length} records</span><span class="tag ${stats.change>=0?'tag-red':'tag-green'}">Change ${stats.change.toFixed(1)}%</span></div></div></div>`;
+
+  h+=`<div class="kpi-row"><div class="kpi-pill accent"><div class="kpi-pill-label">Latest Cost/unit</div><div class="kpi-pill-value">${B(latest?latest.cost_per_use:ing.cost_per_use)}</div><div class="kpi-pill-sub">/${unit}</div></div><div class="kpi-pill blue"><div class="kpi-pill-label">Average</div><div class="kpi-pill-value">${B(stats.avg)}</div><div class="kpi-pill-sub">ค่าเฉลี่ยจาก History</div></div><div class="kpi-pill green"><div class="kpi-pill-label">Lowest</div><div class="kpi-pill-value">${B(stats.min)}</div><div class="kpi-pill-sub">ต่ำสุด</div></div><div class="kpi-pill red"><div class="kpi-pill-label">Highest</div><div class="kpi-pill-value">${B(stats.max)}</div><div class="kpi-pill-sub">สูงสุด</div></div></div>`;
+
+  h+=`<div class="chart-controls">
+    <label style="margin:0">เดือนสำหรับกราฟรายวัน</label>
+    <input id="historyMonthFilter" type="month" value="${selectedMonth}" onchange="changeHistoryYear()">
+
+    <label style="margin:0">ปีสำหรับกราฟรายเดือน</label>
+    <select id="historyYearFilter" onchange="changeHistoryYear()">
+      ${years.map(y=>`<option value="${y}" ${String(y)===String(yearForChart)?"selected":""}>${y}</option>`).join("")}
+    </select>
+  </div>`;
+
+  h+=renderDailyLineChart(rows,unit,selectedMonth);
+  h+=renderMonthlyAvgBarChart(rows,unit,yearForChart);
+
+  h+=`<div class="divider"></div><div class="card-sm-title">ประวัติต้นทุน</div><div class="tbl-wrap"><table><thead><tr><th>วันที่</th><th class="td-r">จำนวนรับ</th><th>หน่วยรับ</th><th class="td-r">ราคา</th><th class="td-r">จำนวนหน่วยใช้</th><th>หน่วยใช้</th><th class="td-r">Yield</th><th class="td-r">Cost/unit</th><th>Source</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.cost_date||""}</td><td class="td-r td-mono">${N(r.purchase_qty).toLocaleString("th-TH")}</td><td>${r.purchase_unit||""}</td><td class="td-r td-mono">${B(r.purchase_total)}</td><td class="td-r td-mono">${N(r.convert_rate).toLocaleString("th-TH")}</td><td>${r.usage_unit||""}</td><td class="td-r td-mono">${(N(r.yield_rate)*100).toFixed(0)}%</td><td class="td-r td-mono" style="font-weight:700">${B(r.cost_per_use)}</td><td>${r.source||""}</td></tr>`).join("")||'<tr><td colspan="9" class="empty">ยังไม่มีประวัติต้นทุน</td></tr>'}</tbody></table></div>`;
+
+  document.getElementById("detailContent").innerHTML=h;
+}
 (async()=>{if(!(await checkLogin()))return;await loadAll()})();
 </script>
 </body>
