@@ -301,6 +301,9 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 .waste-layout{display:grid;grid-template-columns:minmax(360px,.85fr) minmax(520px,1.15fr);gap:16px;align-items:start}
 @media(max-width:1100px){.waste-layout{grid-template-columns:1fr}}
 
+
+.auto-field-note{font-size:10px;color:var(--text3);margin-top:3px}
+.conv-text{font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);white-space:nowrap}
 </style>
 </head>
 <body>
@@ -309,7 +312,7 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 <div class="brand">
 <div class="brand-logo">NRK Group</div>
 <div class="brand-name">🐥 Kitchen OS</div>
-<div class="brand-sub">v96.1 · Cashflow</div>
+<div class="brand-sub">v105 · cashflow-restored</div>
 </div>
 <nav>
 <div class="nav-section">Overview</div>
@@ -426,17 +429,15 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 <div><label>จำนวนรับ</label><input id="ipq" oninput="calcIngredientPreview()" placeholder="เช่น 1" type="number" value="1"/></div>
 <div><label>หน่วยรับ</label><input id="ipu" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วยรับ"/></div>
 <div><label>ราคา (฿)</label><input id="ipp" oninput="calcIngredientPreview()" placeholder="เช่น 90" type="number"/></div>
-<div><label>จำนวนหน่วยใช้ต่อ 1 หน่วยรับ </label><input id="icv" oninput="calcIngredientPreview()" placeholder="เช่น 1000 g ต่อ 1 kg / 6 กระป๋องต่อ 1 แพค" type="number" value="1"/></div>
-<div><label>หน่วยใช้</label><input id="iuu" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วยใช้"/></div>
+<div><label>Conversion ต่อ 1 หน่วยรับ</label><input id="icv" oninput="calcIngredientPreview()" placeholder="เช่น 1000 ถ้าหน่วยรับ kg และหน่วยใช้ g" type="number" value="1"/></div>
+<div><label>หน่วยใช้</label><input id="iuu" list="unitMasterList" placeholder="เลือก/พิมพ์หน่วยใช้"/></div><div><label>จำนวนหน่วยใช้รวม Auto</label><input id="iuq" readonly placeholder="Auto จาก จำนวนรับ × Conversion"/><div class="auto-field-note">ระบบคำนวณอัตโนมัติ</div></div>
 <div><label>Yield วัตถุดิบ %</label><input id="iy" oninput="calcIngredientPreview()" type="number" value="100"/></div>
 <div><label>ต้นทุนต่อหน่วยใช้ (Auto)</label><input id="icpu" readonly=""/></div>
 </div>
-<p class="help" style="margin-top:8px">
-  กรอกจำนวนหน่วยใช้ที่ได้จาก 1 หน่วยรับ เช่น 1 kg = 1000 g, 1 แพค = 6 กระป๋อง
-</p>
+<p class="help" style="margin-top:8px">กรอก Conversion ต่อ 1 หน่วยรับ เช่น 1 kg = 1000 g หรือ 1 แพค = 6 กระป๋อง ระบบจะคำนวณจำนวนหน่วยใช้รวมและ Cost/unit อัตโนมัติ</p>
 <div class="btn-row"><button class="btn btn-primary" onclick="saveIng()">บันทึกวัตถุดิบ</button><button class="btn btn-secondary" onclick="clearIng()">ล้าง</button></div>
 </div>
-<div class="card"><div class="tbl-wrap"><table><thead><tr><th>ชื่อวัตถุดิบ</th><th>หมวดหมู่</th><th class="text-right">จำนวนรับ</th><th>หน่วยรับ</th><th class="text-right">ราคา</th><th class="text-right">จำนวนหน่วยใช้ต่อ 1 หน่วยรับ</th><th>หน่วยใช้</th><th>Yield วัตถุดิบ</th><th class="text-right">ต้นทุนต่อหน่วยใช้</th><th></th></tr></thead><tbody id="ingTbl"></tbody></table></div></div>
+<div class="card"><div class="tbl-wrap"><table><thead><tr><th>ชื่อวัตถุดิบ</th><th>หมวดหมู่</th><th class="text-right">จำนวนรับ</th><th>หน่วยรับ</th><th class="text-right">ราคา</th><th class="text-right">Conversion / 1 หน่วยรับ</th><th class="text-right">จำนวนหน่วยใช้รวม</th><th>หน่วยใช้</th><th>Yield วัตถุดิบ</th><th class="text-right">ต้นทุนต่อหน่วยใช้</th><th></th></tr></thead><tbody id="ingTbl"></tbody></table></div></div>
 </section>
 <!-- ── FOOD COST ── -->
 
@@ -464,8 +465,16 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
       <div class="form-grid">
         <div><label>วันที่</label><input id="wasteDate" type="date"/></div>
         <div>
-          <label>วัตถุดิบ</label>
-          <input id="wasteIng" list="wasteIngList" placeholder="ค้นหาวัตถุดิบ" oninput="autoFillWasteIngredient()"/>
+          <label>ประเภท Waste</label>
+          <select id="wasteType" onchange="refreshWasteSourceList();clearWasteItemFields();">
+            <option value="ingredient">Ingredient / วัตถุดิบ</option>
+            <option value="semi">Semi / ของเตรียม</option>
+            <option value="finished">Finished Product / เมนูสำเร็จ</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1">
+          <label id="wasteSourceLabel">รายการ</label>
+          <input id="wasteIng" list="wasteIngList" placeholder="ค้นหารายการ" oninput="autoFillWasteIngredient()"/>
           <datalist id="wasteIngList"></datalist>
         </div>
         <div><label>หมวด</label><input id="wasteCat" readonly/></div>
@@ -494,12 +503,30 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
   </div>
 
   <div class="card">
+    <div class="card-title">สรุปของเสียตามรายการ</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>รายการ</th>
+            <th class="text-right">จำนวนครั้ง</th>
+            <th class="text-right">จำนวนเสีย</th>
+            <th class="text-right">มูลค่ารวม</th>
+          </tr>
+        </thead>
+        <tbody id="wasteItemSummaryTbl"></tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <div class="card">
     <div class="card-title">รายการของเสียรายเดือน</div>
     <div class="tbl-wrap">
       <table>
         <thead>
           <tr>
-            <th>วันที่</th><th>วัตถุดิบ</th><th>หมวด</th><th class="text-right">จำนวน</th><th>หน่วยใช้</th><th class="text-right">Cost/unit</th><th class="text-right">รวม</th><th>เหตุผล</th><th></th>
+            <th>วันที่</th><th>ประเภท</th><th>รายการ</th><th>หมวด</th><th class="text-right">จำนวน</th><th>หน่วยใช้</th><th class="text-right">Cost/unit</th><th class="text-right">รวม</th><th>เหตุผล</th><th></th>
           </tr>
         </thead>
         <tbody id="wasteTbl"></tbody>
@@ -986,42 +1013,40 @@ async function addWorkspacePurchase(date){
   const row={id:uid("pur"),purchase_date:date,ingredient_id:ing.id,ingredient_name:ing.name,category:cat,quantity:qty,purchase_unit:unit,total_cost:total,unit_purchase_cost:uc};
   const res=await db.from("inventory_purchases").insert(row);
   if(res.error){alert(res.error.message);return;}
-  const purchaseQty = qty || 1;
-const purchaseTotal = total;
-const convertRate = Number(ing.convert_rate || 1);
-const yieldRate = Number(ing.yield_rate || 1);
-const yieldPct = yieldRate * 100;
+  const purchaseQty=qty||1;
+  const purchaseTotal=total;
+  const conversionRate=getIngredientConversionRate(ing,unit);
+  const totalUseQty=calcTotalUseQty(purchaseQty,conversionRate);
+  const yieldRate=Number(ing.yield_rate||1);
+  const cpu=calcIngredientCpu(purchaseTotal,1,totalUseQty,yieldRate*100);
 
-const cpu = calcIngredientCpu(
-  purchaseTotal,
-  purchaseQty,
-  convertRate,
-  yieldPct
-);
+  await db.from("ingredients").update({
+    unit_purchase_cost:purchaseTotal,
+    cost_per_use:cpu,
+    latest_purchase_qty:purchaseQty,
+    purchase_qty:purchaseQty,
+    purchase_unit:unit,
+    convert_rate:totalUseQty,
+    conversion_rate:conversionRate,
+    updated_at:new Date().toISOString()
+  }).eq("id",ing.id);
 
-await db.from("ingredients").update({
-  unit_purchase_cost: purchaseTotal,
-  cost_per_use: cpu,
-  latest_purchase_qty: purchaseQty,
-  purchase_unit: unit,
-  updated_at: new Date().toISOString()
-}).eq("id", ing.id);
-
-await db.from("ingredient_cost_history").insert({
-  id: uid("costhist"),
-  cost_date: date,
-  ingredient_id: ing.id,
-  ingredient_name: ing.name,
-  purchase_qty: purchaseQty,
-  purchase_unit: unit,
-  purchase_total: purchaseTotal,
-  convert_rate: convertRate,
-  usage_unit: ing.usage_unit || "",
-  yield_rate: yieldRate,
-  cost_per_use: cpu,
-  source: "workspace_purchase",
-  source_id: row.id
-});
+  await db.from("ingredient_cost_history").insert({
+    id:uid("costhist"),
+    cost_date:date,
+    ingredient_id:ing.id,
+    ingredient_name:ing.name,
+    purchase_qty:purchaseQty,
+    purchase_unit:unit,
+    purchase_total:purchaseTotal,
+    convert_rate:totalUseQty,
+    conversion_rate:conversionRate,
+    usage_unit:ing.usage_unit||"",
+    yield_rate:yieldRate,
+    cost_per_use:cpu,
+    source:"workspace_purchase",
+    source_id:row.id
+  });
 
 await load(false);
   OPEN_DAYS.add("day_"+date);
@@ -1143,76 +1168,116 @@ async function deleteCashIn(id){
   wasteRows=await loadWasteRows();renderCashflow();showSaveHint();
 }
 
+
+function getIngredientConversionRate(ing,selectedUnit){
+  const unit=String(selectedUnit||ing.purchase_unit||"").trim();
+  const usageUnit=String(ing.usage_unit||"").trim();
+  const saved=Number(ing.conversion_rate||ing.convert_rate||0);
+  if(saved) return saved;
+
+  const key=(unit+"→"+usageUnit).toLowerCase();
+  const standard={
+    "kg→g":1000,"กก→กรัม":1000,"กิโลกรัม→กรัม":1000,
+    "g→g":1,"กรัม→กรัม":1,
+    "l→ml":1000,"ลิตร→ml":1000,"ลิตร→มล":1000,
+    "ml→ml":1,"มล→มล":1
+  };
+  return standard[key] || 1;
+}
+
+function calcTotalUseQty(purchaseQty,conversionRate){
+  return Number(purchaseQty||0) * Number(conversionRate||1);
+}
+
+
 /* ─────────────── INGREDIENTS ─────────────── */
 function ingredientPurchaseQty(i){
   return Number(i?.purchase_qty ?? i?.latest_purchase_qty ?? 1) || 1;
 }
 function calcIngredientCpu(price,purchaseQty,convertRate,yieldPct){
-
-  const p = Number(price || 0);
-
-  // จำนวนที่ซื้อจริง เช่น 5 kg
-  const pq = Number(purchaseQty || 1);
-
-  // สูตรแปลงต่อ 1 หน่วยรับ
-  // เช่น 1 kg = 1000 g
-  const cr = Number(convertRate || 1);
-
-  // Yield %
-  const y = Number(yieldPct || 100) / 100;
-
-  // สูตร:
-  // ราคา ÷ (จำนวนซื้อ × จำนวนหน่วยใช้ต่อ 1 หน่วยรับ × Yield)
-
-  return (pq && cr && y)
-    ? p / (pq * cr * y)
-    : 0;
+  const p=Number(price||0);
+  const pq=Number(purchaseQty||1);
+  const cr=Number(convertRate)||1;
+  const y=(Number(yieldPct||100)/100);
+  return pq&&cr&&y ? p/(pq*cr*y) : 0;
 }
 function calcIngredientPreview(){
+  const purchaseQty=N("ipq")||1;
+  const conversionRate=N("icv")||1;
+  const totalUseQty=calcTotalUseQty(purchaseQty,conversionRate);
+
+  const totalEl=document.getElementById("iuq");
+  if(totalEl){
+    const unit=V("iuu")||"";
+    totalEl.value=Number(totalUseQty||0).toLocaleString("th-TH")+(unit?` ${unit}`:"");
+  }
+
   const el=document.getElementById("icpu");
-  if(el) el.value=calcIngredientCpu(N("ipp"),N("ipq"),N("icv"),N("iy")).toFixed(4);
+  if(el){
+    el.value=calcIngredientCpu(N("ipp"),1,totalUseQty,N("iy")).toFixed(4);
+  }
 }
 async function saveIng(){
   const id=editIng||uid("ing");
   const purchaseQty=N("ipq")||1;
-  const convertRate=N("icv")||1;
-  const cpu=calcIngredientCpu(N("ipp"),purchaseQty,convertRate,N("iy"));
+  const conversionRate=N("icv")||1;
+  const totalUseQty=calcTotalUseQty(purchaseQty,conversionRate);
+  const cpu=calcIngredientCpu(N("ipp"),1,totalUseQty,N("iy"));
+
   const row={
     id,
     name:V("inm"),
     category:V("icat"),
+    purchase_qty:purchaseQty,
+    latest_purchase_qty:purchaseQty,
     purchase_unit:V("ipu"),
     usage_unit:V("iuu"),
-    convert_rate:convertRate,
+    convert_rate:totalUseQty,
+    conversion_rate:conversionRate,
     yield_rate:(N("iy")||100)/100,
     unit_purchase_cost:N("ipp"),
     cost_per_use:cpu,
     is_active:true,
-    latest_purchase_qty:purchaseQty
+    updated_at:new Date().toISOString()
   };
-  if(!row.name)return alert("ใส่ชื่อวัตถุดิบ");
-  const {error}=await db.from("ingredients").upsert(row);
-  if(error)return alert(error.message);
-  editIng=null;clearIng();await load();showSaveHint();
+
+  const res=await db.from("ingredients").upsert(row);
+  if(res.error){alert(res.error.message);return;}
+
+  editIng=null;
+  clearIng();
+  await load(false);
+  ingTable();
+  showSaveHint();
 }
 function clearIng(){
-  ["inm","ipu","iuu","ipp","icpu"].forEach(i=>{const el=document.getElementById(i);if(el)el.value=""});
-  const ipq=document.getElementById("ipq");if(ipq)ipq.value=1;
-  const icv=document.getElementById("icv");if(icv)icv.value=1;
-  const iy=document.getElementById("iy");if(iy)iy.value=100;
+  ["inm","ipu","ipp","icv","iuu","iuq","iy","icpu","ipq"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value="";
+  });
+  const y=document.getElementById("iy"); if(y)y.value=100;
+  const q=document.getElementById("ipq"); if(q)q.value=1;
+  const cv=document.getElementById("icv"); if(cv)cv.value=1;
+  editIng=null;
 }
 function editIngredient(id){
-  const i=ings.find(x=>x.id==id);if(!i)return;editIng=id;
+  const i=ings.find(x=>x.id===id);
+  if(!i)return;
+  editIng=id;
   document.getElementById("inm").value=i.name||"";
-  document.getElementById("icat").value=i.category||"";
-  document.getElementById("ipq").value=ingredientPurchaseQty(i);
+  document.getElementById("icat").value=i.category||"วัตถุดิบอาหาร";
+  document.getElementById("ipq").value=ingredientPurchaseQty(i)||1;
   document.getElementById("ipu").value=i.purchase_unit||"";
   document.getElementById("ipp").value=i.unit_purchase_cost||0;
-  document.getElementById("icv").value=i.convert_rate||1;
+  document.getElementById("icv").value=i.conversion_rate||(
+    Number(i.convert_rate||0) && Number(ingredientPurchaseQty(i)||0)
+      ? Number(i.convert_rate||0)/Number(ingredientPurchaseQty(i)||1)
+      : 1
+  );
   document.getElementById("iuu").value=i.usage_unit||"";
-  document.getElementById("iy").value=(i.yield_rate||1)*100;
+  document.getElementById("iy").value=((i.yield_rate||1)*100).toFixed(0);
   calcIngredientPreview();
-  location.hash="#ing";
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 function ingTable(){
   const tbl=document.getElementById("ingTbl");if(!tbl)return;
@@ -1229,6 +1294,7 @@ function ingTable(){
     <td class="text-right td-mono">${Number(ingredientPurchaseQty(i)).toLocaleString("th-TH")}</td>
     <td>${i.purchase_unit||""}</td>
     <td class="text-right td-mono">${B(i.unit_purchase_cost)}</td>
+    <td class="text-right td-mono">${Number(i.conversion_rate||i.convert_rate||1).toLocaleString("th-TH")}</td>
     <td class="text-right td-mono">${Number(i.convert_rate||0).toLocaleString("th-TH")}</td>
     <td>${i.usage_unit||""}</td>
     <td>${((i.yield_rate||1)*100).toFixed(0)}%</td>
@@ -1267,10 +1333,79 @@ function saveLocalWasteRows(rows){
 }
 async function loadWasteRows(){
   const {data,error}=await db.from("waste_records").select("*");
-  if(error){return loadLocalWasteRows()}
   const local=loadLocalWasteRows();
+  if(error){
+    console.warn("waste_records load fallback:", error.message);
+    return local;
+  }
   return [...(data||[]),...local.filter(r=>String(r.local_only)==="true")];
 }
+
+function wasteTypeLabel(t){
+  if(t==="semi")return "Semi";
+  if(t==="finished")return "Finished";
+  return "Ingredient";
+}
+
+function wasteSourcesByType(type){
+  if(type==="semi"){
+    return recipes
+      .filter(r=>/(semi|prep|เตรียม|ซอส|น้ำจิ้ม|ข้าว|หมัก)/i.test([r.type,r.category,r.name].join(" ")))
+      .map(r=>({
+        id:r.id,
+        name:r.name,
+        category:r.category || "Semi / ของเตรียม",
+        unit:r.unit || r.serving_unit || "unit",
+        cost:Number(r.cost_per_unit || r.cost_per_serving || r.food_cost || r.total_cost || 0)
+      }));
+  }
+
+  if(type==="finished"){
+    return recipes.map(r=>({
+      id:r.id,
+      name:r.name,
+      category:r.category || "Finished Product / เมนูสำเร็จ",
+      unit:r.unit || r.serving_unit || "จาน",
+      cost:Number(r.cost_per_serving || r.food_cost || r.total_cost || r.cost_per_unit || 0)
+    }));
+  }
+
+  return ings.map(i=>({
+    id:i.id,
+    name:i.name,
+    category:i.category || "",
+    unit:i.usage_unit || "",
+    cost:Number(i.cost_per_use || 0)
+  }));
+}
+
+function refreshWasteSourceList(){
+  const type=V("wasteType")||"ingredient";
+  const list=document.getElementById("wasteIngList");
+  const label=document.getElementById("wasteSourceLabel");
+
+  if(label){
+    label.textContent=type==="semi"
+      ? "ของเตรียม / Semi"
+      : type==="finished"
+        ? "เมนูสำเร็จ / Finished Product"
+        : "วัตถุดิบ / Ingredient";
+  }
+
+  if(list){
+    list.innerHTML=wasteSourcesByType(type)
+      .map(x=>`<option value="${x.name}"></option>`)
+      .join("");
+  }
+}
+
+function clearWasteItemFields(){
+  ["wasteIng","wasteCat","wasteUnit","wasteUnitCost","wasteQty","wasteLineCost"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value="";
+  });
+}
+
 function initWasteMonth(){
   const el=document.getElementById("wasteMonth");
   if(el&&!el.value){
@@ -1307,12 +1442,19 @@ function getWasteIngredient(){
     || ings.find(i=>String(i.name||"").toLowerCase().includes(name.toLowerCase()));
 }
 function autoFillWasteIngredient(){
-  const ing=getWasteIngredient();
-  if(!ing)return;
-  const unitCost=Number(ing.cost_per_use||0);
-  document.getElementById("wasteCat").value=ing.category||"";
-  document.getElementById("wasteUnit").value=ing.usage_unit||"";
-  document.getElementById("wasteUnitCost").value=unitCost.toFixed(4);
+  const type=V("wasteType")||"ingredient";
+  const name=V("wasteIng");
+  const item=wasteSourcesByType(type).find(x=>x.name===name);
+  if(!item)return;
+
+  const cat=document.getElementById("wasteCat");
+  const unit=document.getElementById("wasteUnit");
+  const cost=document.getElementById("wasteUnitCost");
+
+  if(cat)cat.value=item.category||"";
+  if(unit)unit.value=item.unit||"";
+  if(cost)cost.value=Number(item.cost||0).toFixed(4);
+
   previewWasteCost();
 }
 function previewWasteCost(){
@@ -1323,44 +1465,50 @@ function previewWasteCost(){
   if(el)el.value=B(total);
 }
 function clearWasteForm(){
-  ["wasteDate","wasteIng","wasteCat","wasteUnit","wasteUnitCost","wasteQty","wasteReason","wasteLineCost"].forEach(id=>{
+  ["wasteIng","wasteCat","wasteUnit","wasteUnitCost","wasteQty","wasteReason","wasteLineCost"].forEach(id=>{
     const el=document.getElementById(id);
     if(el)el.value="";
   });
+
+  const t=document.getElementById("wasteType");
+  if(t)t.value="ingredient";
+
+  refreshWasteSourceList();
 }
 async function saveWaste(){
-  const ing=getWasteIngredient();
-  if(!ing)return alert("เลือกวัตถุดิบก่อน");
-
-  const date=V("wasteDate");
+  const type=V("wasteType")||"ingredient";
+  const name=V("wasteIng");
+  const item=wasteSourcesByType(type).find(x=>x.name===name);
   const qty=N("wasteQty");
-  if(!date)return alert("เลือกวันที่");
-  if(!qty)return alert("ใส่จำนวนของเสีย");
+  const unitCost=Number(V("wasteUnitCost")||0);
+  const total=qty*unitCost;
 
-  const unitCost=Number(ing.cost_per_use||0);
+  if(!name){alert("กรุณาเลือกรายการของเสีย");return;}
+  if(!qty){alert("กรุณากรอกจำนวนเสีย");return;}
+
   const row={
     id:uid("waste"),
-    waste_date:date,
-    ingredient_id:ing.id,
-    ingredient_name:ing.name,
-    category:ing.category||"",
+    waste_date:V("wasteDate")||new Date().toISOString().slice(0,10),
+    waste_type:type,
+    ingredient_id:type==="ingredient" ? (item?.id||null) : null,
+    ingredient_name:name,
+    category:V("wasteCat"),
     quantity:qty,
-    usage_unit:ing.usage_unit||"",
+    usage_unit:V("wasteUnit"),
     unit_cost:unitCost,
-    total_cost:qty*unitCost,
-    reason:V("wasteReason"),
-    local_only:"true"
+    total_cost:total,
+    reason:V("wasteReason")
   };
 
-  const {error}=await db.from("waste_records").insert(row);
-  if(error){
+  const res=await db.from("waste_records").insert(row);
+  if(res.error){
     const rows=loadLocalWasteRows();
-    rows.push(row);
+    rows.push({...row,local_only:"true"});
     saveLocalWasteRows(rows);
   }
 
-  wasteRows=await loadWasteRows();
   clearWasteForm();
+  wasteRows=await loadWasteRows();
   renderWaste();
   showSaveHint();
 }
@@ -1378,8 +1526,8 @@ async function deleteWaste(id){
   showSaveHint();
 }
 function renderWaste(){
+  refreshWasteSourceList();
   initWasteMonth();
-  populateWasteIngredientList();
 
   const mo=document.getElementById("wasteMonth")?.value||"";
   const label=document.getElementById("wasteMonthLabel");
@@ -1409,10 +1557,51 @@ function renderWaste(){
       .join("") || '<tr><td colspan="3" class="empty">ยังไม่มีข้อมูลของเสียเดือนนี้</td></tr>';
   }
 
+  const itemMap={};
+
+  rows.forEach(r=>{
+    const key=[
+      r.waste_type||"ingredient",
+      r.ingredient_name||"ไม่ระบุ",
+      r.usage_unit||""
+    ].join("|");
+
+    if(!itemMap[key]){
+      itemMap[key]={
+        name:r.ingredient_name||"ไม่ระบุ",
+        type:r.waste_type||"ingredient",
+        unit:r.usage_unit||"",
+        count:0,
+        qty:0,
+        cost:0
+      };
+    }
+
+    itemMap[key].count++;
+    itemMap[key].qty+=Number(r.quantity||0);
+    itemMap[key].cost+=Number(r.total_cost||0);
+  });
+
+  const itemSummaryTbl=document.getElementById("wasteItemSummaryTbl");
+  if(itemSummaryTbl){
+    itemSummaryTbl.innerHTML=Object.values(itemMap)
+      .sort((a,b)=>b.cost-a.cost)
+      .map(r=>`
+        <tr>
+          <td>${r.name} <span class="tag tag-gray">${wasteTypeLabel(r.type)}</span></td>
+          <td class="text-right td-mono">${r.count.toLocaleString("th-TH")}</td>
+          <td class="text-right td-mono">${r.qty.toLocaleString("th-TH")} ${r.unit}</td>
+          <td class="text-right td-mono">${B(r.cost)}</td>
+        </tr>
+      `).join("") || '<tr><td colspan="4" class="empty">ยังไม่มีข้อมูลของเสียเดือนนี้</td></tr>';
+  }
+
+
   const tbl=document.getElementById("wasteTbl");
   if(tbl){
     tbl.innerHTML=rows.map(r=>`<tr>
       <td>${r.waste_date||""}</td>
+      <td>${wasteTypeLabel(r.waste_type||"ingredient")}</td>
       <td>${r.ingredient_name||""}</td>
       <td>${r.category||""}</td>
       <td class="text-right td-mono">${Number(r.quantity||0).toLocaleString("th-TH")}</td>
@@ -1421,7 +1610,7 @@ function renderWaste(){
       <td class="text-right td-mono">${B(r.total_cost)}</td>
       <td>${r.reason||""}</td>
       <td><button class="btn btn-danger btn-sm" onclick="deleteWaste('${r.id}')">ลบ</button></td>
-    </tr>`).join("") || '<tr><td colspan="9" class="empty">ยังไม่มีรายการของเสียเดือนนี้</td></tr>';
+    </tr>`).join("") || '<tr><td colspan="10" class="empty">ยังไม่มีรายการของเสียเดือนนี้</td></tr>';
   }
 }
 
