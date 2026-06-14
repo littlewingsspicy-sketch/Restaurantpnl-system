@@ -312,7 +312,7 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 <div class="brand">
 <div class="brand-logo">NRK Group</div>
 <div class="brand-name">🐥 Kitchen OS</div>
-<div class="brand-sub">v105 · cashflow-restored</div>
+<div class="brand-sub">v107 · ingredients-inline-edit-fix</div>
 </div>
 <nav>
 <div class="nav-section">Overview</div>
@@ -591,12 +591,13 @@ const EXPENSE_CATEGORIES=[
   {code:"0402",name:"ค่าน้ำ",group:"🔧 สาธารณูปโภค",cost_type:"fixed",cashflow_type:"operating"},
   {code:"0403",name:"ค่าโทรศัพท์",group:"🔧 สาธารณูปโภค",cost_type:"fixed",cashflow_type:"operating"},
   {code:"0404",name:"ค่าอินเตอร์เน็ต",group:"🔧 สาธารณูปโภค",cost_type:"fixed",cashflow_type:"operating"},
-  {code:"0408",name:"ค่าโฆษณา / Marketing",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"operating"},
-  {code:"0411",name:"ค่าใช้จ่ายอื่นๆ",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"operating"},
+  {code:"0408",name:"ค่าโฆษณา / Marketing (จ่ายเอง)",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"operating",cashflow_include:true},
+  {code:"0409",name:"ค่าโฆษณาผ่านแอป / Platform Ads (หักก่อนโอน)",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"operating",cashflow_include:false},
+  {code:"0411",name:"ค่าใช้จ่ายอื่นๆ",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"operating",cashflow_include:true},
   {code:"0501",name:"ค่าเช่ารายเดือน",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"fixed",cashflow_type:"operating"},
   {code:"0502",name:"ค่าทำบัญชี",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"fixed",cashflow_type:"operating"},
   {code:"0503",name:"ค่าธรรมเนียมธนาคาร",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating"},
-  {code:"0504",name:"ค่า GP Delivery Commission",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating"},
+  {code:"0504",name:"ค่า GP Delivery Commission / Grab GP (หักก่อนโอน)",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating",cashflow_include:false},
   {code:"0505",name:"ภาษีหัก ณ ที่จ่าย",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating"},
   {code:"0506",name:"VAT",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating"},
   {code:"0507",name:"ภาษีเงินได้ประจำปี",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"fixed",cashflow_type:"operating"},
@@ -607,15 +608,19 @@ const EXPENSE_CATEGORIES=[
   {code:"0602",name:"เฟอร์นิเจอร์ / Fixtures",group:"🛠️ ลงทุน / CAPEX",cost_type:"capex",cashflow_type:"investing"},
   {code:"0603",name:"Renovation / ปรับปรุงร้าน",group:"🛠️ ลงทุน / CAPEX",cost_type:"capex",cashflow_type:"investing"},
   {code:"0604",name:"ระบบ POS / Software Setup",group:"🛠️ ลงทุน / CAPEX",cost_type:"capex",cashflow_type:"investing"},
-  {code:"0701",name:"จ่ายคืนเงินกู้",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing"},
-  {code:"0702",name:"ดอกเบี้ยเงินกู้",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"fixed",cashflow_type:"operating"},
-  {code:"0703",name:"ถอนเงินเจ้าของ",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing"},
-  {code:"0704",name:"โอนเงินส่วนตัว / Owner Draw",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing"}
+  {code:"0701",name:"จ่ายคืนเงินกู้ / Loan Payment (จ่ายเอง)",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing",cashflow_include:true},
+  {code:"0702",name:"ดอกเบี้ยเงินกู้",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"fixed",cashflow_type:"operating",cashflow_include:true},
+  {code:"0703",name:"ถอนเงินเจ้าของ",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing",cashflow_include:true},
+  {code:"0704",name:"โอนเงินส่วนตัว / Owner Draw",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing",cashflow_include:true},
+  {code:"0705",name:"สินเชื่อแกรบ / Grab Loan Deduction (หักก่อนโอน)",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing",cashflow_include:false}
 ];
 function expenseCategoryValue(c){return `${c.code} — ${c.name}`}
 function expenseMeta(category){
   const text=String(category||"");
-  return EXPENSE_CATEGORIES.find(c=>text.startsWith(c.code)) || EXPENSE_CATEGORIES.find(c=>text.includes(c.name)) || {code:"9999",name:category||"อื่นๆ",group:"อื่นๆ",cost_type:"variable",cashflow_type:"operating"};
+  return EXPENSE_CATEGORIES.find(c=>text.startsWith(c.code)) || EXPENSE_CATEGORIES.find(c=>text.includes(c.name)) || {code:"9999",name:category||"อื่นๆ",group:"อื่นๆ",cost_type:"variable",cashflow_type:"operating",cashflow_include:true};
+}
+function expenseIncludeInCashflow(meta){
+  return !meta || meta.cashflow_include !== false;
 }
 function expenseCategoryOptions(){
   const groups=[...new Set(EXPENSE_CATEGORIES.map(c=>c.group))];
@@ -1100,7 +1105,11 @@ function cfAdd(obj,key,amount){obj[key]=(obj[key]||0)+Number(amount||0)}
 function buildCashflowRows(){
   const rows=[];
   purchases.filter(p=>inCashflowMonth(p.purchase_date)).forEach(p=>rows.push({date:p.purchase_date,source:"COGS",category:p.category||"COGS",type:"operating",direction:"out",detail:p.ingredient_name||"ซื้อวัตถุดิบ",amount:Number(p.total_cost||0)}));
-  exps.filter(e=>inCashflowMonth(e.expense_date)).forEach(e=>{const meta=expenseMeta(e.category);rows.push({date:e.expense_date,source:"Expense",category:e.category||"Expense",type:meta.cashflow_type||"operating",direction:"out",detail:e.detail||meta.name||"",amount:Number(e.amount||0)})});
+  exps.filter(e=>inCashflowMonth(e.expense_date)).forEach(e=>{
+    const meta=expenseMeta(e.category);
+    if(!expenseIncludeInCashflow(meta)) return;
+    rows.push({date:e.expense_date,source:"Expense",category:e.category||"Expense",type:meta.cashflow_type||"operating",direction:"out",detail:e.detail||meta.name||"",amount:Number(e.amount||0)});
+  });
   cashIns.filter(i=>inCashflowMonth(i.cash_date||i.date)).forEach(i=>rows.push({date:i.cash_date||i.date,source:"Manual Cash In",category:i.source||i.cash_source||"Cash In",type:i.cashflow_type||i.type||"operating",direction:"in",detail:i.detail||"",amount:Number(i.amount||0),id:i.id,manual:true}));
   return rows;
 }
@@ -1190,137 +1199,9 @@ function calcTotalUseQty(purchaseQty,conversionRate){
 }
 
 
-/* ─────────────── INGREDIENTS ─────────────── */
-function ingredientPurchaseQty(i){
-  return Number(i?.purchase_qty ?? i?.latest_purchase_qty ?? 1) || 1;
-}
-function calcIngredientCpu(price,purchaseQty,convertRate,yieldPct){
-  const p=Number(price||0);
-  const pq=Number(purchaseQty||1);
-  const cr=Number(convertRate)||1;
-  const y=(Number(yieldPct||100)/100);
-  return pq&&cr&&y ? p/(pq*cr*y) : 0;
-}
-function calcIngredientPreview(){
-  const purchaseQty=N("ipq")||1;
-  const conversionRate=N("icv")||1;
-  const totalUseQty=calcTotalUseQty(purchaseQty,conversionRate);
-
-  const totalEl=document.getElementById("iuq");
-  if(totalEl){
-    const unit=V("iuu")||"";
-    totalEl.value=Number(totalUseQty||0).toLocaleString("th-TH")+(unit?` ${unit}`:"");
-  }
-
-  const el=document.getElementById("icpu");
-  if(el){
-    el.value=calcIngredientCpu(N("ipp"),1,totalUseQty,N("iy")).toFixed(4);
-  }
-}
-async function saveIng(){
-  const id=editIng||uid("ing");
-  const purchaseQty=N("ipq")||1;
-  const conversionRate=N("icv")||1;
-  const totalUseQty=calcTotalUseQty(purchaseQty,conversionRate);
-  const cpu=calcIngredientCpu(N("ipp"),1,totalUseQty,N("iy"));
-
-  const row={
-    id,
-    name:V("inm"),
-    category:V("icat"),
-    purchase_qty:purchaseQty,
-    latest_purchase_qty:purchaseQty,
-    purchase_unit:V("ipu"),
-    usage_unit:V("iuu"),
-    convert_rate:totalUseQty,
-    conversion_rate:conversionRate,
-    yield_rate:(N("iy")||100)/100,
-    unit_purchase_cost:N("ipp"),
-    cost_per_use:cpu,
-    is_active:true,
-    updated_at:new Date().toISOString()
-  };
-
-  const res=await db.from("ingredients").upsert(row);
-  if(res.error){alert(res.error.message);return;}
-
-  editIng=null;
-  clearIng();
-  await load(false);
-  ingTable();
-  showSaveHint();
-}
-function clearIng(){
-  ["inm","ipu","ipp","icv","iuu","iuq","iy","icpu","ipq"].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.value="";
-  });
-  const y=document.getElementById("iy"); if(y)y.value=100;
-  const q=document.getElementById("ipq"); if(q)q.value=1;
-  const cv=document.getElementById("icv"); if(cv)cv.value=1;
-  editIng=null;
-}
-function editIngredient(id){
-  const i=ings.find(x=>x.id===id);
-  if(!i)return;
-  editIng=id;
-  document.getElementById("inm").value=i.name||"";
-  document.getElementById("icat").value=i.category||"วัตถุดิบอาหาร";
-  document.getElementById("ipq").value=ingredientPurchaseQty(i)||1;
-  document.getElementById("ipu").value=i.purchase_unit||"";
-  document.getElementById("ipp").value=i.unit_purchase_cost||0;
-  document.getElementById("icv").value=i.conversion_rate||(
-    Number(i.convert_rate||0) && Number(ingredientPurchaseQty(i)||0)
-      ? Number(i.convert_rate||0)/Number(ingredientPurchaseQty(i)||1)
-      : 1
-  );
-  document.getElementById("iuu").value=i.usage_unit||"";
-  document.getElementById("iy").value=((i.yield_rate||1)*100).toFixed(0);
-  calcIngredientPreview();
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-function ingTable(){
-  const tbl=document.getElementById("ingTbl");if(!tbl)return;
-  tbl.innerHTML=ings
-  .filter(i => i.is_active !== false)
-  .sort((a,b)=>{
-    const catCompare=String(a.category||"").localeCompare(String(b.category||""),"th");
-    if(catCompare!==0) return catCompare;
-    return String(a.name||"").localeCompare(String(b.name||""),"th");
-  })
-  .map(i=>`<tr>
-    <td>${i.name}</td>
-    <td>${i.category||""}</td>
-    <td class="text-right td-mono">${Number(ingredientPurchaseQty(i)).toLocaleString("th-TH")}</td>
-    <td>${i.purchase_unit||""}</td>
-    <td class="text-right td-mono">${B(i.unit_purchase_cost)}</td>
-    <td class="text-right td-mono">${Number(i.conversion_rate||i.convert_rate||1).toLocaleString("th-TH")}</td>
-    <td class="text-right td-mono">${Number(i.convert_rate||0).toLocaleString("th-TH")}</td>
-    <td>${i.usage_unit||""}</td>
-    <td>${((i.yield_rate||1)*100).toFixed(0)}%</td>
-    <td class="text-right td-mono">${B(i.cost_per_use)}</td>
-    <td><button class="btn btn-secondary btn-sm" onclick="editIngredient('${i.id}')">แก้ไข</button> <button class="btn btn-danger btn-sm" onclick="delIng('${i.id}')">ลบ</button></td>
-  </tr>`).join("")||'<tr><td colspan="10" class="empty">ยังไม่มีวัตถุดิบ</td></tr>';
-}
-async function delIng(id){
-  if(!confirm("ปิดใช้งานวัตถุดิบนี้? ข้อมูลเก่าจะยังอยู่")) return;
-
-  const { error } = await db
-    .from("ingredients")
-    .update({ is_active: false })
-    .eq("id", id);
-
-  if(error){
-    alert(error.message);
-    return;
-  }
-
-  await load(false);
-  ingTable();
-  showSaveHint();
-}
-
-
+</script>
+<script src="js/ingredients.js"></script>
+<script>
 /* ─────────────── WASTE ─────────────── */
 const LOCAL_WASTE_KEY="nrk_waste_records_v1";
 
