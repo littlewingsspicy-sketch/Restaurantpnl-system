@@ -326,6 +326,7 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 <a class="nav-item" href="ingredient_history.html"><span class="icon">📈</span> Ingredient History</a>  
 <a class="nav-item" href="#waste" onclick="nav()"><span class="icon">🗑️</span> Waste / ของเสีย</a>
 <a class="nav-item" href="foodcost.html"><span class="icon">🍗</span> Food Cost</a>
+<a class="nav-item" href="#menusales" onclick="nav()"><span class="icon">🧾</span> Daily Menu Sales</a>
 <div class="nav-section">Settings</div>
 <a class="nav-item" href="#brand" onclick="nav()"><span class="icon">🏷️</span> Brands</a>
 <a class="nav-item" href="#export" onclick="nav()"><span class="icon">⬇️</span> Export</a>
@@ -440,6 +441,83 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 <div class="card"><div class="tbl-wrap"><table><thead><tr><th>ชื่อวัตถุดิบ</th><th>หมวดหมู่</th><th class="text-right">จำนวนรับ</th><th>หน่วยรับ</th><th class="text-right">ราคา</th><th class="text-right">Conversion / 1 หน่วยรับ</th><th class="text-right">จำนวนหน่วยใช้รวม</th><th>หน่วยใช้</th><th>Yield วัตถุดิบ</th><th class="text-right">ต้นทุนต่อหน่วยใช้</th><th></th></tr></thead><tbody id="ingTbl"></tbody></table></div></div>
 </section>
 <!-- ── FOOD COST ── -->
+
+
+<!-- ── DAILY MENU SALES ── -->
+<section class="page" id="menusales">
+  <div class="card">
+    <div class="monthbar">
+      <button class="btn btn-secondary" onclick="moveMenuSalesDate(-1)">← เมื่อวาน</button>
+      <input id="menuSalesDate" type="date" onchange="renderMenuSales()"/>
+      <button class="btn btn-secondary" onclick="moveMenuSalesDate(1)">พรุ่งนี้ →</button>
+      <button class="btn btn-primary" onclick="renderMenuSales()">โหลด</button>
+    </div>
+    <p class="help">บันทึกจำนวนขายรายวันจากเมนูในหน้า Food Cost / recipes เพื่อใช้ต่อยอดไป Inventory และ Purchase Plan</p>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi accent"><div class="kpi-label">จำนวนขาย</div><div class="kpi-value" id="msKpiQty">0</div><div class="kpi-sub" id="menuSalesDateLabel">—</div></div>
+    <div class="kpi blue"><div class="kpi-label">Menu Sales</div><div class="kpi-value" id="msKpiSales">฿0</div><div class="kpi-sub">ยอดขายจากจำนวนเมนู</div></div>
+    <div class="kpi"><div class="kpi-label">Recipe Cost</div><div class="kpi-value" id="msKpiCost">฿0</div><div class="kpi-sub">ต้นทุนจาก Food Cost</div></div>
+    <div class="kpi green"><div class="kpi-label">Gross Profit</div><div class="kpi-value" id="msKpiGp">฿0</div><div class="kpi-sub">ก่อนค่าใช้จ่ายอื่น</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">บันทึกจำนวนขายตามเมนู</div>
+    <div class="form-grid3" style="margin-bottom:12px">
+      <div>
+        <label>ค้นหาเมนู</label>
+        <input id="menuSalesSearch" placeholder="พิมพ์ชื่อเมนู / หมวด / แบรนด์" oninput="renderMenuSales()"/>
+      </div>
+      <div>
+        <label>เรียงลำดับ</label>
+        <select id="menuSalesSort" onchange="renderMenuSales()">
+          <option value="name_asc">ชื่อเมนู A-Z</option>
+          <option value="category_asc">หมวดหมู่</option>
+          <option value="qty_desc">จำนวนขายมากสุด</option>
+          <option value="saved_first">รายการที่บันทึกแล้วก่อน</option>
+          <option value="price_desc">ราคาขายสูงสุด</option>
+          <option value="cost_desc">ต้นทุนสูงสุด</option>
+          <option value="gp_desc">GP% สูงสุด</option>
+          <option value="gp_asc">GP% ต่ำสุด</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:end">
+        <button class="btn btn-secondary" onclick="clearMenuSalesFilters()">ล้างค้นหา</button>
+      </div>
+    </div>
+    <p class="help" id="menuSalesFilterHint" style="margin-bottom:10px"></p>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>เมนู</th>
+            <th class="text-right">ราคาขาย</th>
+            <th class="text-right">ต้นทุน/จาน</th>
+            <th class="text-right">GP%</th>
+            <th class="text-right">จำนวนขาย</th>
+            <th class="text-right">ยอดขาย</th>
+            <th class="text-right">ต้นทุนรวม</th>
+            <th class="text-right">กำไรขั้นต้น</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="menuSalesTbl"></tbody>
+      </table>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="saveAllMenuSales()">บันทึกทั้งหมดที่กรอก</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">รายการที่บันทึกแล้ววันนี้</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>เมนู</th><th class="text-right">จำนวน</th><th class="text-right">ยอดขาย</th><th class="text-right">ต้นทุน</th><th class="text-right">กำไรขั้นต้น</th></tr></thead>
+        <tbody id="menuSalesSavedTbl"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
 <!-- ── WASTE ── -->
 <section class="page" id="waste">
@@ -638,7 +716,7 @@ function expenseCategoryOptions(){
   return groups.map(g=>`<optgroup label="${g}">${EXPENSE_CATEGORIES.filter(c=>c.group===g).map(c=>`<option value="${expenseCategoryValue(c)}">${expenseCategoryValue(c)}</option>`).join("")}</optgroup>`).join("");
 }
 
-let brands=[],ings=[],purchases=[],recipes=[],lines=[],sales=[],exps=[],cashIns=[],work=[],editIng=null,editRec=null,wasteRows=[];
+let brands=[],ings=[],purchases=[],recipes=[],lines=[],sales=[],exps=[],cashIns=[],menuSales=[],work=[],editIng=null,editRec=null,wasteRows=[];
 
 /* ── Helpers ── */
 const B=n=>"฿"+Number(n||0).toLocaleString("th-TH",{maximumFractionDigits:2});
@@ -659,6 +737,7 @@ async function load(fullRender=true){
   sales=await get("daily_sales");
   exps=await get("expenses");
   cashIns=await loadCashIns();
+  menuSales=await loadMenuSales();
   wasteRows=await loadWasteRows();
   setStatus("ok");
   if(fullRender) renderActivePage();
@@ -690,6 +769,7 @@ function renderActivePage(){
   else if(id==="cashflow") renderCashflow();
   else if(id==="workspace") renderWorkspace();
   else if(id==="ing"){ingTable()}
+  else if(id==="menusales") renderMenuSales();
   else if(id==="waste") renderWaste();
   else if(id==="rec"){recipeSelects();recipeTable();toggleRecipePrice();renderWork()}
   else if(id==="brand") brandTable();
@@ -1178,6 +1258,7 @@ async function saveCashIn(){
   if(res.error){const local=loadLocalCashIns();local.push({...row,local_only:"true"});saveLocalCashIns(local)}
   ["cfInDate","cfInAmount","cfInDetail"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=""});
   cashIns=await loadCashIns();
+  menuSales=await loadMenuSales();
   wasteRows=await loadWasteRows();renderCashflow();showSaveHint();
 }
 async function deleteCashIn(id){
@@ -1185,6 +1266,7 @@ async function deleteCashIn(id){
   let local=loadLocalCashIns().filter(r=>r.id!==id);saveLocalCashIns(local);
   await db.from("cash_inflows").delete().eq("id",id);
   cashIns=await loadCashIns();
+  menuSales=await loadMenuSales();
   wasteRows=await loadWasteRows();renderCashflow();showSaveHint();
 }
 
@@ -1212,6 +1294,7 @@ function calcTotalUseQty(purchaseQty,conversionRate){
 
 </script>
 <script src="js/ingredients.js"></script>
+<script src="js/menu_sales.js"></script>
 <script>
 /* ─────────────── WASTE ─────────────── */
 const LOCAL_WASTE_KEY="nrk_waste_records_v1";
@@ -1520,7 +1603,7 @@ function brandTable(){
 async function delBrand(id){if(!confirm("ลบแบรนด์?"))return;await db.from("brands").delete().eq("id",id);await load()}
 
 /* ─────────────── EXPORT ─────────────── */
-function exportAll(){document.getElementById("out").textContent=JSON.stringify({brands,ings,purchases,recipes,lines,sales,exps,cashIns},null,2)}
+function exportAll(){document.getElementById("out").textContent=JSON.stringify({brands,ings,purchases,recipes,lines,sales,exps,cashIns,menuSales},null,2)}
 
 /* ─────────────── AUTH ─────────────── */
 async function logout(){await db.auth.signOut();location.href="login.html"}
