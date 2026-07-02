@@ -31,9 +31,48 @@
   --radius-sm:9px;
   --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
   --shadow-md:0 2px 8px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.06);
+  --sidebar:220px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.55}
+
+
+/* ── Sidebar ── */
+.side{
+  position:fixed;inset:0 auto 0 0;
+  width:var(--sidebar);
+  background:var(--text);
+  display:flex;flex-direction:column;
+  padding:0;z-index:100;
+  overflow-y:auto;
+}
+.side .brand{
+  padding:20px 18px 16px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.brand-logo{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;opacity:.8}
+.brand-name{font-size:17px;font-weight:700;color:#fff;margin-top:3px;letter-spacing:-.01em}
+.brand-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;font-family:'DM Mono',monospace}
+nav{padding:10px 10px;flex:1}
+.nav-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:12px 8px 6px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:9px;
+  color:rgba(255,255,255,.55);font-size:13px;font-weight:500;
+  cursor:pointer;transition:all .15s;margin-bottom:1px;
+  text-decoration:none;
+}
+.nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
+.nav-item.active{background:rgba(212,168,67,.15);color:var(--accent)}
+.nav-item .icon{width:18px;text-align:center;font-size:14px;opacity:.8}
+.side-footer{padding:14px 10px;border-top:1px solid rgba(255,255,255,.07)}
+.logout-btn{
+  display:flex;align-items:center;gap:8px;width:100%;
+  padding:8px 10px;border-radius:9px;background:none;border:none;
+  color:rgba(255,255,255,.35);font-size:12px;cursor:pointer;
+  transition:all .15s;font-family:'DM Sans',sans-serif;
+}
+.logout-btn:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.6)}
 
 /* ── Layout ── */
 .topbar{
@@ -49,7 +88,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .topbar-status{font-size:12px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace}
 .topbar-right{display:flex;align-items:center;gap:10px}
 
-.wrap{max-width:1400px;margin:0 auto;padding:24px 20px}
+.wrap{max-width:1400px;margin:0 auto 0 var(--sidebar);padding:24px 20px}
 
 /* ── Buttons ── */
 .btn{
@@ -228,8 +267,49 @@ tr:hover td{background:var(--surface2)}
 }
 .toast.show{opacity:1}
 
+
+
+/* ── Food Cost UX v2: edit-first layout ── */
+.panel-left{
+  position:sticky;
+  top:76px;
+  align-self:start;
+  max-height:calc(100vh - 96px);
+  overflow:auto;
+  padding-right:2px;
+}
+.panel-right{
+  min-width:0;
+}
+.recipe-edit-box{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:14px;
+  margin:12px 0 14px;
+}
+.recipe-edit-title{
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--text3);
+  margin-bottom:10px;
+}
+.recipe-edit-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+@media(max-width:1100px){.panel-left{position:static;max-height:none;overflow:visible}}
+
+
+.brand-chip-row{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0 14px}
+.brand-chip{border:1px solid var(--border);background:var(--surface2);color:var(--text2);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.brand-chip:hover{border-color:var(--accent);color:var(--text)}
+.brand-chip.active{background:var(--accent-soft);border-color:var(--accent-border);color:var(--orange)}
+.section-block{border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px;background:var(--surface)}
+.section-title{font-size:13px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
+.icon-btn{width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:8px}
+
 /* ── Responsive ── */
-@media(max-width:1100px){.main-layout{grid-template-columns:1fr}}
+@media(max-width:1100px){.main-layout{grid-template-columns:1fr}.side{position:relative;width:100%;height:auto}.wrap{margin-left:0}}
 @media(max-width:700px){
   .line-form{grid-template-columns:1fr 1fr}
   .line-row{grid-template-columns:28px 1fr 80px 80px}
@@ -240,66 +320,16 @@ tr:hover td{background:var(--surface2)}
   .wrap{padding:16px 12px}
   .line-row{grid-template-columns:1fr 80px}
 }
-
-
-/* ── Shared Sidebar (Kitchen OS) ── */
-:root{--sidebar:220px}
-.side{
-  position:fixed;inset:0 auto 0 0;
-  width:var(--sidebar);height:100vh;
-  background:var(--text);
-  display:flex;flex-direction:column;
-  padding:0;z-index:100;
-  overflow-y:auto;
-}
-.side .brand-box{
-  padding:20px 18px 16px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-.side .brand-logo{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;opacity:.8}
-.side .brand-name{font-size:17px;font-weight:700;color:#fff;margin-top:3px;letter-spacing:-.01em}
-.side .brand-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;font-family:'DM Mono',monospace}
-.side nav{padding:10px 10px;flex:1}
-.side .nav-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:12px 8px 6px}
-.side .nav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:9px 10px;border-radius:9px;
-  color:rgba(255,255,255,.55);font-size:13px;font-weight:500;
-  cursor:pointer;transition:all .15s;margin-bottom:1px;text-decoration:none;
-}
-.side .nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
-.side .nav-item.active{background:rgba(212,168,67,.15);color:var(--accent)}
-.side .nav-item .icon{width:18px;text-align:center;font-size:14px;opacity:.8}
-.side-footer{padding:14px 10px;border-top:1px solid rgba(255,255,255,.07)}
-.side .logout-btn{
-  display:flex;align-items:center;gap:8px;width:100%;
-  padding:8px 10px;border-radius:9px;background:none;border:none;
-  color:rgba(255,255,255,.35);font-size:12px;cursor:pointer;
-  transition:all .15s;font-family:'DM Sans',sans-serif;
-}
-.side .logout-btn:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.6)}
-.topbar{margin-left:var(--sidebar);width:calc(100% - var(--sidebar))}
-.wrap{margin-left:var(--sidebar);max-width:none}
-@media(max-width:900px){
-  .side{position:relative;width:100%;height:auto;flex-direction:row;flex-wrap:wrap}
-  .side .brand-box{width:100%;padding:16px 18px 12px}
-  .side nav{display:flex;flex-wrap:wrap;gap:4px;padding:8px 10px}
-  .side .nav-section{display:none}
-  .side-footer{display:none}
-  .topbar{margin-left:0;width:100%}
-  .wrap{margin-left:0}
-}
-
 </style>
 </head>
 <body>
 
-<!-- Shared Sidebar -->
+<!-- Sidebar -->
 <aside class="side">
-  <div class="brand-box">
+  <div class="brand">
     <div class="brand-logo">NRK Group</div>
     <div class="brand-name">🐥 Kitchen OS</div>
-    <div class="brand-sub">Food Cost</div>
+    <div class="brand-sub" id="status">Loading…</div>
   </div>
   <nav>
     <div class="nav-section">Overview</div>
@@ -322,27 +352,21 @@ tr:hover td{background:var(--surface2)}
   </div>
 </aside>
 
-
-<!-- Topbar -->
-<header class="topbar">
-  <div class="topbar-left">
-    <div class="topbar-brand">🍗 Food Cost<span>NRK ERP</span></div>
-    <div class="topbar-status" id="status">Loading…</div>
-  </div>
-  <div class="topbar-right">
-    <a href="index.html" class="btn btn-ghost">← Dashboard</a>
-    <button class="btn btn-ghost" onclick="logout()">ออกจากระบบ</button>
-  </div>
-</header>
-
 <div class="wrap">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px;flex-wrap:wrap">
+    <div>
+      <div style="font-size:20px;font-weight:800;letter-spacing:-.02em">🍗 Food Cost</div>
+      <div class="help">สร้างสูตร คำนวณต้นทุน และแก้ไขราคาเมนู</div>
+    </div>
+    <button class="btn btn-primary" onclick="scrollToCreateRecipe()">+ New Recipe</button>
+  </div>
   <div class="main-layout">
 
     <!-- ══ LEFT PANEL ══ -->
     <div class="panel-left">
 
       <!-- Create / Edit Recipe -->
-      <div class="card create-section">
+      <div class="card create-section" id="createRecipeCard">
         <div class="card-title" id="formTitle">➕ สร้าง Recipe ใหม่</div>
         <div class="fg fg2" style="margin-bottom:12px">
           <div>
@@ -406,10 +430,11 @@ tr:hover td{background:var(--surface2)}
             <option value="menu">Menu</option>
             <option value="semi">Semi</option>
           </select>
-          <select id="brandFilter" onchange="renderList()">
+          <select id="brandFilter" onchange="renderList();renderBrandChips()">
             <option value="all">ทุกแบรนด์</option>
           </select>
         </div>
+        <div id="brandQuickFilters" class="brand-chip-row"></div>
         <div id="recipeList"></div>
       </div>
     </div>
@@ -528,6 +553,7 @@ function populateBrandSelects(){
   const opts='<option value="">— ทุกแบรนด์ —</option>'+brands.map(b=>`<option value="${b.id}">${b.id} · ${b.name}</option>`).join("");
   document.getElementById("newBrand").innerHTML=opts.replace("— ทุกแบรนด์ —","— เลือกแบรนด์ —");
   document.getElementById("brandFilter").innerHTML='<option value="all">ทุกแบรนด์</option>'+brands.map(b=>`<option value="${b.id}">${b.id} · ${b.name}</option>`).join("");
+  renderBrandChips();
 }
 
 /* ── Cost Calc ── */
@@ -745,6 +771,28 @@ function clearForm(){
   onTypeChange();
 }
 
+
+function setBrandFilter(brandId){
+  const el=document.getElementById("brandFilter");
+  if(el)el.value=brandId||"all";
+  renderBrandChips();
+  renderList();
+}
+function renderBrandChips(){
+  const holder=document.getElementById("brandQuickFilters");
+  if(!holder)return;
+  const selected=document.getElementById("brandFilter")?.value||"all";
+  const counts={all:recipes.length};
+  recipes.forEach(r=>{const k=String(r.brand_id||"ไม่ระบุ");counts[k]=(counts[k]||0)+1});
+  const known=brands.map(b=>({id:String(b.id),label:String(b.id),count:counts[String(b.id)]||0})).filter(b=>b.count>0);
+  const unknown=(counts["ไม่ระบุ"]||0)?[{id:"ไม่ระบุ",label:"ไม่ระบุ",count:counts["ไม่ระบุ"]}]:[];
+  const chips=[{id:"all",label:"ทั้งหมด",count:counts.all||0},...known,...unknown];
+  holder.innerHTML=chips.map(c=>`<button class="brand-chip ${String(selected)===String(c.id)?"active":""}" onclick="setBrandFilter('${String(c.id).replaceAll("'","\\'")}')">${c.label} (${c.count})</button>`).join("");
+}
+function scrollToCreateRecipe(){
+  document.getElementById("createRecipeCard")?.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
 /* ── Recipe List ── */
 function renderList(){
   const q=String(document.getElementById("searchBox")?.value||"").toLowerCase();
@@ -752,7 +800,8 @@ function renderList(){
   const bf=document.getElementById("brandFilter")?.value||"all";
   const list=recipes.filter(r=>{
     const text=[r.name,r.type,r.brand_id].join(" ").toLowerCase();
-    return text.includes(q)&&(tf==="all"||typeOf(r)===tf)&&(bf==="all"||String(r.brand_id||"")=== bf);
+    const brandKey=String(r.brand_id||"ไม่ระบุ");
+    return text.includes(q)&&(tf==="all"||typeOf(r)===tf)&&(bf==="all"||brandKey===bf);
   });
   const el=document.getElementById("recipeList");
   if(!list.length){el.innerHTML='<div class="empty" style="padding:24px">ไม่พบ Recipe</div>';return;}
@@ -825,8 +874,31 @@ function showRecipe(id){
       </div>
     </div>`;
 
+
+  const brandOptions='<option value="">— ไม่ระบุแบรนด์ —</option>'+brands.map(b=>`<option value="${b.id}" ${String(r.brand_id||"")===String(b.id)?"selected":""}>${b.id} · ${b.name}</option>`).join("");
+  h+=`<div class="section-block"><div class="section-title">ข้อมูลเมนู</div><div class="recipe-edit-box">
+    <div class="recipe-edit-title">แก้ไขข้อมูลเมนูนี้</div>
+    <div class="fg fg2" style="margin-bottom:10px">
+      <div><label>ชื่อเมนู / Semi</label><input id="editRecipeName" value="${String(r.name||"").replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;')}"></div>
+      <div><label>ประเภท</label><select id="editRecipeType" onchange="previewRecipeBasicDelivery()"><option value="menu" ${isSemi(r)?"":"selected"}>Menu</option><option value="semi" ${isSemi(r)?"selected":""}>Semi-Finished</option></select></div>
+      <div><label>แบรนด์</label><select id="editRecipeBrand">${brandOptions}</select></div>
+      <div><label>Output หน่วย</label><input id="editRecipeUnit" list="unitList" value="${String(r.output_unit||"Portion").replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;')}"></div>
+      <div><label>Output จำนวน</label><input type="number" id="editRecipeYield" value="${Number(r.yield_qty||1)}" min="0.001" step="0.001"></div>
+      <div><label>GP Delivery %</label><input type="number" id="editRecipeGP" value="${Number(r.delivery_gp_percent||0)}" step="0.1" oninput="previewRecipeBasicDelivery()"></div>
+    </div>
+    <div class="fg fg2" id="editRecipePriceWrap" style="margin-bottom:10px;display:${isSemi(r)?"none":"grid"}">
+      <div><label>ราคาขายหน้าร้านรวม VAT</label><input type="number" id="editRecipePrice" value="${Number(r.base_price||0)}" step="1" oninput="previewRecipeBasicDelivery()"></div>
+      <div><label>ราคา Delivery Preview</label><input readonly value="${B(del)}"></div>
+    </div>
+    <div class="formula-box" id="editRecipeFormula">${isSemi(r)?"Semi-Finished ไม่ต้องใส่ราคาขาย ใช้สำหรับเป็นส่วนผสมของเมนูอื่น":(price?`${B(price)} ÷ (1 − ${gp}% × 1.07) = ${B(del)}`:"— ใส่ราคาขายก่อน")}</div>
+    <div class="recipe-edit-actions">
+      <button class="btn btn-primary btn-sm" onclick="saveRecipeBasic('${id}')">💾 บันทึกข้อมูลเมนู</button>
+      <button class="btn btn-secondary btn-sm" onclick="showRecipe('${id}')">ยกเลิก</button>
+    </div>
+  </div></div>`;
+
   // KPI pills
-  h+=`<div class="kpi-row">
+  h+=`<div class="section-block"><div class="section-title">สรุปต้นทุน</div><div class="kpi-row">
     <div class="kpi-pill accent">
       <div class="kpi-pill-label">ต้นทุน/Output</div>
       <div class="kpi-pill-value">${B(mainCostValue)}</div>
@@ -849,7 +921,7 @@ function showRecipe(id){
       <div class="kpi-pill-sub">GP ${gp}% · FC ${fcDel.toFixed(1)}%</div>
     </div>`;
   }
-  h+=`</div>`;
+  h+=`</div></div>`;
 
   // Formula box
   if(!isSemi(r)&&price){
@@ -857,7 +929,7 @@ function showRecipe(id){
     h+=`<div class="formula-box">${B(price)} ÷ (1 − ${gp}% × 1.07) = ${B(del)}  |  Effective GP ${eff.toFixed(2)}%</div>`;
   }
 
-  h+=`<div class="divider"></div>`;
+  h+=`<div class="section-block"><div class="section-title">ส่วนผสม</div>`;
 
   // Add ingredient form
   h+=`<div class="card-sm-title">เพิ่มส่วนผสม</div>
@@ -899,8 +971,8 @@ function showRecipe(id){
           <div style="font-size:11px;color:var(--text3);margin-top:3px">${pct.toFixed(1)}%</div>
         </div>
         <div style="display:flex;gap:5px">
-          <button class="btn btn-secondary btn-xs" onclick="editLine('${l.id}','${id}')">แก้</button>
-          <button class="btn btn-danger btn-xs" onclick="deleteLine('${l.id}','${id}')">ลบ</button>
+          <button class="btn btn-secondary btn-xs icon-btn" title="แก้" onclick="editLine('${l.id}','${id}')">✏️</button>
+          <button class="btn btn-danger btn-xs icon-btn" title="ลบ" onclick="deleteLine('${l.id}','${id}')">🗑️</button>
         </div>
       </div>`;
     });
@@ -911,6 +983,7 @@ function showRecipe(id){
     h+=`<div class="empty" style="padding:24px">ยังไม่มีส่วนผสม — เพิ่มด้านบนได้เลย</div>`;
   }
 
+  h+=`</div>`;
   h+=debugRecipeHTML(id);
   document.getElementById("detailContent").innerHTML=h;
 }
@@ -989,6 +1062,63 @@ async function recalcRecipe(id,visited=[]){
   for(const parentId of parentIds){
     await recalcRecipe(parentId,nextVisited);
   }
+}
+
+
+async function saveRecipeBasic(id){
+  const r=recipes.find(x=>String(x.id)===String(id));
+  if(!r)return alert("ไม่พบ Recipe");
+
+  const name=document.getElementById("editRecipeName")?.value.trim()||"";
+  const type=document.getElementById("editRecipeType")?.value||"menu";
+  const brand=document.getElementById("editRecipeBrand")?.value||null;
+  const yieldQty=Number(document.getElementById("editRecipeYield")?.value||1);
+  const unit=document.getElementById("editRecipeUnit")?.value.trim()||"Portion";
+  const price=type==="semi"?0:Number(document.getElementById("editRecipePrice")?.value||0);
+  const gp=Number(document.getElementById("editRecipeGP")?.value||0);
+  const del=type==="semi"?0:calcDelivery(price,gp);
+
+  if(!name)return alert("กรุณาใส่ชื่อเมนู");
+
+  const payload={
+    name,
+    type,
+    brand_id:brand,
+    yield_qty:yieldQty||1,
+    output_unit:unit,
+    base_price:price,
+    vat_price:price?price/1.07:0,
+    delivery_gp_percent:gp,
+    gp_price:del,
+    final_price:del
+  };
+
+  const res=await db.from("recipes").update(payload).eq("id",id);
+  if(res.error)return alert(res.error.message);
+
+  Object.assign(r,payload);
+  await recalcRecipe(id);
+  await loadAll();
+  selectedId=id;
+  showRecipe(id);
+  toast();
+}
+
+function previewRecipeBasicDelivery(){
+  const type=document.getElementById("editRecipeType")?.value||"menu";
+  const price=Number(document.getElementById("editRecipePrice")?.value||0);
+  const gp=Number(document.getElementById("editRecipeGP")?.value||0);
+  const box=document.getElementById("editRecipeFormula");
+  const priceWrap=document.getElementById("editRecipePriceWrap");
+  if(priceWrap)priceWrap.style.display=type==="semi"?"none":"grid";
+  if(!box)return;
+  if(type==="semi"){
+    box.textContent="Semi-Finished ไม่ต้องใส่ราคาขาย ใช้สำหรับเป็นส่วนผสมของเมนูอื่น";
+    return;
+  }
+  if(!price){box.textContent="— ใส่ราคาขายก่อน";return;}
+  const del=calcDelivery(price,gp);
+  box.textContent=`${B(price)} ÷ (1 − ${gp}% × 1.07) = ${B(del)}`;
 }
 
 async function editRecipe(id){
