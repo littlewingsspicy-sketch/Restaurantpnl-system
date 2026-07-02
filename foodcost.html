@@ -240,9 +240,88 @@ tr:hover td{background:var(--surface2)}
   .wrap{padding:16px 12px}
   .line-row{grid-template-columns:1fr 80px}
 }
+
+
+/* ── Shared Sidebar (Kitchen OS) ── */
+:root{--sidebar:220px}
+.side{
+  position:fixed;inset:0 auto 0 0;
+  width:var(--sidebar);height:100vh;
+  background:var(--text);
+  display:flex;flex-direction:column;
+  padding:0;z-index:100;
+  overflow-y:auto;
+}
+.side .brand-box{
+  padding:20px 18px 16px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.side .brand-logo{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--accent);text-transform:uppercase;opacity:.8}
+.side .brand-name{font-size:17px;font-weight:700;color:#fff;margin-top:3px;letter-spacing:-.01em}
+.side .brand-sub{font-size:11px;color:rgba(255,255,255,.35);margin-top:1px;font-family:'DM Mono',monospace}
+.side nav{padding:10px 10px;flex:1}
+.side .nav-section{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:12px 8px 6px}
+.side .nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:9px;
+  color:rgba(255,255,255,.55);font-size:13px;font-weight:500;
+  cursor:pointer;transition:all .15s;margin-bottom:1px;text-decoration:none;
+}
+.side .nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
+.side .nav-item.active{background:rgba(212,168,67,.15);color:var(--accent)}
+.side .nav-item .icon{width:18px;text-align:center;font-size:14px;opacity:.8}
+.side-footer{padding:14px 10px;border-top:1px solid rgba(255,255,255,.07)}
+.side .logout-btn{
+  display:flex;align-items:center;gap:8px;width:100%;
+  padding:8px 10px;border-radius:9px;background:none;border:none;
+  color:rgba(255,255,255,.35);font-size:12px;cursor:pointer;
+  transition:all .15s;font-family:'DM Sans',sans-serif;
+}
+.side .logout-btn:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.6)}
+.topbar{margin-left:var(--sidebar);width:calc(100% - var(--sidebar))}
+.wrap{margin-left:var(--sidebar);max-width:none}
+@media(max-width:900px){
+  .side{position:relative;width:100%;height:auto;flex-direction:row;flex-wrap:wrap}
+  .side .brand-box{width:100%;padding:16px 18px 12px}
+  .side nav{display:flex;flex-wrap:wrap;gap:4px;padding:8px 10px}
+  .side .nav-section{display:none}
+  .side-footer{display:none}
+  .topbar{margin-left:0;width:100%}
+  .wrap{margin-left:0}
+}
+
 </style>
 </head>
 <body>
+
+<!-- Shared Sidebar -->
+<aside class="side">
+  <div class="brand-box">
+    <div class="brand-logo">NRK Group</div>
+    <div class="brand-name">🐥 Kitchen OS</div>
+    <div class="brand-sub">Food Cost</div>
+  </div>
+  <nav>
+    <div class="nav-section">Overview</div>
+    <a class="nav-item" href="index.html#dash"><span class="icon">◈</span> Dashboard</a>
+    <a class="nav-item" href="pl_report.html"><span class="icon">📈</span> P&amp;L Report</a>
+    <a class="nav-item" href="index.html#cashflow"><span class="icon">💸</span> Cashflow</a>
+    <div class="nav-section">Operations</div>
+    <a class="nav-item" href="index.html#workspace"><span class="icon">📅</span> Monthly Workspace</a>
+    <div class="nav-section">Menu &amp; Cost</div>
+    <a class="nav-item" href="index.html#ing"><span class="icon">🧂</span> Ingredients</a>
+    <a class="nav-item" href="ingredient_history.html"><span class="icon">📈</span> Ingredient History</a>
+    <a class="nav-item" href="index.html#waste"><span class="icon">🗑️</span> Waste / ของเสีย</a>
+    <a class="nav-item active" href="foodcost.html"><span class="icon">🍗</span> Food Cost</a>
+    <div class="nav-section">Settings</div>
+    <a class="nav-item" href="index.html#brand"><span class="icon">🏷️</span> Brands</a>
+    <a class="nav-item" href="index.html#export"><span class="icon">⬇️</span> Export</a>
+  </nav>
+  <div class="side-footer">
+    <button class="logout-btn" onclick="logout()">↩ ออกจากระบบ</button>
+  </div>
+</aside>
+
 
 <!-- Topbar -->
 <header class="topbar">
@@ -729,7 +808,7 @@ function showRecipe(id){
   const fcDel=del?cost/del*100:0;
   const totalCost=ls.reduce((a,l)=>a+lineCost(l,[id]),0);
   const mainCostValue=isSemi(r)?totalCost:cost;
-  const mainCostSub=isSemi(r)?`Cost/unit ${B(cost)} / ${r.output_unit||"unit"}`:`${r.yield_qty||1} ${r.output_unit||"unit"}`;
+  const mainCostSub=isSemi(r)?`Cost/output ${B(cost)} / ${r.output_unit||"unit"}`:`${r.yield_qty||1} ${r.output_unit||"unit"}`;
   let h=`
     <div class="detail-header">
       <div>
