@@ -115,6 +115,9 @@ nav{padding:10px 10px;flex:1}
 .kpi-up{color:var(--green)}
 .kpi-down{color:var(--red)}
 .kpi-mid{color:var(--orange)}
+.year-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;grid-column:span 4}
+.year-kpi-grid .kpi{margin:0}
+@media(max-width:1200px){.year-kpi-grid{grid-column:1/-1}}
 
 /* ── Charts ── */
 .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
@@ -304,6 +307,25 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 
 .auto-field-note{font-size:10px;color:var(--text3);margin-top:3px}
 .conv-text{font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);white-space:nowrap}
+
+/* ── Owner Dashboard V2 ── */
+.kpi.hero{grid-column:span 2;border-top:3px solid var(--accent);background:linear-gradient(180deg,#fff,var(--accent-soft))}
+.kpi.hero .kpi-value{font-size:30px}
+.dashboard-note{font-size:12px;color:var(--text3);line-height:1.6;margin-top:8px}
+.dash-line-wrap{width:100%;height:260px;overflow:hidden;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px}
+.dash-line-wrap svg{width:100%;height:240px;display:block}
+.year-table td,.year-table th{font-size:12px;padding:8px 9px}
+.year-profit{font-weight:700}
+@media(max-width:700px){.kpi.hero{grid-column:span 1}}
+
+.dashboard-year-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.dashboard-year-head .card-title{margin-bottom:0}
+.year-picker{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:6px 10px}
+.year-picker label{margin:0;font-size:11px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
+.year-picker select{width:auto;min-width:110px;padding:6px 10px;border-radius:99px;font-size:13px}
+.year-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.dashboard-note strong{color:var(--text2)}
+
 </style>
 </head>
 <body>
@@ -312,7 +334,7 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 <div class="brand">
 <div class="brand-logo">NRK Group</div>
 <div class="brand-name">🐥 Kitchen OS</div>
-<div class="brand-sub">v106 · cashflow-grab-deduction-fix</div>
+<div class="brand-sub">v108 · dashboard-channel-groups</div>
 </div>
 <nav>
 <div class="nav-section">Overview</div>
@@ -343,21 +365,22 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 <!-- ── DASHBOARD ── -->
 <section class="page active" id="dash">
 <div class="kpi-grid" id="kpiGrid">
-<div class="kpi accent"><div class="kpi-label">Net Revenue</div><div class="kpi-value" id="kpiRevenue">฿0</div><div class="kpi-sub" id="kpiRevenueSub">—</div></div>
-<div class="kpi"><div class="kpi-label">COGS</div><div class="kpi-value" id="kpiCogs">฿0</div><div class="kpi-sub" id="kpiCogsSub">—</div></div>
-<div class="kpi green"><div class="kpi-label">Gross Profit</div><div class="kpi-value" id="kpiGross">฿0</div><div class="kpi-sub" id="kpiGrossSub">—</div></div>
-<div class="kpi"><div class="kpi-label">Total Expenses</div><div class="kpi-value" id="kpiExpenses">฿0</div><div class="kpi-sub" id="kpiExpensesSub">—</div></div>
-<div class="kpi"><div class="kpi-label">Labor Cost</div><div class="kpi-value" id="kpiLabor">฿0</div><div class="kpi-sub" id="kpiLaborSub">—</div></div>
-<div class="kpi"><div class="kpi-label">GP Commission</div><div class="kpi-value" id="kpiGpDelivery">฿0</div><div class="kpi-sub">Grab Commission</div></div>
-<div class="kpi blue"><div class="kpi-label">AOV</div><div class="kpi-value" id="kpiAov">฿0</div><div class="kpi-sub" id="kpiAovSub">—</div></div>
-<div class="kpi"><div class="kpi-label" id="kpiNetLabel">Net Profit</div><div class="kpi-value" id="kpiNet">฿0</div><div class="kpi-sub" id="kpiNetSub">—</div></div>
+<div class="kpi hero"><div class="kpi-label" id="kpiNetLabel">Net Profit / Loss รวมทั้งหมด</div><div class="kpi-value" id="kpiNet">฿0</div><div class="kpi-sub" id="kpiNetSub">ตั้งแต่เริ่มกรอกข้อมูล</div></div>
+</div>
+<div class="card">
+  <div class="dashboard-year-head">
+    <div class="card-title">Year Monitor <span class="card-sub">ดู KPI รายปี</span></div>
+    <div class="year-picker"><label>Year</label><select id="dashYear" onchange="renderDashboard()"></select></div>
+  </div>
+  <div id="yearKpiGrid" class="year-kpi-grid"></div>
 </div>
 <div class="chart-grid">
-<div class="card"><div class="card-title">Revenue by Month</div><div id="growthChart"></div></div>
-<div class="card"><div class="card-title">Revenue by Channel</div><div id="channelChart"></div></div>
-<div class="card"><div class="card-title">Grab by Brand</div><div id="brandChart"></div></div>
-<div class="card"><div class="card-title">Sales by Weekday (avg)</div><div id="weekdayChart"></div></div>
+<div class="card"><div class="card-title">Revenue by Month <span class="card-sub">กราฟเส้นรวมทุกเดือน</span></div><div id="growthChart"></div></div>
+<div class="card"><div class="card-title">Delivery vs Store by Month <span class="card-sub">Delivery = Grab ทุกแบรนด์ / Store = Dine-in + Take Away</span></div><div id="channelGroupChart"></div></div>
+<div class="card"><div class="card-title">Revenue by Channel <span class="card-sub">รวมทั้งหมด</span></div><div id="channelChart"></div></div>
+<div class="card"><div class="card-title">Sales by Weekday <span class="card-sub">เฉลี่ยต่อวัน</span></div><div id="weekdayChart"></div></div>
 </div>
+<div class="card"><div class="card-title">Dashboard Logic</div><p class="dashboard-note"><strong>All-time Net Profit/Loss</strong> = Net Revenue - COGS - Expenses รวมทั้งหมดตั้งแต่เริ่มกรอกข้อมูล. <strong>Year Monitor</strong> ใช้ปีที่เลือก และ Expense ในการ์ดรายปีไม่รวม GP Delivery และรายการชำระหนี้. หมายเหตุ: COGS ตอนนี้อิงจากยอดซื้อวัตถุดิบใน Workspace ยังไม่ใช่ต้นทุนขายจริงจาก Menu Sales / Inventory. Workspace จะสร้างช่อง Grab จาก Brand อัตโนมัติ เช่น SLB → Grab SLB.</p></div>
 </section>
 <!-- ── P&L ── -->
 
@@ -370,7 +393,7 @@ pre{background:var(--text);color:var(--accent);padding:14px;border-radius:var(--
 <button class="btn btn-secondary" onclick="moveCashflowMonth(1)">ถัดไป →</button>
 <button class="btn btn-primary" onclick="renderCashflow()">โหลด</button>
 </div>
-<p class="help">เงินเข้าให้กรอกเอง ส่วนเงินออกดึงจาก COGS / Expenses เฉพาะรายการที่เป็นเงินสดออกจริง — รายการ Grab หักก่อนโอนจะไม่เข้า Cashflow</p>
+<p class="help">เงินเข้าให้กรอกเอง ส่วนเงินออกดึงจาก COGS / Expenses และจัดหมวด Cashflow อัตโนมัติจาก Expense Category</p>
 </div>
 <div class="cf-kpi-grid">
 <div class="cf-kpi"><div class="label">Cash In</div><div class="value" id="cfKpiIn">฿0</div></div>
@@ -569,17 +592,34 @@ const SUPABASE_URL="https://mjbxskhfvaxxcopzesic.supabase.co";
 const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qYnhza2hmdmF4eGNvcHplc2ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjg4NTIsImV4cCI6MjA5MDk0NDg1Mn0.G2W728EIN6qfALpW06YCdSkVKKnAO1bULMGIlei-Z2U";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-const channels=[
+const DEFAULT_GRAB_BRAND_IDS=["LTW","RRK","FFF","DEN"];
+const NON_GRAB_CHANNELS_TOP=[
   ["dine_in","Dine-in",null],
-  ["take_away","Take Away",null],
-  ["grab_ltw","Grab LTW","LTW"],
-  ["grab_rrk","Grab RRK","RRK"],
-  ["grab_fff","Grab FFF","FFF"],
-  ["grab_den","Grab DEN","DEN"],
+  ["take_away","Take Away",null]
+];
+const NON_GRAB_CHANNELS_BOTTOM=[
   ["catering","Catering",null],
   ["event","Event",null],
   ["market","ตลาดนัด",null]
 ];
+let channels=[];
+function cleanBrandId(id){
+  return String(id||"").trim().toUpperCase().replace(/[^A-Z0-9_]/g,"");
+}
+function refreshSalesChannels(){
+  const seen=new Set();
+  const grab=[];
+  const addBrand=id=>{
+    const bid=cleanBrandId(id);
+    if(!bid||seen.has(bid))return;
+    seen.add(bid);
+    grab.push([`grab_${bid.toLowerCase()}`,`Grab ${bid}`,bid]);
+  };
+  DEFAULT_GRAB_BRAND_IDS.forEach(addBrand);
+  (brands||[]).filter(b=>b.is_active!==false).forEach(b=>addBrand(b.id));
+  channels=[...NON_GRAB_CHANNELS_TOP,...grab,...NON_GRAB_CHANNELS_BOTTOM];
+  return channels;
+}
 
 const EXPENSE_CATEGORIES=[
   {code:"0301",name:"เงินเดือนพนักงาน FT",group:"👷 ค่าแรงงาน",cost_type:"fixed",cashflow_type:"operating"},
@@ -591,13 +631,12 @@ const EXPENSE_CATEGORIES=[
   {code:"0402",name:"ค่าน้ำ",group:"🔧 สาธารณูปโภค",cost_type:"fixed",cashflow_type:"operating"},
   {code:"0403",name:"ค่าโทรศัพท์",group:"🔧 สาธารณูปโภค",cost_type:"fixed",cashflow_type:"operating"},
   {code:"0404",name:"ค่าอินเตอร์เน็ต",group:"🔧 สาธารณูปโภค",cost_type:"fixed",cashflow_type:"operating"},
-  {code:"0408",name:"ค่าโฆษณา / Marketing (Grab / หักก่อนโอน)",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"operating",cashflow_include:false},
-  {code:"0409",name:"ค่าโฆษณาผ่านแอป / Platform Ads (หักก่อนโอน)",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"operating",cashflow_include:false},
-  {code:"0411",name:"ค่าใช้จ่ายอื่นๆ",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"operating",cashflow_include:true},
+  {code:"0408",name:"ค่าโฆษณา / Marketing",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"operating"},
+  {code:"0411",name:"ค่าใช้จ่ายอื่นๆ",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"operating"},
   {code:"0501",name:"ค่าเช่ารายเดือน",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"fixed",cashflow_type:"operating"},
   {code:"0502",name:"ค่าทำบัญชี",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"fixed",cashflow_type:"operating"},
   {code:"0503",name:"ค่าธรรมเนียมธนาคาร",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating"},
-  {code:"0504",name:"ค่า GP Delivery Commission / Grab GP (หักก่อนโอน)",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating",cashflow_include:false},
+  {code:"0504",name:"ค่า GP Delivery Commission",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating"},
   {code:"0505",name:"ภาษีหัก ณ ที่จ่าย",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating"},
   {code:"0506",name:"VAT",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating"},
   {code:"0507",name:"ภาษีเงินได้ประจำปี",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"fixed",cashflow_type:"operating"},
@@ -608,30 +647,15 @@ const EXPENSE_CATEGORIES=[
   {code:"0602",name:"เฟอร์นิเจอร์ / Fixtures",group:"🛠️ ลงทุน / CAPEX",cost_type:"capex",cashflow_type:"investing"},
   {code:"0603",name:"Renovation / ปรับปรุงร้าน",group:"🛠️ ลงทุน / CAPEX",cost_type:"capex",cashflow_type:"investing"},
   {code:"0604",name:"ระบบ POS / Software Setup",group:"🛠️ ลงทุน / CAPEX",cost_type:"capex",cashflow_type:"investing"},
-  {code:"0701",name:"จ่ายคืนเงินกู้ / Loan Payment (จ่ายเอง)",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing",cashflow_include:true},
-  {code:"0702",name:"ดอกเบี้ยเงินกู้",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"fixed",cashflow_type:"operating",cashflow_include:true},
-  {code:"0703",name:"ถอนเงินเจ้าของ",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing",cashflow_include:true},
-  {code:"0704",name:"โอนเงินส่วนตัว / Owner Draw",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing",cashflow_include:true},
-  {code:"0705",name:"สินเชื่อแกรบ / Grab Loan Deduction (หักก่อนโอน)",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing",cashflow_include:false}
+  {code:"0701",name:"จ่ายคืนเงินกู้",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing"},
+  {code:"0702",name:"ดอกเบี้ยเงินกู้",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"fixed",cashflow_type:"operating"},
+  {code:"0703",name:"ถอนเงินเจ้าของ",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing"},
+  {code:"0704",name:"โอนเงินส่วนตัว / Owner Draw",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing"}
 ];
 function expenseCategoryValue(c){return `${c.code} — ${c.name}`}
 function expenseMeta(category){
   const text=String(category||"");
-  return EXPENSE_CATEGORIES.find(c=>text.startsWith(c.code)) || EXPENSE_CATEGORIES.find(c=>text.includes(c.name)) || {code:"9999",name:category||"อื่นๆ",group:"อื่นๆ",cost_type:"variable",cashflow_type:"operating",cashflow_include:true};
-}
-function expenseIncludeInCashflow(meta, expense){
-  const category=String(expense?.category||"");
-  const detail=String(expense?.detail||"");
-  const text=(category+" "+detail).toLowerCase();
-
-  // รายการที่ Grab หักก่อนโอนเงิน ไม่ใช่เงินออกจากบัญชีจริง จึงไม่เข้า Cashflow
-  if(category.startsWith("0408")) return false; // Marketing Grab เดิม
-  if(category.startsWith("0409")) return false; // Platform Ads / Grab Ads
-  if(category.startsWith("0504")) return false; // Grab GP / Commission
-  if(category.startsWith("0705")) return false; // Grab Loan Deduction
-  if(category.startsWith("0701") && /(grab|แกรบ)/i.test(text)) return false; // ข้อมูลเก่าใช้ 0701 แต่รายละเอียดเป็น Grab
-
-  return !meta || meta.cashflow_include !== false;
+  return EXPENSE_CATEGORIES.find(c=>text.startsWith(c.code)) || EXPENSE_CATEGORIES.find(c=>text.includes(c.name)) || {code:"9999",name:category||"อื่นๆ",group:"อื่นๆ",cost_type:"variable",cashflow_type:"operating"};
 }
 function expenseCategoryOptions(){
   const groups=[...new Set(EXPENSE_CATEGORIES.map(c=>c.group))];
@@ -639,6 +663,7 @@ function expenseCategoryOptions(){
 }
 
 let brands=[],ings=[],purchases=[],recipes=[],lines=[],sales=[],exps=[],cashIns=[],work=[],editIng=null,editRec=null,wasteRows=[];
+refreshSalesChannels();
 
 /* ── Helpers ── */
 const B=n=>"฿"+Number(n||0).toLocaleString("th-TH",{maximumFractionDigits:2});
@@ -652,6 +677,7 @@ async function get(t){const {data,error}=await db.from(t).select("*");if(error){
 async function load(fullRender=true){
   setStatus("loading");
   brands=await get("brands");
+  refreshSalesChannels();
   ings=await get("ingredients");
   purchases=await get("inventory_purchases");
   recipes=await get("recipes");
@@ -716,73 +742,180 @@ function renderSimpleBars(id,data){
     </div>`).join("");
 }
 
+function dashboardDateRangeDays(){
+  const dates=sales.map(r=>r.sale_date).filter(Boolean).sort();
+  if(!dates.length)return 0;
+  const first=new Date(dates[0]);
+  const last=new Date(dates[dates.length-1]);
+  const diff=Math.floor((last-first)/(1000*60*60*24))+1;
+  return Math.max(diff,1);
+}
+function renderDashboardLine(id,data){
+  const el=document.getElementById(id);if(!el)return;
+  const entries=Object.entries(data).sort((a,b)=>String(a[0]).localeCompare(String(b[0])));
+  if(!entries.length){el.innerHTML='<div class="empty">ไม่มีข้อมูล</div>';return;}
+  const vals=entries.map(e=>Number(e[1]||0));
+  const max=Math.max(...vals,1),min=Math.min(...vals,0),range=Math.max(max-min,1);
+  const W=760,H=240,padL=58,padR=18,padT=28,padB=48;
+  const cw=W-padL-padR,ch=H-padT-padB;
+  const pts=entries.map(([k,v],i)=>{
+    const x=padL+(entries.length===1?cw/2:(i/(entries.length-1))*cw);
+    const y=padT+ch-((Number(v||0)-min)/range)*ch;
+    return {x,y,k,v:Number(v||0)};
+  });
+  const path=pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' ');
+  const labelEvery=Math.max(1,Math.ceil(entries.length/10));
+  el.innerHTML=`<div class="dash-line-wrap"><svg viewBox="0 0 ${W} ${H}">
+    <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+ch}" stroke="#d5cfc3"/>
+    <line x1="${padL}" y1="${padT+ch}" x2="${padL+cw}" y2="${padT+ch}" stroke="#d5cfc3"/>
+    <text x="4" y="${padT+4}" font-size="11" fill="#9c968e">${B(max)}</text>
+    <text x="4" y="${padT+ch}" font-size="11" fill="#9c968e">${B(min)}</text>
+    <path d="${path}" fill="none" stroke="#d4a843" stroke-width="3"/>
+    ${pts.map((p,i)=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="#d4a843"><title>${p.k}: ${B(p.v)}</title></circle>${i%labelEvery===0?`<text x="${p.x.toFixed(1)}" y="${H-20}" font-size="10" fill="#9c968e" text-anchor="middle">${p.k.slice(2)}</text>`:''}`).join('')}
+  </svg></div>`;
+}
+function renderDashboardMultiLine(id,rows,series){
+  const el=document.getElementById(id);if(!el)return;
+  const months=[...new Set(rows.map(r=>r.month))].sort();
+  if(!months.length){el.innerHTML='<div class="empty">ไม่มีข้อมูล</div>';return;}
+  const vals=[];
+  months.forEach(m=>series.forEach(s=>vals.push(Number((rows.find(r=>r.month===m)||{})[s.key]||0))));
+  const max=Math.max(...vals,1),min=0,range=Math.max(max-min,1);
+  const W=760,H=260,padL=58,padR=18,padT=30,padB=52;
+  const cw=W-padL-padR,ch=H-padT-padB;
+  const xAt=i=>padL+(months.length===1?cw/2:(i/(months.length-1))*cw);
+  const yAt=v=>padT+ch-((Number(v||0)-min)/range)*ch;
+  const colors=['#2563a8','#d4a843','#1a7a4a'];
+  const labelEvery=Math.max(1,Math.ceil(months.length/10));
+  const paths=series.map((s,si)=>{
+    const pts=months.map((m,i)=>{const r=rows.find(x=>x.month===m)||{};return{x:xAt(i),y:yAt(r[s.key]||0),m,v:Number(r[s.key]||0)}});
+    const path=pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' ');
+    return `<path d="${path}" fill="none" stroke="${colors[si%colors.length]}" stroke-width="3"/>`+pts.map(p=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="${colors[si%colors.length]}"><title>${s.label} ${p.m}: ${B(p.v)}</title></circle>`).join('');
+  }).join('');
+  el.innerHTML=`<div class="dash-line-wrap"><div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px;font-size:12px;color:var(--text2)">${series.map((s,i)=>`<span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${colors[i%colors.length]};margin-right:5px"></span>${s.label}</span>`).join('')}</div><svg viewBox="0 0 ${W} ${H}">
+    <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+ch}" stroke="#d5cfc3"/>
+    <line x1="${padL}" y1="${padT+ch}" x2="${padL+cw}" y2="${padT+ch}" stroke="#d5cfc3"/>
+    <text x="4" y="${padT+4}" font-size="11" fill="#9c968e">${B(max)}</text>
+    <text x="4" y="${padT+ch}" font-size="11" fill="#9c968e">${B(0)}</text>
+    ${paths}
+    ${months.map((m,i)=>i%labelEvery===0?`<text x="${xAt(i).toFixed(1)}" y="${H-20}" font-size="10" fill="#9c968e" text-anchor="middle">${m.slice(2)}</text>`:'').join('')}
+  </svg></div>`;
+}
+function dashboardMonthlyChannelGroups(){
+  const byMonth={};
+  sales.forEach(s=>{
+    const m=String(s.sale_date||"").slice(0,7);if(!m)return;
+    if(!byMonth[m])byMonth[m]={month:m,delivery:0,store:0};
+    const ch=String(s.channel||"");
+    const amount=Number(s.net_sales||0);
+    if(ch.startsWith("grab_"))byMonth[m].delivery+=amount;
+    else if(ch==="dine_in"||ch==="take_away")byMonth[m].store+=amount;
+  });
+  return Object.values(byMonth).sort((a,b)=>String(a.month).localeCompare(String(b.month)));
+}
+function dashboardYears(){
+  const ys=new Set();
+  sales.forEach(r=>{const y=String(r.sale_date||"").slice(0,4);if(y)ys.add(y)});
+  purchases.forEach(r=>{const y=String(r.purchase_date||"").slice(0,4);if(y)ys.add(y)});
+  exps.forEach(r=>{const y=String(r.expense_date||"").slice(0,4);if(y)ys.add(y)});
+  const now=new Date().getFullYear();
+  ys.add(String(now));
+  ys.add(String(now+1));
+  return [...ys].sort();
+}
+function initDashboardYearPicker(){
+  const el=document.getElementById("dashYear");
+  if(!el)return String(new Date().getFullYear());
+  const years=dashboardYears();
+  const current=el.value||String(new Date().getFullYear());
+  el.innerHTML=years.map(y=>`<option value="${y}" ${String(y)===String(current)?'selected':''}>${y}</option>`).join("");
+  if(!years.includes(current))el.value=years[years.length-1]||String(new Date().getFullYear());
+  return el.value;
+}
+function dashboardInYear(dateStr,year){
+  return String(dateStr||"").slice(0,4)===String(year);
+}
+function dashboardYearDays(year){
+  const dates=sales.filter(r=>dashboardInYear(r.sale_date,year)).map(r=>r.sale_date).filter(Boolean).sort();
+  if(!dates.length)return 0;
+  const first=new Date(dates[0]);
+  const last=new Date(dates[dates.length-1]);
+  return Math.max(Math.floor((last-first)/(1000*60*60*24))+1,1);
+}
+function isDashboardGpExpense(e){
+  const t=String((e&&e.category)||"")+" "+String((e&&e.detail)||"");
+  return /0504|gp delivery|grab commission|commission|ค่า\s*gp|จีพี/i.test(t);
+}
+function isDashboardDebtPayment(e){
+  const t=String((e&&e.category)||"")+" "+String((e&&e.detail)||"");
+  return /0701|0703|0704|0705|จ่ายคืนเงินกู้|ชำระหนี้|สินเชื่อ|เงินกู้|loan|debt|installment|owner draw|withdrawal/i.test(t);
+}
+function renderYearKpis(year){
+  const el=document.getElementById("yearKpiGrid");if(!el)return;
+  const y=year||initDashboardYearPicker();
+  const ySales=sales.filter(r=>dashboardInYear(r.sale_date,y));
+  const yPurchases=purchases.filter(r=>dashboardInYear(r.purchase_date,y));
+  const yExpenses=exps.filter(r=>dashboardInYear(r.expense_date,y));
+  const revenue=ySales.reduce((a,r)=>a+Number(r.net_sales||0),0);
+  const orders=ySales.reduce((a,r)=>a+Number(r.bill_count||0),0);
+  const days=dashboardYearDays(y);
+  const avgRevDay=days?revenue/days:0;
+  const avgOrdersDay=days?orders/days:0;
+  const aov=orders?revenue/orders:0;
+  const cogs=yPurchases.reduce((a,r)=>a+Number(r.total_cost||0),0);
+  const gpDelivery=yExpenses.filter(isDashboardGpExpense).reduce((a,r)=>a+Number(r.amount||0),0);
+  const expenseOperating=yExpenses.filter(e=>!isDashboardGpExpense(e)&&!isDashboardDebtPayment(e)).reduce((a,r)=>a+Number(r.amount||0),0);
+  const gpPct=revenue?gpDelivery/revenue*100:0;
+  const cogsPct=revenue?cogs/revenue*100:0;
+  const expPct=revenue?expenseOperating/revenue*100:0;
+  el.innerHTML=`
+    <div class="kpi accent"><div class="kpi-label">Net Revenue ${y}</div><div class="kpi-value">${B(revenue)}</div><div class="kpi-sub">เฉลี่ย ${B(avgRevDay)} / วัน · ${days.toLocaleString("th-TH")} วัน</div></div>
+    <div class="kpi blue"><div class="kpi-label">Orders ${y}</div><div class="kpi-value">${orders.toLocaleString("th-TH")}</div><div class="kpi-sub">เฉลี่ย ${avgOrdersDay.toFixed(1)} บิล / วัน</div></div>
+    <div class="kpi"><div class="kpi-label">Average Check</div><div class="kpi-value">${B(aov)}</div><div class="kpi-sub">ต่อบิล</div></div>
+    <div class="kpi"><div class="kpi-label">COGS</div><div class="kpi-value">${B(cogs)}</div><div class="kpi-sub">${cogsPct.toFixed(1)}% of Revenue</div></div>
+    <div class="kpi"><div class="kpi-label">Expense</div><div class="kpi-value">${B(expenseOperating)}</div><div class="kpi-sub">${expPct.toFixed(1)}% · ไม่รวม GP/ชำระหนี้</div></div>
+    <div class="kpi orange"><div class="kpi-label">GP Delivery</div><div class="kpi-value">${gpPct.toFixed(1)}%</div><div class="kpi-sub">${B(gpDelivery)}</div></div>`;
+}
 function renderDashboard(){
   const revenue=sales.reduce((a,r)=>a+Number(r.net_sales||0),0);
-  const grossSales=sales.reduce((a,r)=>a+Number(r.sales_amount||0),0);
-  const discount=sales.reduce((a,r)=>a+Number(r.discount||0),0);
   const cogs=purchases.reduce((a,r)=>a+Number(r.total_cost||0),0);
   const totalExp=exps.reduce((a,r)=>a+Number(r.amount||0),0);
-
-  // Labor: filter by category keywords
-  const isLabor=e=>/(แรง|เงินเดือน|labor|ค่าจ้าง|ประกันสังคม|pt รายวัน|ft)/i.test(e.category||"");
-  const labor=exps.filter(isLabor).reduce((a,r)=>a+Number(r.amount||0),0);
-
-  // GP Commission: category 0504
-  const isGP=e=>/(0504|gp delivery|commission|grab commission)/i.test(e.category||"");
-  const gpCommission=exps.filter(isGP).reduce((a,r)=>a+Number(r.amount||0),0);
-
-  const grossProfit=revenue-cogs;
-  const netProfit=grossProfit-totalExp;
+  const netProfit=revenue-cogs-totalExp;
   const bills=sales.reduce((a,r)=>a+Number(r.bill_count||0),0);
   const aov=bills?revenue/bills:0;
+  const dayCount=dashboardDateRangeDays();
+  const revPerDay=dayCount?revenue/dayCount:0;
+  const ordersPerDay=dayCount?bills/dayCount:0;
   const safe=revenue||1;
-
   const fmt=n=>n>=0?`<span class="kpi-up">${B(n)}</span>`:`<span class="kpi-down">${B(n)}</span>`;
-  const pct=n=>(n/safe*100).toFixed(1)+"%";
 
-  document.getElementById("kpiRevenue").textContent=B(revenue);
-  document.getElementById("kpiRevenueSub").textContent=`Gross ${B(grossSales)} | Discount ${B(discount)}`;
-  document.getElementById("kpiCogs").textContent=B(cogs);
-  // COGS breakdown
-  const cogsG={};purchases.forEach(p=>{const k=p.category||"Other";cogsG[k]=(cogsG[k]||0)+Number(p.total_cost||0)});
-  document.getElementById("kpiCogsSub").textContent=`${pct(cogs)} of Revenue`;
-  document.getElementById("kpiGross").innerHTML=fmt(grossProfit);
-  document.getElementById("kpiGrossSub").textContent=`Gross Margin ${pct(grossProfit)}`;
-  document.getElementById("kpiExpenses").textContent=B(totalExp);
-  document.getElementById("kpiExpensesSub").textContent=`${pct(totalExp)} of Revenue`;
-  document.getElementById("kpiLabor").textContent=B(labor);
-  document.getElementById("kpiLaborSub").textContent=`Labor Ratio ${pct(labor)}`;
-  const gpPct = revenue ? (gpCommission / revenue) * 100 : 0;
-
-document.getElementById("kpiGpDelivery").textContent =
-gpPct.toFixed(1) + "%";
-  document.getElementById("kpiAov").textContent=B(aov);
-  document.getElementById("kpiAovSub").textContent=`${bills.toLocaleString()} บิล`;
   document.getElementById("kpiNet").innerHTML=fmt(netProfit);
-  document.getElementById("kpiNetLabel").textContent=netProfit>=0?"Net Profit":"Net Loss";
-  document.getElementById("kpiNetSub").textContent=`Net Margin ${pct(netProfit)}`;
+  document.getElementById("kpiNetLabel").textContent=netProfit>=0?"Net Profit รวมทั้งหมด":"Net Loss รวมทั้งหมด";
+  document.getElementById("kpiNetSub").textContent=`ตั้งแต่เริ่มกรอกข้อมูล · ${dayCount.toLocaleString("th-TH")} วัน`;
 
-  // Charts
   const byMonth={};
-  sales.forEach(s=>{const m=String(s.sale_date||"").slice(0,7);if(m) byMonth[m]=(byMonth[m]||0)+Number(s.net_sales||0)});
-  renderSimpleBars("growthChart",byMonth);
+  sales.forEach(s=>{const m=String(s.sale_date||"").slice(0,7);if(m)byMonth[m]=(byMonth[m]||0)+Number(s.net_sales||0)});
+  renderDashboardLine("growthChart",byMonth);
+  renderDashboardMultiLine("channelGroupChart",dashboardMonthlyChannelGroups(),[
+    {key:"delivery",label:"Delivery / Grab ทุกแบรนด์"},
+    {key:"store",label:"หน้าร้าน / Dine-in + Take Away"}
+  ]);
+
+  const selectedYear=initDashboardYearPicker();
+  renderYearKpis(selectedYear);
 
   const byChannel={};
   sales.forEach(s=>{const n=channelLabel(s.channel);byChannel[n]=(byChannel[n]||0)+Number(s.net_sales||0)});
   renderSimpleBars("channelChart",byChannel);
 
-  const byBrand={};
-  sales.filter(s=>String(s.channel||"").includes("grab")).forEach(s=>{
-    const n=channelLabel(s.channel);byBrand[n]=(byBrand[n]||0)+Number(s.net_sales||0)});
-  renderSimpleBars("brandChart",byBrand);
-
   const dayNames=["อา","จ","อ","พ","พฤ","ศ","ส"];
   const wdSum=Array(7).fill(0),wdCt=Array(7).fill(0);
   sales.forEach(s=>{if(s.sale_date){const d=new Date(s.sale_date).getDay();wdSum[d]+=Number(s.net_sales||0);wdCt[d]++}});
   const wdData={};
-  dayNames.forEach((n,i)=>{if(wdCt[i]) wdData[n]=wdSum[i]/wdCt[i]});
+  dayNames.forEach((n,i)=>{if(wdCt[i])wdData[n]=wdSum[i]/wdCt[i]});
   renderSimpleBars("weekdayChart",wdData);
 }
+
 
 /* ─────────────── P&L ─────────────── */
 function initPLMonth(){const el=document.getElementById("plMonth");if(el&&!el.value){const d=new Date();el.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")}}
@@ -1116,11 +1249,7 @@ function cfAdd(obj,key,amount){obj[key]=(obj[key]||0)+Number(amount||0)}
 function buildCashflowRows(){
   const rows=[];
   purchases.filter(p=>inCashflowMonth(p.purchase_date)).forEach(p=>rows.push({date:p.purchase_date,source:"COGS",category:p.category||"COGS",type:"operating",direction:"out",detail:p.ingredient_name||"ซื้อวัตถุดิบ",amount:Number(p.total_cost||0)}));
-  exps.filter(e=>inCashflowMonth(e.expense_date)).forEach(e=>{
-    const meta=expenseMeta(e.category);
-    if(!expenseIncludeInCashflow(meta,e)) return;
-    rows.push({date:e.expense_date,source:"Expense",category:e.category||"Expense",type:meta.cashflow_type||"operating",direction:"out",detail:e.detail||meta.name||"",amount:Number(e.amount||0)});
-  });
+  exps.filter(e=>inCashflowMonth(e.expense_date)).forEach(e=>{const meta=expenseMeta(e.category);rows.push({date:e.expense_date,source:"Expense",category:e.category||"Expense",type:meta.cashflow_type||"operating",direction:"out",detail:e.detail||meta.name||"",amount:Number(e.amount||0)})});
   cashIns.filter(i=>inCashflowMonth(i.cash_date||i.date)).forEach(i=>rows.push({date:i.cash_date||i.date,source:"Manual Cash In",category:i.source||i.cash_source||"Cash In",type:i.cashflow_type||i.type||"operating",direction:"in",detail:i.detail||"",amount:Number(i.amount||0),id:i.id,manual:true}));
   return rows;
 }
