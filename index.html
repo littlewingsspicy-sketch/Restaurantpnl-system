@@ -631,12 +631,13 @@ const EXPENSE_CATEGORIES=[
   {code:"0402",name:"ค่าน้ำ",group:"🔧 สาธารณูปโภค",cost_type:"fixed",cashflow_type:"operating"},
   {code:"0403",name:"ค่าโทรศัพท์",group:"🔧 สาธารณูปโภค",cost_type:"fixed",cashflow_type:"operating"},
   {code:"0404",name:"ค่าอินเตอร์เน็ต",group:"🔧 สาธารณูปโภค",cost_type:"fixed",cashflow_type:"operating"},
-  {code:"0408",name:"ค่าโฆษณา / Marketing",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"operating"},
+  {code:"0408",name:"ค่าโฆษณา / Marketing",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"ignore"},
+  {code:"0409",name:"ค่าโฆษณาการตลาดผ่านแอพ / Platform Ads",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"ignore"},
   {code:"0411",name:"ค่าใช้จ่ายอื่นๆ",group:"📦 ค่าใช้จ่ายแปรผัน",cost_type:"variable",cashflow_type:"operating"},
   {code:"0501",name:"ค่าเช่ารายเดือน",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"fixed",cashflow_type:"operating"},
   {code:"0502",name:"ค่าทำบัญชี",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"fixed",cashflow_type:"operating"},
   {code:"0503",name:"ค่าธรรมเนียมธนาคาร",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating"},
-  {code:"0504",name:"ค่า GP Delivery Commission",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating"},
+  {code:"0504",name:"ค่า GP Delivery Commission",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"ignore"},
   {code:"0505",name:"ภาษีหัก ณ ที่จ่าย",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating"},
   {code:"0506",name:"VAT",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"variable",cashflow_type:"operating"},
   {code:"0507",name:"ภาษีเงินได้ประจำปี",group:"🏢 ค่าใช้จ่ายคงที่",cost_type:"fixed",cashflow_type:"operating"},
@@ -647,10 +648,11 @@ const EXPENSE_CATEGORIES=[
   {code:"0602",name:"เฟอร์นิเจอร์ / Fixtures",group:"🛠️ ลงทุน / CAPEX",cost_type:"capex",cashflow_type:"investing"},
   {code:"0603",name:"Renovation / ปรับปรุงร้าน",group:"🛠️ ลงทุน / CAPEX",cost_type:"capex",cashflow_type:"investing"},
   {code:"0604",name:"ระบบ POS / Software Setup",group:"🛠️ ลงทุน / CAPEX",cost_type:"capex",cashflow_type:"investing"},
-  {code:"0701",name:"จ่ายคืนเงินกู้",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing"},
+  {code:"0701",name:"จ่ายคืนเงินกู้",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"ignore"},
   {code:"0702",name:"ดอกเบี้ยเงินกู้",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"fixed",cashflow_type:"operating"},
-  {code:"0703",name:"ถอนเงินเจ้าของ",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing"},
-  {code:"0704",name:"โอนเงินส่วนตัว / Owner Draw",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"financing"}
+  {code:"0703",name:"ถอนเงินเจ้าของ",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"ignore"},
+  {code:"0704",name:"โอนเงินส่วนตัว / Owner Draw",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"ignore"},
+  {code:"0705",name:"สินเชื่อแกรบ / Grab Loan Deduction",group:"🏦 เงินทุน / หนี้ / เจ้าของ",cost_type:"financing",cashflow_type:"ignore"}
 ];
 function expenseCategoryValue(c){return `${c.code} — ${c.name}`}
 function expenseMeta(category){
@@ -1246,13 +1248,27 @@ function moveCashflowMonth(delta){
 }
 function inCashflowMonth(dateStr){const el=document.getElementById("cfMonth");if(!el||!el.value)return true;return String(dateStr||"").slice(0,7)===el.value}
 function cfAdd(obj,key,amount){obj[key]=(obj[key]||0)+Number(amount||0)}
+function isCashflowIgnoredExpense(e){
+  const meta=expenseMeta(e.category);
+  const t=(String(e.category||"")+" "+String(e.detail||"")).toLowerCase();
+
+  // รายการเหล่านี้ไม่ใช่เงินสดออกจากบัญชีร้านในมุม Cashflow
+  // เช่น Grab หักก่อนโอน, GP Delivery, Ads ผ่านแอพ, ชำระหนี้/สินเชื่อ, ถอนเงินเจ้าของ
+  if(meta.cashflow_type==="ignore") return true;
+  return /0409|0705|grab|แกรบ|gp delivery|commission|ค่า\s*gp|จีพี|platform ads|ads ผ่านแอพ|โฆษณาการตลาดผ่านแอพ|สินเชื่อ|ชำระหนี้|จ่ายคืนเงินกู้|เงินกู้|loan|debt|installment|owner draw|withdrawal|ถอนเงินเจ้าของ/i.test(t);
+}
 function buildCashflowRows(){
   const rows=[];
   purchases.filter(p=>inCashflowMonth(p.purchase_date)).forEach(p=>rows.push({date:p.purchase_date,source:"COGS",category:p.category||"COGS",type:"operating",direction:"out",detail:p.ingredient_name||"ซื้อวัตถุดิบ",amount:Number(p.total_cost||0)}));
-  exps.filter(e=>inCashflowMonth(e.expense_date)).forEach(e=>{const meta=expenseMeta(e.category);rows.push({date:e.expense_date,source:"Expense",category:e.category||"Expense",type:meta.cashflow_type||"operating",direction:"out",detail:e.detail||meta.name||"",amount:Number(e.amount||0)})});
+  exps.filter(e=>inCashflowMonth(e.expense_date)).forEach(e=>{
+    if(isCashflowIgnoredExpense(e)) return;
+    const meta=expenseMeta(e.category);
+    rows.push({date:e.expense_date,source:"Expense",category:e.category||"Expense",type:meta.cashflow_type||"operating",direction:"out",detail:e.detail||meta.name||"",amount:Number(e.amount||0)});
+  });
   cashIns.filter(i=>inCashflowMonth(i.cash_date||i.date)).forEach(i=>rows.push({date:i.cash_date||i.date,source:"Manual Cash In",category:i.source||i.cash_source||"Cash In",type:i.cashflow_type||i.type||"operating",direction:"in",detail:i.detail||"",amount:Number(i.amount||0),id:i.id,manual:true}));
   return rows;
 }
+
 function renderCashflow(){
   initCashflowMonth();
   const mo=document.getElementById("cfMonth")?.value||"";
