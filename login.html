@@ -8,67 +8,22 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:Arial,'Noto Sans Thai',sans-serif;background:#f6f1ea;color:#222}
-.card{width:min(420px,92vw);background:#fff;border:1px solid #e6d8c8;border-radius:22px;padding:26px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+.card{width:min(420px,92vw);background:#fff;border:1px solid #e6d8c8;border-radius:22px;padding:26px;box-shadow:0 10px 30px rgba(0,0,0,.08);max-width:100%;overflow-x:auto}
 h1{margin:0 0 8px;color:#111}
 p{opacity:.72;line-height:1.45}
 label{display:block;margin-top:14px;font-weight:800}
-input{width:100%;border:1px solid #d8c9b8;border-radius:14px;padding:12px;margin-top:6px;font-size:16px}
+input{width:100%;max-width:100%;min-width:0;border:1px solid #d8c9b8;border-radius:14px;padding:12px;margin-top:6px;font-size:16px}
 button{width:100%;border:0;border-radius:14px;padding:12px;margin-top:18px;background:#d9c400;font-weight:900;font-size:16px;cursor:pointer}
-.status{margin-top:14px;font-size:14px;color:#555}
+button:disabled{opacity:.55;cursor:not-allowed}
+.status{margin-top:14px;font-size:14px;color:#555;line-height:1.45}
 .err{color:#b91c1c;font-weight:800}
-* {
-  box-sizing: border-box;
-}
-
-.card {
-  max-width: 100%;
-  overflow-x: auto;
-}
-
-input,
-select,
-textarea {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-}
-
-table {
-  width: 100%;
-  min-width: 900px;
-}
-
-th,
-td {
-  white-space: nowrap;
-}
-
-.topbar {
-  flex-wrap: wrap;
-}
-
-@media (max-width: 900px) {
-
-  .wrap {
-    grid-template-columns: 1fr !important;
-  }
-
-  .side {
-    position: relative !important;
-    height: auto !important;
-  }
-
-  .main {
-    padding: 14px !important;
-  }
-
-  .grid2,
-  .chart-grid,
-  .kpi-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-}
+.ok{color:#166534;font-weight:800}
+.password-wrap{position:relative}
+.password-wrap input{padding-right:48px}
+.eye-btn{position:absolute;right:8px;top:50%;transform:translateY(-38%);width:auto;margin:0;padding:6px 9px;border-radius:10px;background:#f6f1ea;color:#333;font-size:13px}
+.link-btn{background:transparent;color:#7a5d00;padding:0;margin:10px 0 0;text-align:left;font-size:14px;text-decoration:underline;width:auto;font-weight:800}
+.helper-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+@media (max-width: 900px){.grid2,.chart-grid,.kpi-grid{grid-template-columns:1fr!important}}
 </style>
 </head>
 <body>
@@ -78,14 +33,26 @@ td {
   <label>Email</label>
   <input id="email" type="email" placeholder="you@example.com" autocomplete="email">
   <label>Password</label>
-  <input id="password" type="password" placeholder="password" autocomplete="current-password">
-  <button onclick="login()">Login</button>
+  <div class="password-wrap">
+    <input id="password" type="password" placeholder="password" autocomplete="current-password">
+    <button class="eye-btn" type="button" onclick="togglePassword()">👁️</button>
+  </div>
+  <div class="helper-row">
+    <button class="link-btn" type="button" onclick="forgotPassword()">ลืมรหัสผ่าน?</button>
+  </div>
+  <button id="loginBtn" onclick="login()">Login</button>
   <div id="status" class="status">กรอกอีเมลและรหัสผ่านที่สร้างใน Supabase</div>
 </div>
 <script>
 const SUPABASE_URL = "https://mjbxskhfvaxxcopzesic.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qYnhza2hmdmF4eGNvcHplc2ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjg4NTIsImV4cCI6MjA5MDk0NDg1Mn0.G2W728EIN6qfALpW06YCdSkVKKnAO1bULMGIlei-Z2U";
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function setStatus(message, type=""){
+  const status = document.getElementById("status");
+  status.textContent = message;
+  status.className = "status" + (type ? " " + type : "");
+}
 
 async function alreadyLoggedIn(){
   const result = await db.auth.getSession();
@@ -95,21 +62,53 @@ async function alreadyLoggedIn(){
   }
 }
 
+function togglePassword(){
+  const input = document.getElementById("password");
+  input.type = input.type === "password" ? "text" : "password";
+}
+
 async function login(){
-  const status = document.getElementById("status");
-  status.textContent = "กำลังเข้าสู่ระบบ...";
-  status.className = "status";
+  const btn = document.getElementById("loginBtn");
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
+  if(!email || !password){
+    setStatus("กรุณากรอกอีเมลและรหัสผ่าน", "err");
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = "กำลังเข้าสู่ระบบ...";
+  setStatus("กำลังเข้าสู่ระบบ...");
   const result = await db.auth.signInWithPassword({ email, password });
+  btn.disabled = false;
+  btn.textContent = "Login";
   if(result.error){
-    status.textContent = result.error.message;
-    status.className = "status err";
+    setStatus(result.error.message, "err");
     return;
   }
   const next = new URLSearchParams(location.search).get("next") || "index.html";
   location.href = next;
 }
+
+async function forgotPassword(){
+  const email = document.getElementById("email").value.trim();
+  if(!email){
+    setStatus("กรุณากรอก Email ก่อน แล้วค่อยกดลืมรหัสผ่าน", "err");
+    return;
+  }
+  setStatus("กำลังส่งอีเมลรีเซ็ตรหัสผ่าน...");
+  const redirectTo = new URL("reset-password.html", location.href).href;
+  const result = await db.auth.resetPasswordForEmail(email, { redirectTo });
+  if(result.error){
+    setStatus(result.error.message, "err");
+    return;
+  }
+  setStatus("📧 ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว กรุณาตรวจสอบ Email", "ok");
+}
+
+document.addEventListener("keydown", e=>{
+  if(e.key === "Enter") login();
+});
+
 alreadyLoggedIn();
 </script>
 </body>
