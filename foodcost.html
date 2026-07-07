@@ -684,7 +684,7 @@ function lineCost(line,stack=[]){
   return Number(line?.quantity||0)*lineUnitCost(line,stack);
 }
 
-function recipeCost(id,stack=[]){
+function recipeBaseCost(id,stack=[]){
   if(stack.map(String).includes(String(id))){
     console.warn("Circular recipe reference blocked",stack.concat([id]));
     return 0;
@@ -696,6 +696,15 @@ function recipeCost(id,stack=[]){
   const nextStack=stack.concat([id]);
   const total=ls.reduce((a,l)=>a+lineCost(l,nextStack),0);
   return total/yieldQty;
+}
+function recipeCost(id,stack=[]){
+  const r=recipes.find(x=>String(x.id)===String(id));
+  const base=recipeBaseCost(id,stack);
+  if(r && isSemi(r)){
+    const util=utilityCostForRecipe(id,base);
+    return base+Number(util.total||0);
+  }
+  return base;
 }
 
 function debugRecipeCost(id,stack=[]){
@@ -897,7 +906,7 @@ function renderList(){
     const recipeTotalCost=recipeLines
       .filter(l=>String(l.recipe_id)===String(r.id))
       .reduce((a,l)=>a+lineCost(l,[r.id]),0);
-    const displayCost=isSemi(r)?recipeTotalCost:cost;
+    const displayCost=isSemi(r)?cost:cost;
     const price=Number(r.base_price||0);
     const profit=price-cost;
     const fc=price?cost/price*100:0;
@@ -935,18 +944,19 @@ function showRecipe(id){
   document.getElementById("detailEmpty").style.display="none";
   document.getElementById("detailContent").style.display="block";
   const ls=recipeLines.filter(x=>String(x.recipe_id)===String(id));
-  const baseCost=recipeCost(id);
+  const baseCost=recipeBaseCost(id);
   const price=Number(r.base_price||0);
   const gp=Number(r.delivery_gp_percent||0);
   const del=calcDelivery(price,gp);
-  const util=(!isSemi(r)&&price)?utilityCostForRecipe(id,price):{oilRate:0,lpgRate:0,oilCost:0,lpgCost:0,total:0,settings:recipeUtilitySetting(id),auto:getOilLpgRates()};
+  const utilityBase=isSemi(r)?baseCost:price;
+  const util=utilityBase?utilityCostForRecipe(id,utilityBase):{oilRate:0,lpgRate:0,oilCost:0,lpgCost:0,total:0,settings:recipeUtilitySetting(id),auto:getOilLpgRates()};
   const cost=baseCost+Number(util.total||0);
   const profit=price-cost;
   const fc=price?cost/price*100:0;
   const fcDel=del?cost/del*100:0;
   const totalCost=ls.reduce((a,l)=>a+lineCost(l,[id]),0);
-  const mainCostValue=isSemi(r)?totalCost:cost;
-  const mainCostSub=isSemi(r)?`Cost/output ${B(baseCost)} / ${r.output_unit||"unit"}`:`Ingredients ${B(baseCost)} + Oil/LPG ${B(util.total)}`;
+  const mainCostValue=isSemi(r)?cost:cost;
+  const mainCostSub=isSemi(r)?`Base ${B(baseCost)} + Oil/LPG ${B(util.total)} / ${r.output_unit||"unit"}`:`Ingredients ${B(baseCost)} + Oil/LPG ${B(util.total)}`;
   let h=`
     <div class="detail-header">
       <div>
@@ -986,9 +996,10 @@ function showRecipe(id){
     </div>
   </div></div>`;
 
-  if(!isSemi(r)){
+  {
     const auto=util.auto||getOilLpgRates();
     const st=util.settings||recipeUtilitySetting(id);
+    const basisLabel=isSemi(r)?"ฐานคำนวณ: ต้นทุน Semi ต่อ Output":"ฐานคำนวณ: ราคาขายหน้าร้าน";
     h+=`<div class="section-block"><div class="section-title">Oil & LPG Cost</div>
       <div class="utility-box">
         <div class="utility-grid">
@@ -1011,7 +1022,7 @@ function showRecipe(id){
             <div class="utility-cost-row"><span>LPG Cost</span><b>${B(util.lpgCost)} (${util.lpgRate.toFixed(2)}%)</b></div>
           </div>
         </div>
-        <div class="utility-note">Auto ใช้ข้อมูลเดือน ${auto.month} จากหน้า oil_lpg.html · สูตร: ราคาขายหน้าร้าน × %</div>
+        <div class="utility-note">${basisLabel} · Auto ใช้ข้อมูลเดือน ${auto.month} จากหน้า oil_lpg.html · Menu = ราคาขาย × % · Semi = ต้นทุนต่อ Output × %</div>
         <div class="btn-row"><button class="btn btn-primary btn-sm" onclick="saveRecipeUtilitySetting('${id}')">💾 บันทึก Oil/LPG ของเมนูนี้</button><a class="btn btn-secondary btn-sm" href="oil_lpg.html">เปิดหน้า Oil & LPG</a></div>
       </div>
     </div>`;
