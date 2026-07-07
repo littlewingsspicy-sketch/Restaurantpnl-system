@@ -320,6 +320,23 @@ tr:hover td{background:var(--surface2)}
   .wrap{padding:16px 12px}
   .line-row{grid-template-columns:1fr 80px}
 }
+
+
+/* ── Oil & LPG Utility Cost ── */
+.utility-box{
+  background:var(--accent-soft);
+  border:1px solid var(--accent-border);
+  border-radius:var(--radius-sm);
+  padding:14px;
+  margin:12px 0 14px;
+}
+.utility-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end}
+.utility-check{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--text2);margin-bottom:8px}
+.utility-check input{width:auto}
+.utility-note{font-size:12px;color:var(--text3);margin-top:8px;line-height:1.5}
+.utility-cost-row{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--text2);margin-top:6px}
+.utility-cost-row b{font-family:'DM Mono',monospace;color:var(--text)}
+
 </style>
 </head>
 <body>
@@ -343,6 +360,7 @@ tr:hover td{background:var(--surface2)}
     <a class="nav-item" href="ingredient_history.html"><span class="icon">📈</span> Ingredient History</a>
     <a class="nav-item" href="index.html#waste"><span class="icon">🗑️</span> Waste / ของเสีย</a>
     <a class="nav-item active" href="foodcost.html"><span class="icon">🍗</span> Food Cost</a>
+    <a class="nav-item" href="oil_lpg.html"><span class="icon">🛢️</span> Oil & LPG</a>
     <div class="nav-section">Settings</div>
     <a class="nav-item" href="index.html#brand"><span class="icon">🏷️</span> Brands</a>
     <a class="nav-item" href="index.html#export"><span class="icon">⬇️</span> Export</a>
@@ -358,7 +376,7 @@ tr:hover td{background:var(--surface2)}
       <div style="font-size:20px;font-weight:800;letter-spacing:-.02em">🍗 Food Cost</div>
       <div class="help">สร้างสูตร คำนวณต้นทุน และแก้ไขราคาเมนู</div>
     </div>
-    <button class="btn btn-primary" onclick="scrollToCreateRecipe()">+ New Recipe</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-secondary" href="oil_lpg.html">🛢 Oil & LPG</a><button class="btn btn-primary" onclick="scrollToCreateRecipe()">+ New Recipe</button></div>
   </div>
   <div class="main-layout">
 
@@ -501,6 +519,75 @@ function costBarColor(fc){
   if(fc>50)return "var(--red)";
   if(fc>35)return "var(--orange)";
   return "var(--green)";
+}
+
+
+/* ── Oil & LPG Auto Rates from oil_lpg.html ── */
+const OIL_LPG_KEY="nrk_oil_lpg_manual_v1";
+const RECIPE_UTILITY_KEY="nrk_recipe_utility_cost_v1";
+function currentMonthKey(){
+  const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+}
+function readOilLpgStore(){
+  try{return JSON.parse(localStorage.getItem(OIL_LPG_KEY)||"{}")}catch(e){return {}}
+}
+function getOilLpgRates(monthKey){
+  const m=monthKey||currentMonthKey();
+  const row=readOilLpgStore()[m]||{};
+  const oil=Number(row.oilCost||0), fried=Number(row.friedSales||0);
+  const lpg=Number(row.lpgCost||0), gas=Number(row.gasSales||0);
+  return {
+    month:m,
+    oilRate:fried?oil/fried*100:0,
+    lpgRate:gas?lpg/gas*100:0,
+    oilCost:oil,
+    friedSales:fried,
+    lpgCost:lpg,
+    gasSales:gas
+  };
+}
+function readRecipeUtilitySettings(){
+  try{return JSON.parse(localStorage.getItem(RECIPE_UTILITY_KEY)||"{}")}catch(e){return {}}
+}
+function recipeUtilitySetting(recipeId){
+  const all=readRecipeUtilitySettings();
+  return all[String(recipeId)]||{applyOil:false,applyLpg:false,oilMode:"auto",lpgMode:"auto",oilManual:"",lpgManual:""};
+}
+function saveRecipeUtilitySetting(recipeId){
+  const all=readRecipeUtilitySettings();
+  const get=id=>document.getElementById(id);
+  all[String(recipeId)]={
+    applyOil:!!get("utilApplyOil")?.checked,
+    applyLpg:!!get("utilApplyLpg")?.checked,
+    oilMode:get("utilOilMode")?.value||"auto",
+    lpgMode:get("utilLpgMode")?.value||"auto",
+    oilManual:get("utilOilManual")?.value||"",
+    lpgManual:get("utilLpgManual")?.value||""
+  };
+  localStorage.setItem(RECIPE_UTILITY_KEY,JSON.stringify(all));
+  showRecipe(recipeId);
+  toast();
+}
+function utilityRatesForRecipe(recipeId){
+  const st=recipeUtilitySetting(recipeId);
+  const auto=getOilLpgRates();
+  const oilRate=st.applyOil ? (st.oilMode==="manual"?Number(st.oilManual||0):auto.oilRate) : 0;
+  const lpgRate=st.applyLpg ? (st.lpgMode==="manual"?Number(st.lpgManual||0):auto.lpgRate) : 0;
+  return {settings:st,auto,oilRate,lpgRate};
+}
+function utilityCostForRecipe(recipeId,price){
+  const u=utilityRatesForRecipe(recipeId);
+  const p=Number(price||0);
+  return {...u,oilCost:p*u.oilRate/100,lpgCost:p*u.lpgRate/100,total:p*(u.oilRate+u.lpgRate)/100};
+}
+function onUtilityModeChange(){
+  const oilMode=document.getElementById("utilOilMode")?.value;
+  const lpgMode=document.getElementById("utilLpgMode")?.value;
+  const oilManual=document.getElementById("utilOilManual");
+  const lpgManual=document.getElementById("utilLpgManual");
+  if(oilManual)oilManual.style.display=oilMode==="manual"?"block":"none";
+  if(lpgManual)lpgManual.style.display=lpgMode==="manual"?"block":"none";
 }
 
 /* ── Auth ── */
@@ -848,16 +935,18 @@ function showRecipe(id){
   document.getElementById("detailEmpty").style.display="none";
   document.getElementById("detailContent").style.display="block";
   const ls=recipeLines.filter(x=>String(x.recipe_id)===String(id));
-  const cost=recipeCost(id);
+  const baseCost=recipeCost(id);
   const price=Number(r.base_price||0);
   const gp=Number(r.delivery_gp_percent||0);
   const del=calcDelivery(price,gp);
+  const util=(!isSemi(r)&&price)?utilityCostForRecipe(id,price):{oilRate:0,lpgRate:0,oilCost:0,lpgCost:0,total:0,settings:recipeUtilitySetting(id),auto:getOilLpgRates()};
+  const cost=baseCost+Number(util.total||0);
   const profit=price-cost;
   const fc=price?cost/price*100:0;
   const fcDel=del?cost/del*100:0;
   const totalCost=ls.reduce((a,l)=>a+lineCost(l,[id]),0);
   const mainCostValue=isSemi(r)?totalCost:cost;
-  const mainCostSub=isSemi(r)?`Cost/output ${B(cost)} / ${r.output_unit||"unit"}`:`${r.yield_qty||1} ${r.output_unit||"unit"}`;
+  const mainCostSub=isSemi(r)?`Cost/output ${B(baseCost)} / ${r.output_unit||"unit"}`:`Ingredients ${B(baseCost)} + Oil/LPG ${B(util.total)}`;
   let h=`
     <div class="detail-header">
       <div>
@@ -896,6 +985,37 @@ function showRecipe(id){
       <button class="btn btn-secondary btn-sm" onclick="showRecipe('${id}')">ยกเลิก</button>
     </div>
   </div></div>`;
+
+  if(!isSemi(r)){
+    const auto=util.auto||getOilLpgRates();
+    const st=util.settings||recipeUtilitySetting(id);
+    h+=`<div class="section-block"><div class="section-title">Oil & LPG Cost</div>
+      <div class="utility-box">
+        <div class="utility-grid">
+          <div>
+            <label class="utility-check"><input type="checkbox" id="utilApplyOil" ${st.applyOil?"checked":""}> Apply Oil Cost</label>
+            <select id="utilOilMode" onchange="onUtilityModeChange()">
+              <option value="auto" ${st.oilMode!=="manual"?"selected":""}>Auto จาก Oil & LPG (${auto.oilRate.toFixed(2)}%)</option>
+              <option value="manual" ${st.oilMode==="manual"?"selected":""}>Manual %</option>
+            </select>
+            <input id="utilOilManual" type="number" step="0.01" placeholder="Oil %" value="${st.oilManual||""}" style="margin-top:8px;display:${st.oilMode==="manual"?"block":"none"}">
+            <div class="utility-cost-row"><span>Oil Cost</span><b>${B(util.oilCost)} (${util.oilRate.toFixed(2)}%)</b></div>
+          </div>
+          <div>
+            <label class="utility-check"><input type="checkbox" id="utilApplyLpg" ${st.applyLpg?"checked":""}> Apply LPG Cost</label>
+            <select id="utilLpgMode" onchange="onUtilityModeChange()">
+              <option value="auto" ${st.lpgMode!=="manual"?"selected":""}>Auto จาก Oil & LPG (${auto.lpgRate.toFixed(2)}%)</option>
+              <option value="manual" ${st.lpgMode==="manual"?"selected":""}>Manual %</option>
+            </select>
+            <input id="utilLpgManual" type="number" step="0.01" placeholder="LPG %" value="${st.lpgManual||""}" style="margin-top:8px;display:${st.lpgMode==="manual"?"block":"none"}">
+            <div class="utility-cost-row"><span>LPG Cost</span><b>${B(util.lpgCost)} (${util.lpgRate.toFixed(2)}%)</b></div>
+          </div>
+        </div>
+        <div class="utility-note">Auto ใช้ข้อมูลเดือน ${auto.month} จากหน้า oil_lpg.html · สูตร: ราคาขายหน้าร้าน × %</div>
+        <div class="btn-row"><button class="btn btn-primary btn-sm" onclick="saveRecipeUtilitySetting('${id}')">💾 บันทึก Oil/LPG ของเมนูนี้</button><a class="btn btn-secondary btn-sm" href="oil_lpg.html">เปิดหน้า Oil & LPG</a></div>
+      </div>
+    </div>`;
+  }
 
   // KPI pills
   h+=`<div class="section-block"><div class="section-title">สรุปต้นทุน</div><div class="kpi-row">
