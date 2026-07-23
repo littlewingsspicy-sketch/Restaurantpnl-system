@@ -1109,7 +1109,7 @@ function renderWorkspace(){
               <input type="number" id="ws_qty_${date}" placeholder="จำนวน">
               <input id="ws_unit_${date}" list="unitMasterList" placeholder="หน่วย">
               <input type="number" id="ws_total_${date}" placeholder="ราคารวม ฿">
-              <button class="btn btn-secondary btn-sm" onclick="addWorkspacePurchase('${date}')">+ เพิ่ม</button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addWorkspacePurchase('${date}')">+ เพิ่ม</button>
             </div>
             <div class="tbl-wrap"><table class="ws-mini-table"><thead><tr><th>รายการ</th><th>หมวด</th><th>จำนวน</th><th class="text-right">รวม</th><th></th></tr></thead><tbody>
               ${purchasesFor(date).map(p=>`<tr><td>${p.ingredient_name||""}</td><td>${p.category||""}</td><td>${p.quantity||0} ${p.purchase_unit||""}</td><td class="text-right td-mono">${B(p.total_cost)}</td><td><button class="btn btn-secondary btn-sm" onclick="editWorkspacePurchase('${p.id}')">แก้</button><button class="btn btn-danger btn-sm" onclick="del('inventory_purchases','${p.id}')">ลบ</button></td></tr>`).join("")}
@@ -1153,53 +1153,104 @@ async function saveWorkspaceSales(date){
 }
 
 async function addWorkspacePurchase(date){
-  const ingVal=document.getElementById(`ws_ing_${date}`)?.value||"";
-  const ing=ings.find(i=>i.name===ingVal)||ings.find(i=>String(i.name||"").toLowerCase().includes(ingVal.toLowerCase()));
+  const ingInput=document.getElementById(`ws_ing_${date}`);
+  const qtyInput=document.getElementById(`ws_qty_${date}`);
+  const unitInput=document.getElementById(`ws_unit_${date}`);
+  const totalInput=document.getElementById(`ws_total_${date}`);
+  const catInput=document.getElementById(`ws_cat_${date}`);
+
+  const ingVal=String(ingInput?.value||"").trim();
+  const ing=ings.find(i=>String(i.name||"").trim()===ingVal)
+    || ings.find(i=>String(i.name||"").toLowerCase().includes(ingVal.toLowerCase()));
   if(!ing){alert("เลือก/ค้นหาวัตถุดิบก่อน");return;}
-  const qty=Number(document.getElementById(`ws_qty_${date}`)?.value||0);
-  const unit=document.getElementById(`ws_unit_${date}`)?.value||ing.purchase_unit||"";
-  const total=Number(document.getElementById(`ws_total_${date}`)?.value||0);
-  const cat=document.getElementById(`ws_cat_${date}`)?.value||ing.category||"อื่นๆ";
-  const uc=qty?total/qty:0;
-  const row={id:uid("pur"),purchase_date:date,ingredient_id:ing.id,ingredient_name:ing.name,category:cat,quantity:qty,purchase_unit:unit,total_cost:total,unit_purchase_cost:uc};
-  const res=await db.from("inventory_purchases").insert(row);
-  if(res.error){alert(res.error.message);return;}
-  const purchaseQty=qty||1;
-  const purchaseTotal=total;
+
+  const qty=Number(qtyInput?.value||0);
+  const total=Number(totalInput?.value||0);
+  if(!(qty>0)){alert("ใส่จำนวน");return;}
+  if(!(total>0)){alert("ใส่ราคารวม");return;}
+
+  const unit=String(unitInput?.value||ing.purchase_unit||"").trim();
+  const cat=String(catInput?.value||ing.category||"อื่นๆ").trim();
+  const purchaseId=uid("pur");
+  const row={
+    id:purchaseId,
+    purchase_date:date,
+    ingredient_id:ing.id,
+    ingredient_name:ing.name,
+    category:cat,
+    quantity:qty,
+    purchase_unit:unit,
+    total_cost:total,
+    unit_purchase_cost:total/qty
+  };
+
+  // ต้องยืนยันว่า Supabase คืนแถวที่บันทึกจริงก่อน จึงถือว่าสำเร็จ
+  let savedRow=null;
+  let insertResult=await db.from("inventory_purchases").insert(row).select("*").single();
+
+  // รองรับกรณี schema เก่าไม่มี unit_purchase_cost
+  if(insertResult.error && /unit_purchase_cost/i.test(insertResult.error.message||"")){
+    const {unit_purchase_cost,...legacyRow}=row;
+    insertResult=await db.from("inventory_purchases").insert(legacyRow).select("*").single();
+  }
+
+  if(insertResult.error){
+    alert(insertResult.error.message);
+    return;
+  }
+  savedRow=insertResult.data;
+  if(!savedRow){
+    alert("บันทึก COGS ไม่สำเร็จ");
+    return;
+  }
+
+  // อัปเดตหน้าให้เห็นรายการทันที โดยไม่รอขั้นตอนประวัติต้นทุน
+  purchases.push(savedRow);
+
+  const purchaseQty=qty;
   const conversionRate=getIngredientConversionRate(ing,unit);
   const totalUseQty=calcTotalUseQty(purchaseQty,conversionRate);
   const yieldRate=Number(ing.yield_rate||1);
-  const cpu=calcIngredientCpu(purchaseTotal,1,totalUseQty,yieldRate*100);
+  const cpu=calcIngredientCpu(total,1,totalUseQty,yieldRate*100);
 
-  await db.from("ingredients").update({
-    unit_purchase_cost:purchaseTotal,
-    cost_per_use:cpu,
-    latest_purchase_qty:purchaseQty,
-    purchase_qty:purchaseQty,
-    purchase_unit:unit,
-    convert_rate:totalUseQty,
-    conversion_rate:conversionRate,
-    updated_at:new Date().toISOString()
-  }).eq("id",ing.id);
+  // สองขั้นตอนนี้เป็นข้อมูลต่อเนื่อง ไม่ควรทำให้การบันทึก COGS หลักล้ม
+  try{
+    await db.from("ingredients").update({
+      unit_purchase_cost:total,
+      cost_per_use:cpu,
+      latest_purchase_qty:purchaseQty,
+      purchase_qty:purchaseQty,
+      purchase_unit:unit,
+      convert_rate:totalUseQty,
+      conversion_rate:conversionRate,
+      updated_at:new Date().toISOString()
+    }).eq("id",ing.id);
 
-  await db.from("ingredient_cost_history").insert({
-    id:uid("costhist"),
-    cost_date:date,
-    ingredient_id:ing.id,
-    ingredient_name:ing.name,
-    purchase_qty:purchaseQty,
-    purchase_unit:unit,
-    purchase_total:purchaseTotal,
-    convert_rate:totalUseQty,
-    conversion_rate:conversionRate,
-    usage_unit:ing.usage_unit||"",
-    yield_rate:yieldRate,
-    cost_per_use:cpu,
-    source:"workspace_purchase",
-    source_id:row.id
-  });
+    await db.from("ingredient_cost_history").insert({
+      id:uid("costhist"),
+      cost_date:date,
+      ingredient_id:ing.id,
+      ingredient_name:ing.name,
+      purchase_qty:purchaseQty,
+      purchase_unit:unit,
+      purchase_total:total,
+      convert_rate:totalUseQty,
+      conversion_rate:conversionRate,
+      usage_unit:ing.usage_unit||"",
+      yield_rate:yieldRate,
+      cost_per_use:cpu,
+      source:"workspace_purchase",
+      source_id:purchaseId
+    });
+  }catch(e){
+    console.error("COGS follow-up update failed",e);
+  }
 
-await load(false);
+  ingInput.value="";
+  qtyInput.value="";
+  totalInput.value="";
+  if(unitInput)unitInput.value="";
+
   OPEN_DAYS.add("day_"+date);
   renderWorkspace();
   showSaveHint();
